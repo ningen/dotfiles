@@ -1,12 +1,16 @@
 #!/bin/bash -e
 
 function install_dependencies() { 
-  apt-add-repository ppa:fish-shell/release-3
-  apt update
-  apt install -y fish
+  echo_message "install dependency packages"
+  sudo apt-add-repository -y ppa:fish-shell/release-3
+  sudo apt-add-repository -y ppa:neovim-ppa/stable
+  sudo apt update
+  sudo apt install -y fish neovim make git
 }
 
 function link_dotfiles() {
+  echo_message "Create synbolic link"
+
   IGNORE_PATTERN="^\.(git|travis)"
 
   echo "Create dotfile links."
@@ -14,13 +18,37 @@ function link_dotfiles() {
       [[ $dotfile =~ $IGNORE_PATTERN ]] && continue
       ln -snfv "$(pwd)/$dotfile" "$HOME/$dotfile"
   done
-  echo "Success"
+}
+
+function set_default_shell() {
+  echo_message "Set default shell to 'fish'"
+  chsh -s $(which fish)
+}
+
+
+function install_neovim_package_manager() {
+  packer_dir=~/.local/share/nvim/site/pack/packer/start/packer.nvim
+  if [ -d $packer_dir ]; then
+    echo_message "Exists neovim package manager 'packer.nvim'"
+  else
+    echo_message "Install neovim package manager 'packer.nvim'"
+    mkdir -p $packer_dir
+    git clone --depth 1 https://github.com/wbthomason/packer.nvim $packer_dir
+  fi
+}
+
+function echo_message() {
+  echo '============================================='
+  echo $1 
+  echo '============================================='
 }
 
 
 function main() {
   install_dependencies
   link_dotfiles
+  set_default_shell
+  install_neovim_package_manager
 }
 
 main
