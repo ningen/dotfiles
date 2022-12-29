@@ -1,0 +1,12 @@
+[alias]
+  a = add
+  aa = add -A
+  b = branch
+  c = checkout
+  cm = commit -m
+  cp = cherry-pick
+  l = log --graph
+  s = status
+[user]
+	email = msg1801022@gmail.com
+	name = ningen
