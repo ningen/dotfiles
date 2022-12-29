@@ -1,11 +1,11 @@
 #!/bin/bash -e
 
-function install_dependencies() { 
+function install() { 
   echo_message "install dependency packages"
   sudo apt-add-repository -y ppa:fish-shell/release-3
   sudo apt-add-repository -y ppa:neovim-ppa/stable
   sudo apt update
-  sudo apt install -y fish neovim make git
+  sudo apt install -y fish neovim make git zip unzip
   
   # setting packer.nvim 
   packer_dir=~/.local/share/nvim/site/pack/packer/start/packer.nvim
@@ -16,6 +16,14 @@ function install_dependencies() {
     mkdir -p $packer_dir
     git clone --depth 1 https://github.com/wbthomason/packer.nvim "$packer_dir"
   fi
+
+  # install languages 
+  # nodejs: volta
+  echo_message "Install node version manager 'volta'"
+  curl https://get.volta.sh | bash -s -- --skip-setup 
+  # deno: deno
+  echo_message "Install deno"
+  curl -fsSL https://deno.land/x/install/install.sh | sh
 }
 
 function link_dotfiles() {
@@ -49,11 +57,11 @@ action="${1:-all}"
 
 case "$action" in
   all ) 
-    install_dependencies
+    install 
     link_dotfiles
     set_default_shell ;;
   install )
-    install_dependencies ;;
+    install ;;
   link )
     link_dotfiles ;;
   sh )
