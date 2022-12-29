@@ -23,6 +23,7 @@ function link_dotfiles() {
 function set_default_shell() {
   echo_message "Set default shell to 'fish'"
   chsh -s $(which fish)
+  echo_message "Changed default shell to 'fish'"
 }
 
 
@@ -33,7 +34,7 @@ function install_neovim_package_manager() {
   else
     echo_message "Install neovim package manager 'packer.nvim'"
     mkdir -p $packer_dir
-    git clone --depth 1 https://github.com/wbthomason/packer.nvim $packer_dir
+    git clone --depth 1 https://github.com/wbthomason/packer.nvim "$packer_dir"
   fi
 }
 
@@ -47,8 +48,8 @@ function echo_message() {
 function main() {
   install_dependencies
   link_dotfiles
-  set_default_shell
   install_neovim_package_manager
+  set_default_shell
 }
 
 main
