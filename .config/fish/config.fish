@@ -4,3 +4,5 @@ end
 
 
 export XDG_CONFIG_HOME=$HOME/.config
+
+alias g='git'
