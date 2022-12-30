@@ -2,9 +2,13 @@
 
 function install() { 
   echo_message "install dependency packages"
+  
+  mkdir -p ~/.npm-global
+
   sudo apt-add-repository -y ppa:fish-shell/release-3
+  curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
   sudo apt update
-  sudo apt install -y fish make git zip unzip
+  sudo apt install -y fish make git zip unzip nodejs
 
   # install neovim(v0.8.2)
   # apt-add-repository でrepositoryを追加する方法はバージョンが古かったため、curlで直接取ってくる
@@ -22,22 +26,12 @@ function install() {
     git clone --depth 1 https://github.com/wbthomason/packer.nvim "$packer_dir"
   fi
 
-  # install languages 
-  # nodejs: volta
-  echo_message "Install node version manager 'volta'"
-  curl https://get.volta.sh | bash -s -- --skip-setup 
-
-  volta install node
-  volta install yarn
-  volta install npm
-  volta install npx
-
-  npm install -g typescript
-  npm install -g typescript-language-server
-
   # deno: deno
   echo_message "Install deno"
   curl -fsSL https://deno.land/x/install/install.sh | sh
+
+  # install yarn, typescript, typescript-language-server
+  npm install -g yarn typescript typescript-language-server 
 }
 
 function link_dotfiles() {
