@@ -7,8 +7,11 @@ opt.expandtab = true
 opt.tabstop = 2
 opt.shiftwidth = 2
 
+opt.clipboard:prepend { "unnamed", "unnamedplus" }
+
 
 keymap.set('n', '<Tab>', ':tabNext<CR>')
 keymap.set('n', '<S-Tab>', ':tabprevious<CR>')
 
 require('plugins')
+require('settings')

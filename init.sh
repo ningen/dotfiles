@@ -3,10 +3,15 @@
 function install() { 
   echo_message "install dependency packages"
   sudo apt-add-repository -y ppa:fish-shell/release-3
-  sudo apt-add-repository -y ppa:neovim-ppa/stable
   sudo apt update
-  sudo apt install -y fish neovim make git zip unzip
-  
+  sudo apt install -y fish make git zip unzip
+
+  # install neovim(v0.8.2)
+  # apt-add-repository でrepositoryを追加する方法はバージョンが古かったため、curlで直接取ってくる
+  curl -LO 'https://github.com/neovim/neovim/releases/download/v0.8.2/nvim-linux64.deb'
+  sudo apt install ./nvim-linux64.deb
+  rm ./nvim-linux64.deb
+
   # setting packer.nvim 
   packer_dir=~/.local/share/nvim/site/pack/packer/start/packer.nvim
   if [ -d $packer_dir ]; then
@@ -21,6 +26,7 @@ function install() {
   # nodejs: volta
   echo_message "Install node version manager 'volta'"
   curl https://get.volta.sh | bash -s -- --skip-setup 
+
   # deno: deno
   echo_message "Install deno"
   curl -fsSL https://deno.land/x/install/install.sh | sh
