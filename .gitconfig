@@ -5,6 +5,8 @@
   c = checkout
   cm = commit -m
   cp = cherry-pick
+  d = diff
+  dc = diff --cached
   l = log --graph
   s = status
 [user]
