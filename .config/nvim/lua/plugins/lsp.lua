@@ -1,6 +1,12 @@
 -- lsp server management
 require('mason').setup()
-require('mason-lspconfig').setup_handlers({function(server)
+
+local mason_lspconfig = require('mason-lspconfig')
+mason_lspconfig.setup {
+  ensure_installed = { 'sumneko_lua', 'tsserver' }
+}
+
+mason_lspconfig.setup_handlers({function(server)
   local opt = {
     -- サーバ起動後に実行される関数
     capabilities = require('cmp_nvim_lsp').default_capabilities(
@@ -20,7 +26,7 @@ vim.keymap.set('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>') -- 実装
 vim.keymap.set('n', 'gt', '<cmd>lua vim.lsp.buf.type_definition()<CR>') -- 型情報へジャンプ
 vim.keymap.set('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>') -- 名前変更
 vim.keymap.set('n', 'ga', '<cmd>lua vim.lsp.buf.code_action()<CR>')  -- Error, Warning, Hintが出ている場所で実行可能な修正の候補を表示
-vim.keymap.set('n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>') 
+vim.keymap.set('n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>')
 vim.keymap.set('n', 'g]', '<cmd>lua vim.diagnostic.goto_next()<CR>') -- 次の警告にジャンプ?
 vim.keymap.set('n', 'g[', '<cmd>lua vim.diagnostic.goto_prev()<CR>') -- 前の警告にジャンプ?
 
