@@ -12,14 +12,31 @@ packer.startup(function(use)
   use 'neovim/nvim-lspconfig' -- lsp
   use {
     'williamboman/mason.nvim', -- lsp server management
-    'williamboman/mason-lspconfig.nvim',
+    requires = {
+      { 'williamboman/mason-lspconfig.nvim' }
+    }
   }
   use {
     'hrsh7th/nvim-cmp', -- complement
-    'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/vim-vsnip',
+    requires = {
+      { 'hrsh7th/cmp-nvim-lsp' },
+      { 'hrsh7th/vim-vsnip',},
+    }
   }
-
+  use {
+    'nvim-telescope/telescope.nvim', -- fuzzy finder
+    requires = {
+      { 'nvim-lua/plenary.nvim' }
+    }
+  }
+  use {
+    'nvim-telescope/telescope-file-browser.nvim', -- filer
+  }
+  use {
+    'EdenEast/nightfox.nvim' -- colorscheme
+  }
 end)
 
 require('plugins.lsp')
+require('plugins.colorscheme')
+require('plugins.telescope')
