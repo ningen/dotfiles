@@ -4,7 +4,7 @@ end
 
 # aliases
 alias g='git'
-
+alias python='python3'
 
 # setting environment
 set -gx XDG_CONFIG_HOME $HOME/.config
