@@ -27,7 +27,7 @@ packer.startup(function(use)
     'hrsh7th/nvim-cmp', -- complementj
     requires = {
       { 'hrsh7th/cmp-nvim-lsp' },
-      { 'hrsh7th/vim-vsnip',},
+      { 'hrsh7th/vim-vsnip', },
     }
   }
   use {
@@ -36,14 +36,13 @@ packer.startup(function(use)
       { 'nvim-lua/plenary.nvim' }
     }
   }
-  use {
-    'nvim-telescope/telescope-file-browser.nvim', -- filer
-  }
-  use {
-    'EdenEast/nightfox.nvim' -- colorscheme
-  }
+  use 'nvim-telescope/telescope-file-browser.nvim' -- filer
+  use 'EdenEast/nightfox.nvim' -- colorscheme
+  use 'nvim-tree/nvim-web-devicons' -- icon
+  use 'dinhhuy258/git.nvim' --git
 end)
 
 require('plugins.lsp')
 require('plugins.colorscheme')
 require('plugins.telescope')
+require('plugins.git')
