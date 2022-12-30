@@ -27,6 +27,14 @@ function install() {
   echo_message "Install node version manager 'volta'"
   curl https://get.volta.sh | bash -s -- --skip-setup 
 
+  volta install node
+  volta install yarn
+  volta install npm
+  volta install npx
+
+  npm install -g typescript
+  npm install -g typescript-language-server
+
   # deno: deno
   echo_message "Install deno"
   curl -fsSL https://deno.land/x/install/install.sh | sh

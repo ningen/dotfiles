@@ -1,4 +1,13 @@
-local vim = vim
-local cmd = vim.cmd
+local opt  = vim.opt
+local keymap = vim.keymap
 
-cmd("colorscheme nightfox")
+opt.number = true
+
+opt.expandtab = true
+opt.tabstop = 2
+opt.shiftwidth = 2
+
+opt.clipboard:prepend { "unnamed", "unnamedplus" }
+
+keymap.set('n', '<Tab>', ':tabNext<CR>')
+keymap.set('n', '<S-Tab>', ':tabprevious<CR>')
