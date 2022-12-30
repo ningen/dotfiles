@@ -30,8 +30,10 @@ function install() {
   echo_message "Install deno"
   curl -fsSL https://deno.land/x/install/install.sh | sh
 
+  source ./.profile
+
   # install yarn, typescript, typescript-language-server
-  npm install -g yarn typescript typescript-language-server 
+  sudo npm install -g yarn typescript typescript-language-server 
 }
 
 function link_dotfiles() {
@@ -65,8 +67,8 @@ action="${1:-all}"
 
 case "$action" in
   all ) 
-    install 
     link_dotfiles
+    install 
     set_default_shell ;;
   install )
     install ;;

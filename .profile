@@ -18,4 +18,4 @@ if [ -d "$HOME/.local/bin" ] ; then
 fi
 
 # 別の場所にしないと、権限エラーの可能性がある
-NPM_CONFIG_PREFIX=~/.npm-global
+export PATH=~/.npm-global/bin:$PATH
