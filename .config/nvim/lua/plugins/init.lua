@@ -9,6 +9,7 @@ vim.cmd [[packadd packer.nvim]]
 
 packer.startup(function(use)
   use 'wbthomason/packer.nvim'
+
   use 'neovim/nvim-lspconfig' -- lsp
   use {
     'williamboman/mason.nvim', -- lsp server management
@@ -23,6 +24,8 @@ packer.startup(function(use)
       { 'neovim/nvim-lspconfig' }
     }
   }
+
+  -- 補完関係
   use {
     'hrsh7th/nvim-cmp', -- complementj
     requires = {
@@ -30,19 +33,28 @@ packer.startup(function(use)
       { 'hrsh7th/vim-vsnip', },
     }
   }
+  use 'onsails/lspkind.nvim'
+  use 'L3MON4D3/LuaSnip'
+  use 'hrsh7th/cmp-nvim-lsp'
+  use 'hrsh7th/cmp-buffer'
+
   use {
     'nvim-telescope/telescope.nvim', -- fuzzy finder
     requires = {
       { 'nvim-lua/plenary.nvim' }
     }
   }
+
   use 'nvim-telescope/telescope-file-browser.nvim' -- filer
+  use {
+    'nvim-lualine/lualine.nvim',
+    requires = {
+      { 'nvim-tree/nvim-web-devicons', opt = true }
+    },
+  }
+  use 'dinhhuy258/git.nvim' --git
+
   use 'EdenEast/nightfox.nvim' -- colorscheme
   use 'nvim-tree/nvim-web-devicons' -- icon
-  use 'dinhhuy258/git.nvim' --git
-end)
 
-require('plugins.lsp')
-require('plugins.colorscheme')
-require('plugins.telescope')
-require('plugins.git')
+end)
