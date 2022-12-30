@@ -17,7 +17,14 @@ packer.startup(function(use)
     }
   }
   use {
-    'hrsh7th/nvim-cmp', -- complement
+    'glepnir/lspsaga.nvim',
+    branch = 'main',
+    requires = {
+      { 'neovim/nvim-lspconfig' }
+    }
+  }
+  use {
+    'hrsh7th/nvim-cmp', -- complementj
     requires = {
       { 'hrsh7th/cmp-nvim-lsp' },
       { 'hrsh7th/vim-vsnip',},

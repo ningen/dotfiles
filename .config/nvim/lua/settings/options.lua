@@ -1,11 +1,14 @@
-local opt  = vim.opt
+local opt    = vim.opt
 local keymap = vim.keymap
+
+vim.g.mapleader = ','
 
 opt.number = true
 
 opt.expandtab = true
 opt.tabstop = 2
 opt.shiftwidth = 2
+opt.signcolumn = 'yes'
 
 opt.clipboard:prepend { "unnamed", "unnamedplus" }
 
