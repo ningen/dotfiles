@@ -49,7 +49,7 @@ packer.startup(function(use)
   use {
     'nvim-lualine/lualine.nvim',
     requires = {
-      { 'nvim-tree/nvim-web-devicons', opt = true }
+      { 'nvim-tree/nvim-web-devicons' }
     },
   }
   use 'dinhhuy258/git.nvim' --git
