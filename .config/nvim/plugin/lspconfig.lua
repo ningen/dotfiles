@@ -91,7 +91,7 @@ mason_lspconfig.setup_handlers({
           enable_format_on_save(client, bufnr)
         end,
         settings = {
-          lua = {
+          Lua = {
             diagnostics = {
               globals = { 'vim' }
             },
@@ -130,62 +130,13 @@ mason_lspconfig.setup_handlers({
               ["https://crux.land"] = true,
             }
           }
-        }
+        },
       }
     end
 
     nvim_lsp[server_name].setup(opts)
   end
 })
-
-
-nvim_lsp.tsserver.setup {
-  root_dir = nvim_lsp.util.root_pattern('package.json'),
-  on_attach = on_attach,
-  init_options = {
-    hostinfo = 'neovim'
-  },
-  cmd = { 'typescript-language-server', '--stdio' },
-  capabilities = capabilities
-}
-
--- nvim_lsp.denols.setup {
---   root_dir = lspconfig.util.root_pattern('deno.json'),
---   cmd = { 'deno', 'lsp' },
---   init_options = {
---     lint = true,
---     unstable = true,
---     suggest = {
---       imports = {
---         hosts = {
---           ["https://deno.land"] = true,
---           ["https://cdn.nest.land"] = true,
---           ["https://crux.land"] = true,
---         },
---       },
---     },
---   },
--- }
-
-nvim_lsp.sumneko_lua.setup {
-  on_attach = function(client, bufnr)
-    on_attach(client, bufnr)
-    enable_format_on_save(client, bufnr)
-  end,
-  settings = {
-    lua = {
-      diagnostics = {
-        globals = { 'vim' }
-      },
-
-      workspace = {
-        library = vim.api.nvim_get_runtime_file("", true),
-        checkThirdParty = false,
-      }
-    },
-  },
-}
-
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
   vim.lsp.diagnostic.on_publish_diagnostics, {
