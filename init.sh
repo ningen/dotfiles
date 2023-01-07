@@ -8,7 +8,7 @@ function install() {
   sudo apt-add-repository -y ppa:fish-shell/release-3
   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
   sudo apt update
-  sudo apt install -y fish make git zip unzip nodejs python3 python3-pip
+  sudo apt install -y fish make git zip unzip nodejs python3 python3-pip tmux
 
   # install neovim(v0.8.2)
   # apt-add-repository でrepositoryを追加する方法はバージョンが古かったため、curlで直接取ってくる
