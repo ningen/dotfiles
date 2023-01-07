@@ -57,4 +57,5 @@ packer.startup(function(use)
   use 'EdenEast/nightfox.nvim' -- colorscheme
   use 'nvim-tree/nvim-web-devicons' -- icon
 
+  use 'voldikss/vim-translator' -- translator(auto -> jp)
 end)
