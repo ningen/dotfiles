@@ -12,3 +12,7 @@ set -gx XDG_CONFIG_HOME $HOME/.config
 ## Deno
 set -gx DENO_INSTALL $HOME/.deno
 fish_add_path $DENO_INSTALL/bin
+
+## tmux
+set -gx TMUX_SOURCE_DIR /usr/local/src/tmux
+fish_add_path $TMUX_SOURCE_DIR

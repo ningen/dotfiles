@@ -8,13 +8,25 @@ function install() {
   sudo apt-add-repository -y ppa:fish-shell/release-3
   curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
   sudo apt update
-  sudo apt install -y fish make git zip unzip nodejs python3 python3-pip tmux
+  sudo apt install -y fish make git zip unzip nodejs python3 python3-pip automake bison build-essential pkg-config libevent-dev libncurses5-dev
 
   # install neovim(v0.8.2)
   # apt-add-repository でrepositoryを追加する方法はバージョンが古かったため、curlで直接取ってくる
   curl -LO 'https://github.com/neovim/neovim/releases/download/v0.8.2/nvim-linux64.deb'
   sudo apt install ./nvim-linux64.deb
   rm ./nvim-linux64.deb
+
+  # install tmux(latest)
+  current_dir=$(pwd)
+
+  sudo git clone https://github.com/tmux/tmux /usr/local/src/tmux
+
+  cd /usr/local/src/tmux
+  sudo ./autogen.sh
+  sudo ./configure --prefix=/usr/local
+  sudo make
+
+  cd "$current_dir"
 
   # setting packer.nvim 
   packer_dir=~/.local/share/nvim/site/pack/packer/start/packer.nvim
