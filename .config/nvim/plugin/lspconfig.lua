@@ -9,7 +9,7 @@ mason.setup({
 })
 
 mason_lspconfig.setup {
-  ensure_installed = { 'sumneko_lua', 'denols', 'tsserver' },
+  ensure_installed = { 'sumneko_lua', 'denols', 'tsserver', 'marksman', 'hls' },
   automatic_installation = true
 }
 
@@ -131,6 +131,35 @@ mason_lspconfig.setup_handlers({
             }
           }
         },
+      }
+    end
+
+    if server_name == 'marksman' then
+      opts = {
+        cmd = { 'marksman', 'server' },
+        filetypes = { 'markdown' },
+        root_dir = nvim_lsp.util.root_pattern('.git', '.marksman.toml'),
+        single_file_support = true,
+      }
+    end
+
+    if server_name == 'hls' then
+      opts = {
+        cmd = { "haskell-language-server-wrapper", "--lsp" },
+        filetypes = { 'haskell', 'lhaskell' },
+        root_dir = function(filepath)
+          return (
+              nvim_lsp.util.root_pattern('hie.yaml', 'stack.yaml', 'cabal.project')(filepath)
+                  or nvim_lsp.util.root_pattern('*.cabal', 'package.yaml')(filepath)
+              )
+        end,
+        settings = {
+          haskell = {
+            cabelFormattingProvider = 'cabelfmt',
+            formattingProvider = 'ormolu',
+          }
+        },
+        single_file_support = true,
       }
     end
 
