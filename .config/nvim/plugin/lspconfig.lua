@@ -9,7 +9,8 @@ mason.setup({
 })
 
 mason_lspconfig.setup {
-  ensure_installed = { 'sumneko_lua', 'denols', 'tsserver', 'marksman', 'hls' },
+  -- sumneko_lua -> lua_ls
+  ensure_installed = { 'lua_ls', 'denols', 'tsserver', 'marksman', 'hls' },
   automatic_installation = true
 }
 
@@ -84,7 +85,7 @@ mason_lspconfig.setup_handlers({
     end
 
 
-    if server_name == 'sumneko_lua' then
+    if server_name == 'lua_ls' then
       opts = {
         on_attach = function(client, bufnr)
           on_attach(client, bufnr)
