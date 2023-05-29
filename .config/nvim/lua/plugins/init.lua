@@ -40,6 +40,7 @@ packer.startup(function(use)
 
   use {
     'nvim-telescope/telescope.nvim', -- fuzzy finder
+    tag = '0.1.1',
     requires = {
       { 'nvim-lua/plenary.nvim' }
     }
