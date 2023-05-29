@@ -2,23 +2,25 @@ local status, saga = pcall(require, 'lspsaga')
 
 if (not status) then return end
 
-saga.init_lsp_saga {
-  server_filetype_map = {
-    typescript = 'typescript',
-    lua = 'lua'
-  },
-  border_style = 'single',
-  code_action_lightbulb = {
-    enable = true,
-  },
-  symbol_in_winbar = {
-    enable = true,
-  },
-  show_outline = {
-    win_width = 50,
-    auto_preview = false,
-  }
-}
+-- saga.init_lsp_saga {
+--   server_filetype_map = {
+--     typescript = 'typescript',
+--     lua = 'lua'
+--   },
+--   border_style = 'single',
+--   code_action_lightbulb = {
+--     enable = true,
+--   },
+--   symbol_in_winbar = {
+--     enable = true,
+--   },
+--   show_outline = {
+--     win_width = 50,
+--     auto_preview = false,
+--   }
+-- }
+
+saga.setup({})
 
 local saga_opts = { silent = true }
 vim.keymap.set('n', '<C-j>', '<Cmd>Lspsaga diagnostic_jump_next<CR>', saga_opts) -- 次の警告にジャンプ
