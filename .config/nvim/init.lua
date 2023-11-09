@@ -5,6 +5,23 @@ function set_options(obj, configs)
 end
 
 vim.g.mapleader = '<Space>'
+vim.keymap.set('i', 'jj', '<ESC>')
+
+vim.opt.clipboard:append({ 'unnamedplus' })
+if vim.fn.has('wsl') == 1 then
+  vim.opt.clipboard:append({
+    name = "win32yank-wsl",
+    copy = {
+      ["+"] = "win32yank.exe -i --crlf",
+      ["*"] = "win32yank.exe -i --crlf"
+    },
+    paste = {
+      ["+"] = "win32yank.exe -o --crlf",
+      ["*"] = "win32yank.exe -o --crlf"
+    },
+    cache_enable = 0,
+  })
+end
 
 local vim_opt = {
   number = true,
@@ -27,7 +44,7 @@ require('packer').startup(function(use)
     config = function()
       require('nightfox').setup({})
     end
-  } -- colorscheme
+  }                                 -- colorscheme
 
   use 'nvim-tree/nvim-web-devicons' -- icon
 
@@ -43,11 +60,13 @@ require('packer').startup(function(use)
   use 'williamboman/mason.nvim'
   use 'williamboman/mason-lspconfig.nvim'
 
+  use {
+    'nvimdev/lspsaga.nvim'
+  }
+
   use 'hrsh7th/nvim-cmp'
   use 'hrsh7th/cmp-nvim-lsp'
   use 'hrsh7th/vim-vsnip'
-
-
 end)
 
 
@@ -77,26 +96,49 @@ require('mason-lspconfig').setup_handlers({
       hls = {},
       denols = {},
       tsserver = {},
-      marksman = {}
+      marksman = {},
+      clangd = {}
     }
 
     local using_config = lspconfigs[server]
     require('lspconfig')[server].setup(using_config)
   end
 })
+require('lspsaga').setup({
+  border_style = "single",
+  symbol_in_winbar = {
+    enable = true,
+  },
+  code_action_lightbulb = {
+    enable = true,
+  },
+  show_outline = {
+    win_width = 50,
+    auto_preview = false,
+  },
+})
 
 vim.keymap.set('n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>')
+-- vim.keymap.set('n', 'K', '<cmd>Lspsaga hover_doc<CR>')
 vim.keymap.set('n', 'gf', '<cmd>lua vim.lsp.buf.format({ async = true })<CR>')
 vim.keymap.set('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>')
+-- vim.keymap.set('n', 'gr', '<cmd>Lspsaga finder<CR>')
 vim.keymap.set('n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
+-- vim.keymap.set('n', 'gd', '<cmd>Lspsaga peek_definitation<CR>')
 vim.keymap.set('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
 vim.keymap.set('n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>')
 vim.keymap.set('n', 'gt', '<cmd>lua vim.lsp.buf.type_definition()<CR>')
 vim.keymap.set('n', 'gn', '<cmd>lua vim.lsp.buf.rename()<CR>')
+-- vim.keymap.set('n', 'gn', '<cmd>Lspsaga rename<CR>')
 vim.keymap.set('n', 'ga', '<cmd>lua vim.lsp.buf.code_action()<CR>')
+-- vim.keymap.set('n', 'ga', '<cmd>Lspsaga code_action<CR>')
 vim.keymap.set('n', 'ge', '<cmd>lua vim.diagnostic.open_float()<CR>')
+-- vim.keymap.set('n', 'ge', '<cmd>Lspsaga show_line_diagnostics<CR>')
 vim.keymap.set('n', 'g]', '<cmd>lua vim.diagnostic.goto_next()<CR>')
 vim.keymap.set('n', 'g[', '<cmd>lua vim.diagnostic.goto_prev()<CR>')
+-- vim.keymap.set('n', 'g]', '<cmd>Lspsaga diagnostic_jump_next<CR>')
+-- vim.keymap.set('n', 'g[', '<cmd>Lspsaga diagnostic_jump_prev<CR>')
+
 
 
 -- LSP handlers
@@ -142,4 +184,11 @@ cmp.setup({
 })
 
 vim.cmd([[ colorscheme nightfox ]])
+vim.cmd([[
+highlight Normal ctermbg=NONE guibg=NONE
+highlight NonText ctermbg=NONE guibg=NONE
+highlight LineNr ctermbg=NONE guibg=NONE
+highlight Folded ctermbg=NONE guibg=NONE
+highlight EndOfBuffer ctermbg=NONE guibg=NONE
+]])
 
