@@ -9,7 +9,7 @@ mason.setup({
 })
 
 mason_lspconfig.setup {
-  ensure_installed = { 'sumneko_lua', 'denols', 'tsserver', 'marksman', 'hls' },
+  ensure_installed = { 'denols', 'tsserver', 'marksman' },
   automatic_installation = true
 }
 

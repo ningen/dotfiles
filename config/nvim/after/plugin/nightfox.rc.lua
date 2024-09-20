@@ -6,7 +6,6 @@ if (not status) then
 end
 
 nightfox.setup({
-  -- setup
 })
 
 vim.cmd('colorscheme nightfox')

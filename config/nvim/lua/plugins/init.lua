@@ -56,6 +56,8 @@ packer.startup(function(use)
   use 'dinhhuy258/git.nvim' --git
 
   use 'EdenEast/nightfox.nvim' -- colorscheme
+  use 'Mofiqul/dracula.nvim'
+
   use 'nvim-tree/nvim-web-devicons' -- icon
 
   use 'voldikss/vim-translator' -- translator(auto -> jp)

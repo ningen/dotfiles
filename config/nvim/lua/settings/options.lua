@@ -16,3 +16,5 @@ keymap.set('n', '<Tab>', ':tabNext<CR>')
 keymap.set('n', '<S-Tab>', ':tabprevious<CR>')
 
 keymap.set('i', 'jj', '<Esc>')
+
+vim.cmd [[ colorscheme dracula-soft ]] 
