@@ -10,9 +10,8 @@
   
 
   outputs = { self, nixpkgs, home-manager, flake-utils }@inputs:
-  flake-utils.lib.eachDefaultSystem (
-    system:
     let
+      system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
     in
     {
@@ -23,13 +22,16 @@
           echo "Updating flake..."
           nix flake update
           echo "Updating home-manager..."
-          nix run nixpkgs#home-manager -- switch --flake .#laptop
+          nix run nixpkgs#home-manager -- switch --flake .#ningen@ningen-mba.local
           echo "Update complete!"
         '');
       };
-      packages.${system}.homeConfigurations = {
-        laptop = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgs;
+      homeConfigurations = {
+        "ningen@ningen-mba.local" = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import inputs.nixpkgs {
+	    system = system;
+            config.allowUnfree = true;
+          };
           extraSpecialArgs = {
             inherit inputs;
           };
@@ -38,6 +40,5 @@
           ];
         };
       };
-    }
-  );
+    };
 }
