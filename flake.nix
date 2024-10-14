@@ -6,10 +6,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     flake-utils.url = "github:numtide/flake-utils";
+    nix-darwin = {
+     url = "github:LnL7/nix-darwin";
+     inputs.nixpkgs.follows = "nixpkgs";
+   };
   };
   
 
-  outputs = { self, nixpkgs, home-manager, flake-utils }@inputs:
+  outputs = { self, nixpkgs, home-manager, flake-utils, nix-darwin }@inputs:
     let
       system = "aarch64-darwin";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -23,6 +27,8 @@
           nix flake update
           echo "Updating home-manager..."
           nix run nixpkgs#home-manager -- switch --flake .#ningen@ningen-mba.local
+          echo "Updating nix-darwin..."
+          nix run nix-darwin -- switch --flake .#ningen
           echo "Update complete!"
         '');
       };
@@ -39,6 +45,11 @@
             ./home.nix
           ];
         };
+      };
+
+      darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {
+        system = system;
+        modules = [ ./macos.nix ];
       };
     };
 }
