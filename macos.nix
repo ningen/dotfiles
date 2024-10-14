@@ -16,6 +16,7 @@
   system = {
     defaults = {
       NSGlobalDomain.AppleShowAllExtensions = true;
+      NSGlobalDomain.ApplePressAndHoldEnabled = false;
       finder = {
         AppleShowAllFiles = true;
         AppleShowAllExtensions = true;
@@ -27,15 +28,22 @@
       };
     };
   };
-
-  homebrew.enable = true;
-  homebrew.onActivation = {
+  
+  homebrew = {
+    enable = true;
+    onActivation = {
       autoUpdate = true;
-      # !! 注意 !!
       cleanup = "uninstall";
+    };
+    # macos cli apps
+    brews = [
+    ];
+    # macos gui apps
+    casks = [
+      "visual-studio-code"
+      "wezterm"
+      "discord"
+      "google-chrome"
+    ];
   };
-
-  homebrew.casks = [
-    "visual-studio-code"
-  ];
 }
