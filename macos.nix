@@ -34,4 +34,8 @@
       # !! 注意 !!
       cleanup = "uninstall";
   };
+
+  homebrew.casks = [
+    "visual-studio-code"
+  ];
 }
