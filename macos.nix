@@ -28,6 +28,13 @@
       };
     };
   };
+
+
+  fonts = {
+    packages = with pkgs; [
+      jetbrains-mono
+    ];
+  };
   
   homebrew = {
     enable = true;
