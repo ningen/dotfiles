@@ -44,6 +44,7 @@
       "wezterm"
       "discord"
       "google-chrome"
+      "aquaskk"
     ];
   };
 }
