@@ -52,6 +52,7 @@
       "discord"
       "google-chrome"
       "aquaskk"
+      "floorp"
     ];
   };
 }
