@@ -53,6 +53,7 @@
       "google-chrome"
       "aquaskk"
       "floorp"
+      "notion"
     ];
   };
 }
