@@ -48,12 +48,13 @@
     # macos gui apps
     casks = [
       "visual-studio-code"
-      "wezterm"
+      # "wezterm"
       "discord"
       "google-chrome"
       "aquaskk"
       "floorp"
       "notion"
+      "ghostty"
     ];
   };
 }
