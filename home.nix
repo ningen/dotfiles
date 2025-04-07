@@ -29,30 +29,7 @@
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
-  home.file = 
-    let
-      symlink = config.lib.file.mkOutOfStoreSymlink;
-    in
-    {
-      ".config/nix" = {
-        source = (symlink .config/nix);
-        recursive = true;
-      };
-      ".config/nvim" = {
-        source = (symlink .config/nvim);
-        recursive = true;
-      };
-      ".config/git/config" = {
-        source = (symlink .config/git/config);
-      };
-      ".config/starship.toml" = {
-        source = (symlink .config/starship/starship.toml);
-      };
-      "Library/Application Support/Code/User" = {
-        source = (symlink .config/vscode);
-        recursive = true;
-      };
-    };
+  home.file = {};
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
