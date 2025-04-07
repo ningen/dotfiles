@@ -36,11 +36,21 @@
     {
       ".config/nix" = {
         source = (symlink .config/nix);
-	recursive = true;
+        recursive = true;
       };
       ".config/nvim" = {
         source = (symlink .config/nvim);
-	recursive = true;
+        recursive = true;
+      };
+      ".config/git/config" = {
+        source = (symlink .config/git/config);
+      };
+      ".config/starship.toml" = {
+        source = (symlink .config/starship/starship.toml);
+      };
+      "Library/Application Support/Code/User" = {
+        source = (symlink .config/vscode);
+        recursive = true;
       };
     };
 
