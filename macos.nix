@@ -55,6 +55,7 @@
       "floorp"
       "notion"
       "ghostty"
+      "cursor"
     ];
   };
 }
