@@ -25,6 +25,8 @@ in
     neovim
     zsh
     volta
+    lua-language-server
+    typescript-language-server
   ];
 
   programs.starship = {
