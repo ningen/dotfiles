@@ -1,10 +1,14 @@
 { config, pkgs, ... }:
 
+let
+  isDarwin = pkgs.stdenv.isDarwin;
+  homeDirectory = if isDarwin then "/Users/ningen" else "/home/ningen";
+in
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
   home.username = "ningen";
-  home.homeDirectory = "/Users/ningen";
+  home.homeDirectory = homeDirectory;
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
