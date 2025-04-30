@@ -7,7 +7,17 @@ echo "Creating symbolic links..."
 
 # Create config directories
 mkdir -p ~/.config
-mkdir -p ~/Library/Application\ Support/Code/User/
+
+# Detect OS and set VSCode config path
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
+else
+    # Linux
+    VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
+fi
+
+mkdir -p "$VSCODE_CONFIG_DIR"
 
 # Directory symlinks
 ln -sfn "$DOTFILES_DIR/.config/git" ~/.config/git
@@ -15,7 +25,7 @@ ln -sfn "$DOTFILES_DIR/.config/nix" ~/.config/nix
 ln -sfn "$DOTFILES_DIR/.config/nvim" ~/.config/nvim
 
 # VSCode config
-ln -sf "$DOTFILES_DIR/.config/vscode/settings.json" ~/Library/Application\ Support/Code/User/settings.json
-ln -sf "$DOTFILES_DIR/.config/vscode/keybindings.json" ~/Library/Application\ Support/Code/User/keybindings.json
+ln -sf "$DOTFILES_DIR/.config/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
+ln -sf "$DOTFILES_DIR/.config/vscode/keybindings.json" "$VSCODE_CONFIG_DIR/keybindings.json"
 
 echo "Dotfiles setup completed!"
