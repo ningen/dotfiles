@@ -53,7 +53,7 @@
         };
         
         # Linux configuration
-        "ningen@linux" = inputs.home-manager.lib.homeManagerConfiguration {
+        "ningen@DESKTOP-0DRJD1E" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";
             config.allowUnfree = true;
