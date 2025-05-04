@@ -27,6 +27,9 @@ in
     volta
     lua-language-server
     typescript-language-server
+    uv
+    docker
+    direnv
   ];
 
   programs.starship = {
