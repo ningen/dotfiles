@@ -56,6 +56,7 @@
       "ghostty"
       "cursor"
       "obsidian"
+      "raycast"
     ];
   };
 }
