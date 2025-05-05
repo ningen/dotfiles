@@ -30,6 +30,7 @@ in
     uv
     docker
     direnv
+    deno
   ];
 
   programs.starship = {
@@ -62,7 +63,7 @@ in
 
   programs.zsh = {
     enable = true;
-    initExtra = ''
+    initContent = ''
       export VOLTA_HOME="$HOME/.volta"
       export PATH="$VOLTA_HOME/bin:$PATH"
     '';
