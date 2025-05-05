@@ -55,6 +55,7 @@
       "notion"
       "ghostty"
       "cursor"
+      "obsidian"
     ];
   };
 }
