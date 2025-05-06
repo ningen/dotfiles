@@ -4,5 +4,9 @@
     "git.autofetch": true,
     "git.confirmSync": false,
     "github.copilot.chat.agent.thinkingTool": true,
-    "github.copilot.chat.codesearch.enabled": true
+    "github.copilot.chat.codesearch.enabled": true,
+    "[typescript]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
