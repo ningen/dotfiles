@@ -31,6 +31,7 @@ in
     docker
     direnv
     deno
+    ghc
   ];
 
   programs.starship = {
