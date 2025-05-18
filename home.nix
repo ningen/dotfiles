@@ -33,6 +33,7 @@ in
     direnv
     deno
     ghc
+    go
   ];
 
   programs.starship = {
