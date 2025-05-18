@@ -52,7 +52,7 @@ vim.keymap.set('n', 'P', 'P`]', { desc = 'Paste and move the end' })
 vim.keymap.set('x', 'p', 'P', { desc = 'Paste without change register' })
 vim.keymap.set('x', 'P', 'p', { desc = 'Paste with change register' })
 
-vim.keymap.set({ 'n', 'x' }, 'x', '"_d', { desc = 'Delete into blackhole' })
+-- vim.keymap.set({ 'n', 'x' }, 'x', '"_d', { desc = 'Delete into blackhole' })
 vim.keymap.set('n', 'X', '"_D', { desc = 'Delete into blackhole' })
 vim.keymap.set('o', 'x', 'd', { desc = 'Delete using x' })
 
@@ -416,7 +416,15 @@ now(function()
       Lua = {}
     }
   })
+  vim.lsp.config('pyright', {
+    cmd = { 'pyright-langserver', '--stdio' },
+    filetypes = { 'python' },
+    settings = {
+      Python = {}
+    }
+  })
   vim.lsp.enable('lua_ls')
+  vim.lsp.enable('pyright')
 end)
 
 later(function()

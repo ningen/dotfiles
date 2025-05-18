@@ -27,6 +27,7 @@ in
     volta
     lua-language-server
     typescript-language-server
+    pyright
     uv
     docker
     direnv
