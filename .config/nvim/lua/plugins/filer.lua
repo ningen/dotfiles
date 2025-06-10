@@ -8,6 +8,17 @@ return {
     -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
   },
   lazy = false, -- neo-tree will lazily load itself
+  keys = {
+    {
+      "<D-b>",
+      function()
+        vim.cmd("Neotree toggle")
+	vim.cmd("wincmd p")
+      end,
+      desc = "Toggle filer"
+    },
+    { "<leader>e", ":Neotree focus<CR>", desc = "Focus Neotree" },
+  },
   config = function()
     local neotree = require('neo-tree')
     neotree.setup({
