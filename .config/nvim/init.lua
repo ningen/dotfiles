@@ -15,4 +15,5 @@ vim.opt.number = true
 vim.g.mapleader = ','
 
 require("lazy").setup("plugins")
+require("lsp")
 
