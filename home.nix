@@ -34,6 +34,9 @@ in
     deno
     ghc
     go
+    stylua
+    black
+    prettierd
   ];
 
   programs.starship = {

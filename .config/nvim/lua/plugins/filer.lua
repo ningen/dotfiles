@@ -13,26 +13,33 @@ return {
       "<D-b>",
       function()
         vim.cmd("Neotree toggle")
-	vim.cmd("wincmd p")
+        vim.cmd("wincmd p")
       end,
-      desc = "Toggle filer"
+      desc = "Toggle filer",
     },
     { "<leader>e", ":Neotree focus<CR>", desc = "Focus Neotree" },
   },
   config = function()
-    local neotree = require('neo-tree')
+    local neotree = require("neo-tree")
     neotree.setup({
+      filesystem = {
+        filtered_items = {
+          visible = true,
+          hide_dotfiles = true,
+          hide_gitignored = true,
+        },
+      },
       close_if_last_window = true,
       popup_border_style = "rounded",
 
       window = {
         mappings = {
-          ["y"] = "copy_to_clipboard",    -- y でコピー（vim風）
+          ["y"] = "copy_to_clipboard", -- y でコピー（vim風）
           ["p"] = "paste_from_clipboard", -- p でペースト（vim風）
-          ["x"] = "cut_to_clipboard",     -- x でカット（vim風）
-          ["d"] = "delete",               -- d で削除（vim風）
-        }
-      }
+          ["x"] = "cut_to_clipboard", -- x でカット（vim風）
+          ["d"] = "delete", -- d で削除（vim風）
+        },
+      },
     })
     vim.api.nvim_create_autocmd("VimEnter", {
       callback = function()
@@ -44,7 +51,7 @@ return {
           vim.cmd("Neotree show")
           vim.cmd("wincmd p") -- 元のウィンドウにフォーカスを戻す
         end
-      end
+      end,
     })
-  end
+  end,
 }
