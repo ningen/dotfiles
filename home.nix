@@ -37,6 +37,7 @@ in
     stylua
     black
     prettierd
+    gcc
   ];
 
   programs.starship = {
