@@ -9,7 +9,8 @@
     };
   };
 
-  system.stateVersion = 5;
+  system.stateVersion = 6;
+  system.primaryUser = "ningen";
 
   # システムの設定（nix-darwinが効いているかのテスト）
   system = {

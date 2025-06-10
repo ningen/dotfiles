@@ -30,7 +30,7 @@
             nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
             if [[ "$(uname)" == "Darwin" ]]; then
               echo "Updating nix-darwin..."
-              nix run nix-darwin -- switch --flake .#ningen
+              sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch  --flake .#ningen
             fi
             echo "Update complete!"
           '');
