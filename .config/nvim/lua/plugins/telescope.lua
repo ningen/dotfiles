@@ -11,7 +11,21 @@ return {
       desc = "Command Palette",
     },
     {
+      "<M-S-p>",
+      function()
+        require("telescope.builtin").keymaps()
+      end,
+      desc = "Command Palette",
+    },
+    {
       "<D-p>",
+      function()
+        require("telescope.builtin").find_files({ hidden = true })
+      end,
+      desc = "Find files",
+    },
+    {
+      "<M-p>",
       function()
         require("telescope.builtin").find_files({ hidden = true })
       end,

@@ -17,6 +17,14 @@ return {
       end,
       desc = "Toggle filer",
     },
+    {
+      "<M-b>",
+      function()
+        vim.cmd("Neotree toggle")
+        vim.cmd("wincmd p")
+      end,
+      desc = "Toggle filer",
+    },
     { "<leader>e", ":Neotree focus<CR>", desc = "Focus Neotree" },
   },
   config = function()
