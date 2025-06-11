@@ -10,22 +10,14 @@ return {
   lazy = false, -- neo-tree will lazily load itself
   keys = {
     {
-      "<D-b>",
+      "<leader>e",
       function()
         vim.cmd("Neotree toggle")
         vim.cmd("wincmd p")
       end,
       desc = "Toggle filer",
     },
-    {
-      "<M-b>",
-      function()
-        vim.cmd("Neotree toggle")
-        vim.cmd("wincmd p")
-      end,
-      desc = "Toggle filer",
-    },
-    { "<leader>e", ":Neotree focus<CR>", desc = "Focus Neotree" },
+    { "<leader>E", ":Neotree focus<CR>", desc = "Focus Neotree" },
   },
   config = function()
     local neotree = require("neo-tree")
@@ -42,10 +34,32 @@ return {
 
       window = {
         mappings = {
-          ["y"] = "copy_to_clipboard", -- y でコピー（vim風）
-          ["p"] = "paste_from_clipboard", -- p でペースト（vim風）
-          ["x"] = "cut_to_clipboard", -- x でカット（vim風）
-          ["d"] = "delete", -- d で削除（vim風）
+          -- 基本操作（覚えやすい単語の頭文字）
+          ["<CR>"] = "open",
+          ["o"] = "open",
+          ["s"] = "open_split",  -- split
+          ["v"] = "open_vsplit", -- vertical
+          ["t"] = "open_tabnew", -- tab
+
+          -- ファイル操作
+          ["a"] = "add",                  -- add (新規作成)
+          ["d"] = "delete",               -- delete
+          ["r"] = "rename",               -- rename
+          ["y"] = "copy",                 -- yank (コピー)
+          ["x"] = "cut_to_clipboard",     -- cut
+          ["p"] = "paste_from_clipboard", -- paste
+
+          -- 移動
+          ["h"] = "close_node", -- 親へ（左）
+          ["l"] = "open",       -- 子へ（右）
+
+          -- 表示
+          ["H"] = "toggle_hidden", -- Hidden files
+          ["R"] = "refresh",       -- Refresh
+          ["?"] = "show_help",     -- help
+
+          -- 終了
+          ["q"] = "close_window", -- quit
         },
       },
     })

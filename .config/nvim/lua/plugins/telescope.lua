@@ -4,32 +4,53 @@ return {
   dependencies = { "nvim-lua/plenary.nvim" },
   keys = {
     {
-      "<D-S-p>",
+      "<leader>fp",
       function()
         require("telescope.builtin").keymaps()
       end,
       desc = "Command Palette",
     },
     {
-      "<M-S-p>",
-      function()
-        require("telescope.builtin").keymaps()
-      end,
-      desc = "Command Palette",
-    },
-    {
-      "<D-p>",
+      "<leader>ff",
       function()
         require("telescope.builtin").find_files({ hidden = true })
       end,
       desc = "Find files",
     },
     {
-      "<M-p>",
+      "<leader>fg",
       function()
-        require("telescope.builtin").find_files({ hidden = true })
+        require("telescope.builtin").live_grep({ hidden = true })
       end,
-      desc = "Find files",
+      desc = "Live grep",
+    },
+    {
+      "<leader>fw",
+      function()
+        require("telescope.builtin").grep_string({ hidden = true })
+      end,
+      desc = "Grep cursor string",
+    },
+    {
+      "<leader>gs",
+      function()
+        require("telescope.builtin").git_status()
+      end,
+      desc = "show git status"
+    },
+    {
+      "<leader>gb",
+      function()
+        require("telescope.builtin").git_branches()
+      end,
+      desc = "show git branches"
+    },
+    {
+      "<leader>gc",
+      function()
+        require("telescope.builtin").git_commits()
+      end,
+      desc = "show git commmits"
     },
   },
   config = function()

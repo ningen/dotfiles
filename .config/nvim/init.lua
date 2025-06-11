@@ -11,8 +11,48 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- 基本設定を書く
 vim.opt.number = true
-vim.g.mapleader = ","
+vim.g.mapleader = " "
+
+vim.opt.shiftwidth = 2       -- インデント幅
+vim.opt.tabstop = 2          -- タブ幅
+vim.opt.smartindent = true   -- スマートインデント
+vim.opt.wrap = false         -- 行折り返しなし
+vim.opt.swapfile = false     -- スワップファイル無効
+vim.opt.backup = false       -- バックアップ無効
+vim.opt.undofile = true      -- Undo履歴を保持
+vim.opt.hlsearch = false     -- 検索ハイライト無効
+vim.opt.incsearch = true     -- インクリメンタルサーチ
+vim.opt.termguicolors = true -- True Color対応
+vim.opt.scrolloff = 8        -- スクロール時の余白
+vim.opt.updatetime = 50      -- 更新時間短縮
+
+-- クリップボード連携
+vim.opt.clipboard = "unnamedplus"
+
+-- マウス有効化
+vim.opt.mouse = "a"
+
+-- 検索時の大文字小文字
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+-- 分割ウィンドウの挙動
+vim.opt.splitbelow = true -- 水平分割（horizontal split）時に、新しいウィンドウを下に配置
+vim.opt.splitright = true -- 垂直分割（vertical split）時に、新しいウィンドウを右に配置
+
+-- ウィンドウ操作のキーマップ
+vim.keymap.set('n', '<leader>h', '<C-w>h', { desc = 'Go to left window' })
+vim.keymap.set('n', '<leader>j', '<C-w>j', { desc = 'Go to lower window' })
+vim.keymap.set('n', '<leader>k', '<C-w>k', { desc = 'Go to upper window' })
+vim.keymap.set('n', '<leader>l', '<C-w>l', { desc = 'Go to right window' })
+
+-- ウィンドウサイズ調整
+vim.keymap.set('n', '<C-Up>', ':resize -2<CR>', { desc = 'Decrease window height' })
+vim.keymap.set('n', '<C-Down>', ':resize +2<CR>', { desc = 'Increase window height' })
+vim.keymap.set('n', '<C-Left>', ':vertical resize -2<CR>', { desc = 'Decrease window width' })
+vim.keymap.set('n', '<C-Right>', ':vertical resize +2<CR>', { desc = 'Increase window width' })
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = {
