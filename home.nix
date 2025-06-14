@@ -38,6 +38,8 @@ in
     black
     prettierd
     gcc
+		pyright
+		lazygit
   ];
 
   programs.starship = {

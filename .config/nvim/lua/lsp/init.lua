@@ -46,3 +46,4 @@ vim.lsp.config("*", {
 
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("tsserver")
+vim.lsp.enable("pyright")
