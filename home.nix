@@ -40,6 +40,7 @@ in
     gcc
 		pyright
 		lazygit
+		tmux
   ];
 
   programs.starship = {
