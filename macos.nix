@@ -44,6 +44,7 @@
     };
     # macos cli apps
     brews = [
+			"tmux"
     ];
     # macos gui apps
     casks = [
