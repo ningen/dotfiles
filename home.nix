@@ -31,7 +31,6 @@ in
     uv
     docker
     direnv
-    deno
     ghc
     go
     stylua
@@ -41,6 +40,7 @@ in
 		pyright
 		lazygit
 		tmux
+		awscli2
   ];
 
   programs.starship = {
