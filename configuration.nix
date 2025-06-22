@@ -195,6 +195,7 @@
   environment.systemPackages = with pkgs; [
     kitty
     wofi
+    waybar
     libsForQt5.dolphin
     libsForQt5.dolphin-plugins
     libsForQt5.kio-extras

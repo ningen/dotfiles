@@ -24,6 +24,7 @@ ln -sfn "$DOTFILES_DIR/.config/git" ~/.config/git
 ln -sfn "$DOTFILES_DIR/.config/nix" ~/.config/nix
 ln -sfn "$DOTFILES_DIR/.config/nvim" ~/.config/nvim
 ln -sfn "$DOTFILES_DIR/.config/hypr" ~/.config/hypr
+ln -sfn "$DOTFILES_DIR/.config/waybar" ~/.config/waybar
 
 # VSCode config
 ln -sf "$DOTFILES_DIR/.config/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
