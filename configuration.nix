@@ -15,6 +15,11 @@
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ]
+    ++ (with inputs.nixos-hardware.nixosModules; [
+      common-cpu-intel
+      common-gpu-nvidia
+      common-pc-ssd
+    ])
     ++ [
       inputs.xremap.nixosModules.default
     ];
@@ -53,6 +58,7 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
 
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
@@ -212,4 +218,5 @@
       ];
     };
   };
+
 }

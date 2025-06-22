@@ -10,6 +10,7 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     xremap.url = "github:xremap/nix-flake";
   };
 
@@ -20,6 +21,7 @@
       home-manager,
       flake-utils,
       nix-darwin,
+      nixos-hardware,
       xremap,
     }@inputs:
     let

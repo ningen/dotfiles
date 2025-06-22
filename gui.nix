@@ -8,6 +8,5 @@
   home.packages = with pkgs; [
     slack
     steam
-    floorp
   ];
 }
