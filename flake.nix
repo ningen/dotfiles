@@ -79,8 +79,6 @@
           ];
         };
 
-        # nixos configuration
-        # TODO: merge linux configuration
         "ningen@nixos" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";
@@ -91,6 +89,7 @@
           };
           modules = [
             ./home.nix
+            ./gui.nix
           ];
         };
 
@@ -102,6 +101,9 @@
           modules = [
             ./configuration.nix
           ];
+          specialArgs = {
+            inherit inputs;
+          };
         };
       };
 
