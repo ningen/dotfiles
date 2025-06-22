@@ -65,6 +65,31 @@
             ./home.nix
           ];
         };
+
+        # nixos configuration
+	# TODO: merge linux configuration
+        "ningen@nixos" = inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import inputs.nixpkgs {
+            system = "x86_64-linux";
+            config.allowUnfree = true;
+          };
+          extraSpecialArgs = {
+            inherit inputs;
+          };
+          modules = [
+            ./home.nix
+          ];
+        };
+	
+      };
+
+      nixosConfigurations = {
+        myNixOS = inputs.nixpkgs.lib.nixosSystem {
+          system = "x86_64-linux";
+          modules = [
+            ./configuration.nix
+	  ];
+	};
       };
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {
