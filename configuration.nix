@@ -57,12 +57,23 @@
   };
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  services.xserver = {
+    enable = true;
+  };
+
+  # services.desktopManager.gnome.enable = true;
+  services.displayManager.gdm = {
+    enable = true;
+    wayland = true;
+  };
+
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  # Enable the GNOME Desktop Environment.
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
+  programs.hyprland.enable = true;
+  xdg.portal = {
+    enable = true;
+    wlr.enable = true;
+  };
 
   # programs.hyprland = {
   #   enable = true;
@@ -138,6 +149,7 @@
     QT_IM_MODULE = "fcitx";
     XMODIFIERS = "@im=fcitx";
     INPUT_METHOD = "fcitx";
+    NIXOS_OZONE_WL = "1";
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -183,6 +195,11 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    kitty
+    wofi
+    libsForQt5.dolphin
+    libsForQt5.dolphin-plugins
+    libsForQt5.kio-extras
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
