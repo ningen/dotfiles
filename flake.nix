@@ -7,33 +7,46 @@
     };
     flake-utils.url = "github:numtide/flake-utils";
     nix-darwin = {
-     url = "github:LnL7/nix-darwin";
-     inputs.nixpkgs.follows = "nixpkgs";
-   };
+      url = "github:LnL7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    xremap.url = "github:xremap/nix-flake";
   };
-  
 
-  outputs = { self, nixpkgs, home-manager, flake-utils, nix-darwin }@inputs:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      flake-utils,
+      nix-darwin,
+      xremap,
+    }@inputs:
     let
-      supportedSystems = [ "aarch64-darwin" "x86_64-linux" ];
+      supportedSystems = [
+        "aarch64-darwin"
+        "x86_64-linux"
+      ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
     in
     {
       apps = forAllSystems (system: {
         update = {
           type = "app";
-          program = toString (nixpkgs.legacyPackages.${system}.writeShellScript "update-script" ''
-            set -e
-            echo "Updating flake..."
-            nix flake update
-            echo "Updating home-manager..."
-            nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
-            if [[ "$(uname)" == "Darwin" ]]; then
-              echo "Updating nix-darwin..."
-              sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch  --flake .#ningen
-            fi
-            echo "Update complete!"
-          '');
+          program = toString (
+            nixpkgs.legacyPackages.${system}.writeShellScript "update-script" ''
+              set -e
+              echo "Updating flake..."
+              nix flake update
+              echo "Updating home-manager..."
+              nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
+              if [[ "$(uname)" == "Darwin" ]]; then
+                echo "Updating nix-darwin..."
+                sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch  --flake .#ningen
+              fi
+              echo "Update complete!"
+            ''
+          );
         };
       });
 
@@ -51,7 +64,7 @@
             ./home.nix
           ];
         };
-        
+
         # Linux configuration
         "ningen@DESKTOP-0DRJD1E" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
@@ -67,7 +80,7 @@
         };
 
         # nixos configuration
-	# TODO: merge linux configuration
+        # TODO: merge linux configuration
         "ningen@nixos" = inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             system = "x86_64-linux";
@@ -80,7 +93,7 @@
             ./home.nix
           ];
         };
-	
+
       };
 
       nixosConfigurations = {
@@ -88,8 +101,8 @@
           system = "x86_64-linux";
           modules = [
             ./configuration.nix
-	  ];
-	};
+          ];
+        };
       };
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {

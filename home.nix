@@ -37,10 +37,12 @@ in
     black
     prettierd
     gcc
-		pyright
-		lazygit
-		tmux
-		awscli2
+    pyright
+    lazygit
+    tmux
+    awscli2
+    nil
+    nixfmt-rfc-style
   ];
 
   programs.starship = {
@@ -49,7 +51,7 @@ in
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
-  home.file = {};
+  home.file = { };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a

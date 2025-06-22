@@ -1,4 +1,5 @@
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
 
   # nix自体の設定
   nix = {
@@ -29,13 +30,12 @@
     };
   };
 
-
   fonts = {
     packages = with pkgs; [
       jetbrains-mono
     ];
   };
-  
+
   homebrew = {
     enable = true;
     onActivation = {
