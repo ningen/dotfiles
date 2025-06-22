@@ -69,16 +69,14 @@
 
   services.xserver.videoDrivers = [ "nvidia" ];
 
-  programs.hyprland.enable = true;
+  programs.hyprland = {
+    enable = true;
+    xwayland.enable = true;
+  };
   xdg.portal = {
     enable = true;
     wlr.enable = true;
   };
-
-  # programs.hyprland = {
-  #   enable = true;
-  #   xwayland.enable = true;
-  # };
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -209,6 +207,8 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
+
+  programs.steam.enable = true;
 
   # List services that you want to enable:
 

@@ -41,6 +41,19 @@
     ];
   };
 
+  fileSystems."/mnt/external-ssd" = {
+    device = "/dev/disk/by-uuid/f6d051c6-ac2a-4bff-9ec8-b8591dda07b3";
+    fsType = "ext4";
+    options = [
+      "defaults"
+      "noatime"
+      "nofail"
+      "user"
+      "exec"
+      "dev"
+    ];
+  };
+
   swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking

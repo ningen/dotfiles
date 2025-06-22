@@ -7,6 +7,6 @@
   # GUI の application
   home.packages = with pkgs; [
     slack
-    steam
+    bitwarden-desktop
   ];
 }
