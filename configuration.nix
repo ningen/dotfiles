@@ -64,6 +64,11 @@
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
 
+  # programs.hyprland = {
+  #   enable = true;
+  #   xwayland.enable = true;
+  # };
+
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "us";
@@ -90,8 +95,13 @@
   };
 
   i18n.inputMethod = {
-    enabled = "fcitx5";
-    fcitx5.addons = [ pkgs.fcitx5-mozc ];
+    enable = true;
+    type = "fcitx5";
+    fcitx5.addons = [
+      pkgs.fcitx5-mozc
+      pkgs.fcitx5-gtk
+      pkgs.fcitx5-anthy
+    ];
   };
 
   fonts = {
@@ -121,6 +131,13 @@
         emoji = [ "Noto Color Emoji" ];
       };
     };
+  };
+
+  environment.sessionVariables = {
+    GTK_IM_MODULE = "fcitx";
+    QT_IM_MODULE = "fcitx";
+    XMODIFIERS = "@im=fcitx";
+    INPUT_METHOD = "fcitx";
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
