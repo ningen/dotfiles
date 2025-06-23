@@ -28,8 +28,16 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
+  # networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  networking = {
+    hostName = "nixos";
+    nameservers = [
+      "8.8.8.8"
+      "8.8.4.4"
+    ];
+  };
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -73,6 +81,8 @@
     enable = true;
     xwayland.enable = true;
   };
+  programs.gamemode.enable = true;
+
   xdg.portal = {
     enable = true;
     wlr.enable = true;
