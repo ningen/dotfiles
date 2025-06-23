@@ -5,6 +5,9 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Create symbolic links
 echo "Creating symbolic links..."
 
+# Create local file
+touch "$DOTFILES_DIR/.config/nix/nix-local.conf"
+
 # Create config directories
 mkdir -p ~/.config
 
