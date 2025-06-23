@@ -196,6 +196,7 @@
     kitty
     wofi
     waybar
+    pavucontrol
     libsForQt5.dolphin
     libsForQt5.dolphin-plugins
     libsForQt5.kio-extras
