@@ -82,6 +82,10 @@
     xwayland.enable = true;
   };
   programs.gamemode.enable = true;
+  programs.gamescope = {
+    enable = true;
+    capSysNice = true;
+  };
 
   xdg.portal = {
     enable = true;
@@ -158,6 +162,13 @@
     XMODIFIERS = "@im=fcitx";
     INPUT_METHOD = "fcitx";
     NIXOS_OZONE_WL = "1";
+    # VRRとフレームペーシングの最適化
+    __GL_GSYNC_ALLOWED = "1";
+    __GL_VRR_ALLOWED = "1";
+    # バッファリングを減らしてレイテンシを改善
+    __GL_MaxFramesAllowed = "1";
+    # NVIDIAのフレームペーシングを調整
+    __GL_SYNC_TO_VBLANK = "0";
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -220,7 +231,10 @@
   #   enableSSHSupport = true;
   # };
 
-  programs.steam.enable = true;
+  programs.steam = {
+    enable = true;
+    gamescopeSession.enable = true;
+  };
 
   # List services that you want to enable:
 

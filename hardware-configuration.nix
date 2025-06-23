@@ -27,6 +27,13 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    # VRRを有効にしつつ、フレームペーシングを改善
+    "nvidia.NVreg_EnableGpuFirmware=0"
+  ];
+
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/ef82a90f-08bf-4ab3-a3da-27ea57154134";
     fsType = "ext4";
@@ -68,7 +75,18 @@
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
   hardware.nvidia = {
-    open = true;
+    open = false;
+    modesetting.enable = true;
+    powerManagement.enable = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+    forceFullCompositionPipeline = false;
+  };
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
   };
 
   hardware.nvidia.prime.sync.enable = false;
