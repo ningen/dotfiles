@@ -30,6 +30,14 @@
         "x86_64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      mkHome = { system, modules }: inputs.home-manager.lib.homeManagerConfiguration {
+        pkgs = import inputs.nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
+        extraSpecialArgs = { inherit inputs; };
+        inherit modules;
+      };
     in
     {
       apps = forAllSystems (system: {
@@ -53,48 +61,18 @@
       });
 
       homeConfigurations = {
-        # macOS configuration
-        "ningen@ningen-mba.local" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = import inputs.nixpkgs {
-            system = "aarch64-darwin";
-            config.allowUnfree = true;
-          };
-          extraSpecialArgs = {
-            inherit inputs;
-          };
-          modules = [
-            ./home.nix
-          ];
+        "ningen@ningen-mba.local" = mkHome {
+          system = "aarch64-darwin";
+          modules = [ ./home.nix ];
         };
-
-        # Linux configuration
-        "ningen@DESKTOP-0DRJD1E" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = import inputs.nixpkgs {
-            system = "x86_64-linux";
-            config.allowUnfree = true;
-          };
-          extraSpecialArgs = {
-            inherit inputs;
-          };
-          modules = [
-            ./home.nix
-          ];
+        "ningen@DESKTOP-0DRJD1E" = mkHome {
+          system = "x86_64-linux";
+          modules = [ ./home.nix ];
         };
-
-        "ningen@nixos" = inputs.home-manager.lib.homeManagerConfiguration {
-          pkgs = import inputs.nixpkgs {
-            system = "x86_64-linux";
-            config.allowUnfree = true;
-          };
-          extraSpecialArgs = {
-            inherit inputs;
-          };
-          modules = [
-            ./home.nix
-            ./gui.nix
-          ];
+        "ningen@nixos" = mkHome {
+          system = "x86_64-linux";
+          modules = [ ./home.nix ./gui.nix ];
         };
-
       };
 
       nixosConfigurations = {

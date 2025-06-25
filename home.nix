@@ -5,15 +5,11 @@
 }:
 
 let
-  isDarwin = pkgs.stdenv.isDarwin;
-  homeDirectory = if isDarwin then "/Users/ningen" else "/home/ningen";
   nodePkgs = pkgs.callPackage ./node2nix { inherit pkgs; };
 in
 {
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
-  home.username = "ningen";
-  home.homeDirectory = homeDirectory;
 
   targets.genericLinux.enable = true;
 
@@ -28,31 +24,40 @@ in
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages = with pkgs; [
-    neovim
-    zsh
-    volta
-    lua-language-server
-    typescript-language-server
-    pyright
-    uv
-    docker
-    direnv
-    ghc
-    go
-    stylua
-    black
-    prettierd
-    gcc
-    pyright
-    lazygit
-    tmux
-    awscli2
-    nil
-    nixfmt-rfc-style
-    nodePkgs."@anthropic-ai/claude-code"
-    nodePkgs."@google/gemini-cli"
-  ];
+  home.packages = with pkgs;
+    let
+      dev-tools = [
+        neovim
+        zsh
+        volta
+        uv
+        docker
+        direnv
+        ghc
+        go
+        gcc
+        lazygit
+        tmux
+        awscli2
+      ];
+      language-servers = [
+        lua-language-server
+        typescript-language-server
+        pyright
+        nil
+      ];
+      formatters = [
+        stylua
+        black
+        prettierd
+        nixfmt-rfc-style
+      ];
+      node-packages = [
+        nodePkgs."@anthropic-ai/claude-code"
+        nodePkgs."@google/gemini-cli"
+      ];
+    in
+    dev-tools ++ language-servers ++ formatters ++ node-packages;
 
   programs.starship = {
     enable = true;
@@ -90,10 +95,11 @@ in
 
   programs.zsh = {
     enable = true;
-    initContent = ''
-      export VOLTA_HOME="$HOME/.volta"
-      export PATH="$VOLTA_HOME/bin:$PATH"
-    '';
+    initContent = '''';
+  };
+
+  programs.volta = {
+    enable = true;
   };
 
   # Let Home Manager install and manage itself.
