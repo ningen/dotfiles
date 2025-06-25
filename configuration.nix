@@ -221,6 +221,11 @@
     libsForQt5.dolphin
     libsForQt5.dolphin-plugins
     libsForQt5.kio-extras
+    grimblast # スクリーンショット
+    slurp # 範囲選択
+    wl-clipboard # クリップボード操作
+    swayidle # lock 画面
+    swaylock # lock 画面
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

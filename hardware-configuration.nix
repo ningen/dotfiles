@@ -76,12 +76,17 @@
 
   hardware.nvidia = {
     open = false;
-    modesetting.enable = true;
+    modesetting.enable = false;
     powerManagement.enable = false;
     nvidiaSettings = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
 
     forceFullCompositionPipeline = false;
+  };
+
+  powerManagement = {
+    enable = true;
+    cpuFreqGovernor = "performance";
   };
 
   hardware.graphics = {

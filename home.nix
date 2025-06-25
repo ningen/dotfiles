@@ -7,6 +7,7 @@
 let
   isDarwin = pkgs.stdenv.isDarwin;
   homeDirectory = if isDarwin then "/Users/ningen" else "/home/ningen";
+  nodePkgs = pkgs.callPackage ./node2nix { inherit pkgs; };
 in
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -49,6 +50,8 @@ in
     awscli2
     nil
     nixfmt-rfc-style
+    nodePkgs."@anthropic-ai/claude-code"
+    nodePkgs."@google/gemini-cli"
   ];
 
   programs.starship = {
