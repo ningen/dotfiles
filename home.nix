@@ -22,6 +22,9 @@ in
   # release notes.
   home.stateVersion = "24.05"; # Please read the comment before changing.
 
+  home.username = "ningen";
+  home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
+
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs;
@@ -96,10 +99,6 @@ in
   programs.zsh = {
     enable = true;
     initContent = '''';
-  };
-
-  programs.volta = {
-    enable = true;
   };
 
   # Let Home Manager install and manage itself.
