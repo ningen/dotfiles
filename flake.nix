@@ -63,15 +63,35 @@
       homeConfigurations = {
         "ningen@ningen-mba.local" = mkHome {
           system = "aarch64-darwin";
-          modules = [ ./home.nix ];
+          modules = [
+            ./nix/hosts/common/home.nix
+            ./nix/hosts/ningen-mba/macos.nix
+            ./nix/packages/dev-tools.nix
+            ./nix/packages/language-servers.nix
+            ./nix/packages/formatters.nix
+            ./nix/packages/node-packages.nix
+          ];
         };
         "ningen@DESKTOP-0DRJD1E" = mkHome {
           system = "x86_64-linux";
-          modules = [ ./home.nix ];
+          modules = [
+            ./nix/hosts/common/home.nix
+            ./nix/packages/dev-tools.nix
+            ./nix/packages/language-servers.nix
+            ./nix/packages/formatters.nix
+            ./nix/packages/node-packages.nix
+          ];
         };
         "ningen@nixos" = mkHome {
           system = "x86_64-linux";
-          modules = [ ./home.nix ./gui.nix ];
+          modules = [
+            ./nix/hosts/common/home.nix
+            ./nix/hosts/nixos/gui.nix
+            ./nix/packages/dev-tools.nix
+            ./nix/packages/language-servers.nix
+            ./nix/packages/formatters.nix
+            ./nix/packages/node-packages.nix
+          ];
         };
       };
 
@@ -79,7 +99,7 @@
         myNixOS = inputs.nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
-            ./configuration.nix
+            ./nix/hosts/nixos/configuration.nix
           ];
           specialArgs = {
             inherit inputs;
@@ -89,7 +109,7 @@
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {
         system = "aarch64-darwin";
-        modules = [ ./macos.nix ];
+        modules = [ ./nix/hosts/ningen-mba/macos.nix ];
       };
     };
 }
