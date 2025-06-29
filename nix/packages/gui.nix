@@ -3,7 +3,7 @@
     discord
     hyprland
     xdg-desktop-portal-hyprland
-    waybar
+    (waybar.override { cavaSupport = true; })
     swww
     rofi-wayland
     obs-studio
