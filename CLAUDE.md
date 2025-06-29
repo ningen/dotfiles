@@ -90,9 +90,9 @@ Node.jsパッケージを更新するには：
 
 技術的な詳細情報やガイドは `docs/` ディレクトリに整理されています：
 
-- **docs/node2nix.md**: node2nixの詳細ガイド（基本概念、使用方法、トラブルシューティング）
-- **docs/nixos.md**: NixOSの詳細ガイド（基本概念、設定方法、実装詳細、トラブルシューティング）
-- **docs/nix-darwin.md**: nix-darwinの詳細ガイド（macOS特有設定、Homebrew統合、システム管理）
+- **docs/nix/node2nix.md**: node2nixの詳細ガイド（基本概念、使用方法、トラブルシューティング）
+- **docs/nix/nixos.md**: NixOSの詳細ガイド（基本概念、設定方法、実装詳細、トラブルシューティング）
+- **docs/nix/nix-darwin.md**: nix-darwinの詳細ガイド（macOS特有設定、Homebrew統合、システム管理）
 
 ## Web検索について
 
