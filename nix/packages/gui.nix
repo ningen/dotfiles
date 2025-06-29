@@ -10,7 +10,6 @@
     vlc
     alacritty
     playerctl
-    hyprshell
   ];
 
   # Firefox設定（MPRIS対応）
