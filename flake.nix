@@ -85,7 +85,7 @@
           system = "x86_64-linux";
           modules = [
             ./nix/hosts/common/home.nix
-            ./nix/hosts/nixos/gui.nix
+            ./nix/packages/gui.nix
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix

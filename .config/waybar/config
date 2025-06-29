@@ -1,7 +1,7 @@
 {
     "layer": "top", // Waybar at top layer
     "modules-left": ["sway/workspaces"],
-    "modules-right": ["tray", "cpu", "memory", "backlight", "network", "pulseaudio", "battery", "clock"],
+    "modules-right": ["tray", "mpris", "cpu", "memory", "backlight", "network", "pulseaudio", "battery", "clock"],
     "tray": {
         // "icon-size": 21,
         "spacing": 10
@@ -9,7 +9,7 @@
     "clock": {
         "tooltip-format": "{:%Y-%m-%d | %H:%M}",
         "format-alt": "{:%Y-%m-%d}",
-        "format": "{:%a %Y-%m-%d %l:%M %p}"
+        "format": "{:%a %Y-%m-%d %H:%M}"
     },
     "cpu": {
         "format": "　{usage}%"
@@ -54,5 +54,14 @@
             "default": ["", ""]
         },
         "on-click": "pavucontrol"
+    },
+    "mpris": {
+        "format": "♪ {artist} - {title}",
+        "format-paused": "⏸ {artist} - {title}",
+        "format-stopped": "",
+        "max-length": 50,
+        "on-click": "playerctl play-pause",
+        "on-scroll-up": "playerctl next",
+        "on-scroll-down": "playerctl previous"
     }
 }
