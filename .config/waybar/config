@@ -1,7 +1,8 @@
 {
     "layer": "top", // Waybar at top layer
-    "modules-left": ["sway/workspaces"],
-    "modules-right": ["tray", "mpris", "cpu", "memory", "backlight", "network", "pulseaudio", "battery", "clock"],
+    "modules-left": ["clock"],
+    "modules-center": ["mpris"],
+    "modules-right": ["cpu", "memory", "pulseaudio", "tray"],
     "tray": {
         // "icon-size": 21,
         "spacing": 10
@@ -9,18 +10,13 @@
     "clock": {
         "tooltip-format": "{:%Y-%m-%d | %H:%M}",
         "format-alt": "{:%Y-%m-%d}",
-        "format": "{:%a %Y-%m-%d %H:%M}"
+        "format": "{:%Y-%m-%d %H:%M}"
     },
     "cpu": {
-        "format": "　{usage}%"
+        "format": " 󰻠 {usage}%"
     },
     "memory": {
-        "format": "　{}%"
-    },
-    "backlight": {
-        //"device": "intel_backlight",
-        "format": "　{percent}%",
-        "format-icons": ["", ""]
+        "format": " 󰄨 {}%"
     },
     "battery": {
         //"states": {
