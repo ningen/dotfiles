@@ -302,12 +302,67 @@ homeConfigurations = {
 
 2. **Nix式の再生成**
    ```bash
-   nix-shell -p node2nix --run "node2nix -i nix/node2nix/node-packages.json -o nix/node2nix/node-packages.nix"
+   cd nix/node2nix
+   nix-shell -p node2nix --run "node2nix -i node-packages.json"
    ```
 
-3. **設定の適用**
+3. **システム統合モジュールの編集**
+   ```bash
+   # nix/packages/node-packages.nix に新しいパッケージを追加
+   vim nix/packages/node-packages.nix
+   ```
+
+4. **設定の適用**
    ```bash
    nix run .#update
+   ```
+
+### 新しいパッケージを追加する手順
+
+例として`nodemon`パッケージを追加する場合：
+
+1. **node-packages.jsonに追加**
+   ```json
+   [
+     "@anthropic-ai/claude-code",
+     "@google/gemini-cli", 
+     "ccusage",
+     "nodemon"
+   ]
+   ```
+
+2. **node2nixディレクトリでNix式を再生成**
+   ```bash
+   cd nix/node2nix
+   nix-shell -p node2nix --run "node2nix -i node-packages.json"
+   ```
+
+3. **システム統合モジュールに追加**
+   ```nix
+   # nix/packages/node-packages.nix
+   { pkgs, ... }:
+   let
+     nodePkgs = pkgs.callPackage ../node2nix { inherit pkgs; };
+   in
+   {
+     home.packages = with pkgs; [
+       nodePkgs."@anthropic-ai/claude-code"
+       nodePkgs."@google/gemini-cli"
+       nodePkgs."ccusage"
+       nodePkgs."nodemon"  # <- 追加
+     ];
+   }
+   ```
+
+4. **設定を適用**
+   ```bash
+   nix run .#update
+   ```
+
+5. **パッケージの確認**
+   ```bash
+   which nodemon
+   nodemon --version
    ```
 
 ### 実装の特徴
