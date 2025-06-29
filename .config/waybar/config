@@ -1,7 +1,7 @@
 {
     "layer": "top", // Waybar at top layer
     "modules-left": ["clock"],
-    "modules-center": ["mpris", "cava"],
+    "modules-center": ["cava", "mpris"],
     "modules-right": ["cpu", "memory", "pulseaudio", "tray"],
     "tray": {
         // "icon-size": 21,
