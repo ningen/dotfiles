@@ -28,6 +28,15 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # ネットワーク安定化のためのカーネルパラメータ
+  boot.kernelParams = [
+    # R8169ドライバーの安定性向上
+    "r8169.use_dac=1"
+    "r8169.aspm=0"
+    # PCIe電源管理を無効化してネットワーク瞬断を防止
+    "pcie_aspm=off"
+  ];
+
   # networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
@@ -45,6 +54,13 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
+
+  # ネットワークデバイスの電源管理を無効化
+  services.udev.extraRules = ''
+    # イーサネットアダプターの電源管理を無効化してリンク安定性を向上
+    ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp7s0", RUN+="/bin/sh -c 'echo on > /sys/class/net/%k/device/power/control'"
+    ACTION=="add", SUBSYSTEM=="net", KERNEL=="enp7s0", RUN+="${pkgs.ethtool}/bin/ethtool -s %k wol d"
+  '';
 
   # Set your time zone.
   time.timeZone = "Asia/Tokyo";
