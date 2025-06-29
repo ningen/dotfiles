@@ -16,8 +16,11 @@
   # システムの設定（nix-darwinが効いているかのテスト）
   system = {
     defaults = {
-      NSGlobalDomain.AppleShowAllExtensions = true;
-      NSGlobalDomain.ApplePressAndHoldEnabled = false;
+      NSGlobalDomain = {
+        AppleShowAllExtensions = true;
+        ApplePressAndHoldEnabled = false;
+        "com.apple.keyboard.fnState" = true;
+      };
       finder = {
         AppleShowAllFiles = true;
         AppleShowAllExtensions = true;
