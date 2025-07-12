@@ -61,6 +61,7 @@
       "cursor"
       "obsidian"
       "raycast"
+      "kitty"
     ];
   };
 }
