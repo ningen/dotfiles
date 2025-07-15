@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   home.packages = with pkgs; [
     discord
     hyprland
@@ -10,6 +11,7 @@
     vlc
     alacritty
     playerctl
+    slack
   ];
 
   # Firefox設定（MPRIS対応）
@@ -25,3 +27,4 @@
     };
   };
 }
+
