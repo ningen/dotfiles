@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+{ pkgs, ... }:
+{
   home.packages = with pkgs; [
     neovim
     zsh
@@ -12,5 +13,6 @@
     lazygit
     tmux
     awscli2
+    emacs
   ];
 }

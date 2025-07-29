@@ -31,6 +31,7 @@ ln -sfn "$DOTFILES_DIR/.config/waybar" ~/.config/waybar
 ln -sfn "$DOTFILES_DIR/.config/discord/settings.json" ~/.config/discord/settings.json
 ln -sfn "$DOTFILES_DIR/.config/tmux" ~/.config/tmux
 ln -sfn "$DOTFILES_DIR/.config/kitty" ~/.config/kitty
+ln -sfn "$DOTFILES_DIR/.config/emacs" ~/.config/emacs
 
 # VSCode config
 ln -sf "$DOTFILES_DIR/.config/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
