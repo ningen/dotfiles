@@ -1,6 +1,8 @@
 #+TITLE: Configration Emacs Code
 
-* モダンなpackage manager の leaf を使用する
+* init
+
+** モダンなpackage manager の leaf を使用する
 
 #+begin_src emacs-lisp :tangle yes
   (eval-and-compile
@@ -22,8 +24,40 @@
     :ensure t)
 #+end_src
 
+* 現代のソフトウェアと似たような基準に寄せる
 
-* 行数の表示
+** Emacs外でファイルが更新されたときに、ファイルを読み込みし直す
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf autorevert
+    :doc "revert buffers when files on disk change"
+    :global-minor-mode global-auto-revert-mode)
+#+end_src
+
+
+** 行数の表示
+
 #+begin_src emacs-lisp :tangle yes
   (global-display-line-numbers-mode 1)
+#+end_src
+
+** 選択状態で入力したときに、選択範囲を消す
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf delsel
+    :doc "delete selection if you insert"
+    :global-minor-mode delete-selection-mode)
+#+end_src
+
+* vim 関連
+
+** vim like な keybind
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf evil
+    :doc "vim like keybind"
+    :ensure t
+    :hook ((after-init-hook . evil-mode))
+    :init
+    (setq evil-want-C-u-scroll t))
 #+end_src
