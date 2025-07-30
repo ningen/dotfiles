@@ -24,7 +24,20 @@
     :ensure t)
 #+end_src
 
-* 現代のソフトウェアと似たような基準に寄せる
+* vim 関連
+
+** vim like な keybind
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf evil
+    :doc "vim like keybind"
+    :ensure t
+    :hook ((after-init-hook . evil-mode))
+    :init
+    (setq evil-want-C-u-scroll t))
+#+end_src
+
+* util 系
 
 ** Emacs外でファイルが更新されたときに、ファイルを読み込みし直す
 
@@ -49,15 +62,9 @@
     :global-minor-mode delete-selection-mode)
 #+end_src
 
-* vim 関連
-
-** vim like な keybind
+** C-c t で ターミナル起動
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf evil
-    :doc "vim like keybind"
-    :ensure t
-    :hook ((after-init-hook . evil-mode))
-    :init
-    (setq evil-want-C-u-scroll t))
+  (global-set-key (kbd "C-c t") 'term)
 #+end_src
+
