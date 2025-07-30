@@ -1,6 +1,29 @@
 #+TITLE: Configration Emacs Code
 
-*行数の表示
+* モダンなpackage manager の leaf を使用する
+
+#+begin_src emacs-lisp :tangle yes
+  (eval-and-compile
+      (customize-set-variable
+       'package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                           ("melpa" . "https://melpa.org/packages/")))
+      (package-initialize)
+      (use-package leaf :ensure t)
+
+      (leaf leaf-keywords
+        :ensure t
+        :init
+        (leaf blackout :ensure t)
+        :config
+        (leaf-keywords-init)))
+
+  (leaf leaf-convert
+    :doc "Convert many format to leaf format"
+    :ensure t)
+#+end_src
+
+
+* 行数の表示
 #+begin_src emacs-lisp :tangle yes
   (global-display-line-numbers-mode 1)
 #+end_src
