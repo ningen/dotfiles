@@ -2,5 +2,5 @@
 
 *行数の表示
 #+begin_src emacs-lisp :tangle yes
-  (display-line-numbers-mode)
+  (global-display-line-numbers-mode 1)
 #+end_src

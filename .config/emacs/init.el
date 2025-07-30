@@ -1,3 +1,7 @@
-;; emacs-init.el を生成 して load
+;; (org-babel-load-file
+;;  (expand-file-name "config.org" user-emacs-directory))
+
+(defvar my-config-dir user-emacs-directory)
+
 (org-babel-load-file
-  (expand-file-name "emacs-init.org" user-emacs-directory))
+  (expand-file-name "config.org" my-config-dir))
