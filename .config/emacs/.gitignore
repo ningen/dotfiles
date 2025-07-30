@@ -2,3 +2,5 @@ config.el
 auto-save-list
 eln-cache/
 elpa/
+
+bookmarks

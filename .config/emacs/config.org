@@ -37,6 +37,32 @@
     (setq evil-want-C-u-scroll t))
 #+end_src
 
+* org mode
+
+** org file の 保存先
+
+#+begin_src emacs-lisp :tangle yes
+  (setq org-directory "~/.org/")
+  (setq org-default-notes-file "notes.org")
+#+end_src
+
+** Org-capture の 設定
+
+*** キーバインド
+
+#+begin_src emacs-lisp :tangle yes
+  (define-key global-map "\C-cc" 'org-capture)
+#+end_src
+
+
+*** テンプレートメニューの設定
+
+#+begin_src emacs-lisp :tangle yes
+  (setq org-capture-templates
+      '(("n" "日々の気づいたことをNote として Memo" entry (file+headline "~/.org/notes.org" "Notes") "* %?\nEntered on %U\n %i\n %a")
+        ))
+#+end_src
+
 * util 系
 
 ** Emacs外でファイルが更新されたときに、ファイルを読み込みし直す
