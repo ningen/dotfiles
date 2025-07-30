@@ -1,4 +1,3 @@
-(defun hello-world()
-	(interactive)
-	(message "Hello-world")
-)
+(require 'org-install)
+(org-babel-load-file
+		(expand-file-name "README.org" user-emacs-directory))
