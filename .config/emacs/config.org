@@ -63,6 +63,41 @@
         ))
 #+end_src
 
+* Color Themes
+
+** doom emacs theme
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf doom-themes
+    :doc "emacs color theme"
+    :ensure t
+    :config
+    (load-theme 'doom-tokyo-night t)
+    (doom-themes-org-config)
+    )
+#+end_src
+
+* filer(treemacs) の設定
+
+** treemacs 本体
+
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf treemacs
+    :ensure t
+    )   
+#+end_src
+
+
+** magit 連携
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf treemacs-magit
+    :after treemacs-magit
+    :ensure t
+    )   
+#+end_src
+
 * util 系
 
 ** Emacs外でファイルが更新されたときに、ファイルを読み込みし直す
@@ -94,3 +129,12 @@
   (global-set-key (kbd "C-c t") 'term)
 #+end_src
 
+** Emacs の 設定ファイルを reload する 関数の定義
+
+#+begin_src emacs-lisp :tangle yes
+  (defun reload-emacs ()
+    "reload emacs config file"
+    (interactive)
+    (load-file (concat user-emacs-directory "init.el"))
+    )
+#+end_src
