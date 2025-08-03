@@ -78,6 +78,32 @@
     )
 #+end_src
 
+* treesitter
+
+** treesit の install
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf treesit
+    :config
+    (setq treesit-font-lock-level 4)
+   )
+#+end_src
+
+
+** 自動でtreesitter の parser を install
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf treesit-auto
+    :ensure t
+    :init
+    (require 'treesit-auto)
+    (global-treesit-auto-mode)
+    :config
+    (setq treesit-auto-install t)
+   )
+#+end_src
+
+
 * filer(treemacs) の設定
 
 ** treemacs 本体
