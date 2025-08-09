@@ -12,6 +12,7 @@
     alacritty
     playerctl
     slack
+    google-chrome
   ];
 
   # Firefox設定（MPRIS対応）
@@ -27,4 +28,3 @@
     };
   };
 }
-
