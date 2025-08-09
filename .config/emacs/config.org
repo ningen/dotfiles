@@ -24,6 +24,7 @@
     :ensure t)
 #+end_src
 
+
 * vim 関連
 
 ** vim like な keybind
@@ -35,6 +36,15 @@
     :hook ((after-init-hook . evil-mode))
     :init
     (setq evil-want-C-u-scroll t))
+#+end_src
+
+* keybind
+
+** (linux only) superkey を emacs の meta key として使用する
+
+#+begin_src emacs-lisp :tangle yes
+  (when (eq system-type 'gnu/linux)
+    (setq x-super-keysym 'meta))
 #+end_src
 
 * org mode
