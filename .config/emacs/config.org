@@ -42,7 +42,7 @@
 ** org file の 保存先
 
 #+begin_src emacs-lisp :tangle yes
-  (setq org-directory "~/.org/")
+  (setq org-directory "~/dev/org-notes/")
   (setq org-default-notes-file "notes.org")
 #+end_src
 
@@ -59,9 +59,28 @@
 
 #+begin_src emacs-lisp :tangle yes
   (setq org-capture-templates
-      '(("n" "日々の気づいたことをNote として Memo" entry (file+headline "~/.org/notes.org" "Notes") "* %?\nEntered on %U\n %i\n %a")
+      '(("n" "日々の気づいたことをNote として Memo" entry (file+headline "~/dev/org-notes/notes.org" "Notes") "* %?\nEntered on %U\n %i\n %a")
+        ("e" "emacs 関連の操作メモ" entry (file+headline "~/dev/org-notes/emacs.org" "Emacs-Notes") "* %?\n%U\n")
         ))
 #+end_src
+
+
+* LSP 関連
+
+** Emacs 標準の LSP client の eglot をいれる
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf eglot
+    :doc "lsp clinet"
+    :ensure t
+    :hook
+    (python-mode . eglot-ensure)
+    (sh-mode . eglot-ensure)
+    )
+#+end_src
+
+#+RESULTS:
+: eglot
 
 
 * Color Themes

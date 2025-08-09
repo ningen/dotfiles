@@ -4,3 +4,7 @@ eln-cache/
 elpa/
 
 bookmarks
+tree-sitter/
+transient/
+
+.cache/
