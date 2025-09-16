@@ -71,6 +71,7 @@
   (setq org-capture-templates
       '(("n" "日々の気づいたことをNote として Memo" entry (file+headline "~/dev/org-notes/notes.org" "Notes") "* %?\nEntered on %U\n %i\n %a")
         ("e" "emacs 関連の操作メモ" entry (file+headline "~/dev/org-notes/emacs.org" "Emacs-Notes") "* %?\n%U\n")
+        ("j" "毎日の日記" entry (file+headline "~/dev/org-notes/journal.org" "Journal") "* %?\n%U\n")
         ))
 #+end_src
 

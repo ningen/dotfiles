@@ -10,19 +10,18 @@
 }:
 
 {
-  imports =
-    [
-      # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-    ]
-    ++ (with inputs.nixos-hardware.nixosModules; [
-      common-cpu-intel
-      common-gpu-nvidia
-      common-pc-ssd
-    ])
-    ++ [
-      inputs.xremap.nixosModules.default
-    ];
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+  ]
+  ++ (with inputs.nixos-hardware.nixosModules; [
+    common-cpu-intel
+    common-gpu-nvidia
+    common-pc-ssd
+  ])
+  ++ [
+    inputs.xremap.nixosModules.default
+  ];
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -218,6 +217,9 @@
     };
     zsh = {
       enable = true;
+      shellAliases = {
+        g = "git";
+      };
     };
   };
 

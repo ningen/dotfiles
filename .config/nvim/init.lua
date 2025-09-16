@@ -43,10 +43,15 @@ vim.opt.splitbelow = true -- 水平分割（horizontal split）時に、新し�
 vim.opt.splitright = true -- 垂直分割（vertical split）時に、新しいウィンドウを右に配置
 
 -- ウィンドウ操作のキーマップ
-vim.keymap.set("n", "<leader>h", "<C-w>h", { desc = "Go to left window" })
-vim.keymap.set("n", "<leader>j", "<C-w>j", { desc = "Go to lower window" })
-vim.keymap.set("n", "<leader>k", "<C-w>k", { desc = "Go to upper window" })
-vim.keymap.set("n", "<leader>l", "<C-w>l", { desc = "Go to right window" })
+-- vim.keymap.set("n", "<leader>h", "<C-w>h", { desc = "Go to left window" })
+-- vim.keymap.set("n", "<leader>j", "<C-w>j", { desc = "Go to lower window" })
+-- vim.keymap.set("n", "<leader>k", "<C-w>k", { desc = "Go to upper window" })
+-- vim.keymap.set("n", "<leader>l", "<C-w>l", { desc = "Go to right window" })
+
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
 
 -- ウィンドウサイズ調整
 vim.keymap.set("n", "<C-Up>", ":resize -2<CR>", { desc = "Decrease window height" })
