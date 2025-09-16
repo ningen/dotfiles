@@ -217,9 +217,6 @@
     };
     zsh = {
       enable = true;
-      shellAliases = {
-        g = "git";
-      };
     };
   };
 

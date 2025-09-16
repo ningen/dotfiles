@@ -8,7 +8,6 @@
   home.stateVersion = "24.05";
   home.username = "ningen";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
-  
 
   programs.starship = {
     enable = true;
@@ -47,6 +46,9 @@
   programs.zsh = {
     enable = true;
     initContent = '''';
+    shellAliases = {
+      g = "git";
+    };
   };
 
   # Let Home Manager install and manage itself.

@@ -6,7 +6,8 @@
     xdg-desktop-portal-hyprland
     (waybar.override { cavaSupport = true; })
     swww
-    rofi-wayland
+    # rofi-wayland
+    rofi
     obs-studio
     vlc
     alacritty
