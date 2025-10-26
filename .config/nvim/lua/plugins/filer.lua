@@ -37,43 +37,43 @@ return {
           -- 基本操作（覚えやすい単語の頭文字）
           ["<CR>"] = "open",
           ["o"] = "open",
-          ["s"] = "open_split",  -- split
+          ["s"] = "open_split", -- split
           ["v"] = "open_vsplit", -- vertical
           ["t"] = "open_tabnew", -- tab
 
           -- ファイル操作
-          ["a"] = "add",                  -- add (新規作成)
-          ["d"] = "delete",               -- delete
-          ["r"] = "rename",               -- rename
-          ["y"] = "copy",                 -- yank (コピー)
-          ["x"] = "cut_to_clipboard",     -- cut
+          ["a"] = "add", -- add (新規作成)
+          ["d"] = "delete", -- delete
+          ["r"] = "rename", -- rename
+          ["y"] = "copy", -- yank (コピー)
+          ["x"] = "cut_to_clipboard", -- cut
           ["p"] = "paste_from_clipboard", -- paste
 
           -- 移動
           ["h"] = "close_node", -- 親へ（左）
-          ["l"] = "open",       -- 子へ（右）
+          ["l"] = "open", -- 子へ（右）
 
           -- 表示
           ["H"] = "toggle_hidden", -- Hidden files
-          ["R"] = "refresh",       -- Refresh
-          ["?"] = "show_help",     -- help
+          ["R"] = "refresh", -- Refresh
+          ["?"] = "show_help", -- help
 
           -- 終了
           ["q"] = "close_window", -- quit
         },
       },
     })
-    vim.api.nvim_create_autocmd("VimEnter", {
-      callback = function()
-        -- ファイルが指定されていない場合のみ開く
-        if vim.fn.argc() == 0 then
-          vim.cmd("Neotree show")
-        else
-          -- ファイルが指定されている場合は、そのファイルを表示してからneo-treeを開く
-          vim.cmd("Neotree show")
-          vim.cmd("wincmd p") -- 元のウィンドウにフォーカスを戻す
-        end
-      end,
-    })
+    -- vim.api.nvim_create_autocmd("VimEnter", {
+    --   callback = function()
+    --     -- ファイルが指定されていない場合のみ開く
+    --     if vim.fn.argc() == 0 then
+    --       vim.cmd("Neotree show")
+    --     else
+    --       -- ファイルが指定されている場合は、そのファイルを表示してからneo-treeを開く
+    --       vim.cmd("Neotree show")
+    --       vim.cmd("wincmd p") -- 元のウィンドウにフォーカスを戻す
+    --     end
+    --   end,
+    -- })
   end,
 }
