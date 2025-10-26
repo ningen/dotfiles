@@ -47,6 +47,7 @@
     };
     # macos cli apps
     brews = [
+      "ghcup" # TODO: recovered nix package, move dev-tools.nix.
     ];
     # macos gui apps
     casks = [

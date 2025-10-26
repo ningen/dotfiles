@@ -30,14 +30,16 @@
         "x86_64-linux"
       ];
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
-      mkHome = { system, modules }: inputs.home-manager.lib.homeManagerConfiguration {
-        pkgs = import inputs.nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
+      mkHome =
+        { system, modules }:
+        inputs.home-manager.lib.homeManagerConfiguration {
+          pkgs = import inputs.nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+          extraSpecialArgs = { inherit inputs; };
+          inherit modules;
         };
-        extraSpecialArgs = { inherit inputs; };
-        inherit modules;
-      };
     in
     {
       apps = forAllSystems (system: {
@@ -52,7 +54,7 @@
               nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
               if [[ "$(uname)" == "Darwin" ]]; then
                 echo "Updating nix-darwin..."
-                sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch  --flake .#ningen
+                sudo darwin-rebuild switch --flake .#ningen
               fi
               echo "Update complete!"
             ''
