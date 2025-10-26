@@ -7,7 +7,6 @@
     uv
     docker
     direnv
-    ghc
     go
     gcc
     lazygit

@@ -45,7 +45,9 @@
 
   programs.zsh = {
     enable = true;
-    initContent = '''';
+    initContent = ''
+      	    export PATH=~/.ghcup/bin/:$PATH
+      	  '';
     shellAliases = {
       g = "git";
     };
