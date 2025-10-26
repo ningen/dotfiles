@@ -5,7 +5,7 @@
 }:
 
 {
-  home.stateVersion = "24.05";
+  home.stateVersion = "25.05";
   home.username = "ningen";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
 
