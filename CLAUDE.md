@@ -86,6 +86,35 @@ Node.jsパッケージを更新するには：
 - **マルチホスト管理**: 単一リポジトリで複数マシンを管理
 - **モジュラーアーキテクチャ**: ホストごとに機能セットの有効/無効を簡単に切り替え
 
+## トラブルシューティング
+
+### NixOS更新エラーの調査手順
+
+1. **基本診断**
+   ```bash
+   # Flake設定の問題をチェック
+   nix flake check
+   
+   # 最近のnixos-rebuildログを確認
+   journalctl -u nixos-rebuild --since "1 day ago" --no-pager
+   ```
+
+2. **パッケージ名変更の確認**
+   ```bash
+   # パッケージの現在の名前を検索
+   nix search nixpkgs <パッケージ名>
+   ```
+
+3. **設定ファイル内検索**
+   ```bash
+   # 設定ファイル内で特定文字列を検索
+   rg "<検索文字列>" <設定ファイルパス>
+   ```
+
+### 一般的なパッケージ名変更例
+- `libsForQt5.*` → `kdePackages.*` (KDE関連パッケージ)
+- `noto-fonts-emoji` → `noto-fonts-color-emoji`
+
 ## ドキュメント
 
 技術的な詳細情報やガイドは `docs/` ディレクトリに整理されています：

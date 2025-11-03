@@ -148,7 +148,7 @@
     packages = with pkgs; [
       noto-fonts-cjk-serif
       noto-fonts-cjk-sans
-      noto-fonts-emoji
+      noto-fonts-color-emoji
       nerd-fonts.jetbrains-mono
     ];
 
@@ -235,9 +235,9 @@
     wofi
     waybar
     pavucontrol
-    libsForQt5.dolphin
-    libsForQt5.dolphin-plugins
-    libsForQt5.kio-extras
+    kdePackages.dolphin
+    kdePackages.dolphin-plugins
+    kdePackages.kio-extras
     grimblast # スクリーンショット
     slurp # 範囲選択
     wl-clipboard # クリップボード操作
@@ -287,6 +287,7 @@
   };
 
   services.xremap = {
+    enable = true;
     userName = "ningen";
     serviceMode = "system";
     config = {
