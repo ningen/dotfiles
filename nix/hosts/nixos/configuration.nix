@@ -34,6 +34,8 @@
     "r8169.aspm=0"
     # PCIe電源管理を無効化してネットワーク瞬断を防止
     "pcie_aspm=off"
+    # キャプチャーボードのパススルー機能を常時有効にするために設定
+    "usbcore.autosuspend=-1"
   ];
 
   # networking.hostName = "nixos"; # Define your hostname.
