@@ -95,7 +95,7 @@
   services.xserver.videoDrivers = [ "nvidia" ];
 
   programs.hyprland = {
-    enable = true;
+    enable = false;
     xwayland.enable = true;
   };
   programs.gamemode.enable = true;
@@ -248,28 +248,23 @@
 
   # settings gnome desktop shortcut
   programs.dconf.enable = true;
-  programs.dconf.profiles.user.databases = [
-    {
-      settings = {
-        # "org/gnome/desktop/wm/keybindings" = {
-        #   switch-input-source = [ "<Control>space" ];
-        #   switch-input-source-backward = [ "<Shift><Control>space" ];
-        # };
+  # programs.dconf.profiles.user.databases = [
+  #   {
+  #     settings = {
+  #       "org/gnome/desktop/wm/keybindings" = {
+  #         switch-input-source = "@as []";
+  #         switch-input-source-backward = "@as []";
+  #       };
 
-        "org/gnome/settings-daemon/plugins/media-keys" = {
-          custom-keybindings = [
-            "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
-          ];
-        };
-
-        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-          name = "Ulauncher";
-          command = "ulauncher-toggle";
-          binding = "<Super>space";
-        };
-      };
-    }
-  ];
+  #       "org/gnome/settings-daemon/plugins/media-keys" = {
+  #         ulauncher-toggle = [ "<Super>space" ];
+  #       };
+  #     };
+  #     locks = [
+  #       "org/gnome/settings-daemon/plugins/media-keys/ulauncher-toggle"
+  #     ];
+  #   }
+  # ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
