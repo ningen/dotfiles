@@ -246,25 +246,51 @@
     ulauncher # gnome での launcher
   ];
 
+  systemd.user.services.ulauncher = {
+    enable = true;
+    description = "Ulauncher";
+    wantedBy = [ "graphical-session.target" ];
+    wants = [ "graphical-session.target" ];
+    after = [ "graphical-session.target" ];
+    serviceConfig = {
+      Type = "simple";
+      Restart = "on-failure";
+      RestartSec = 1;
+      ExecStart = "${pkgs.ulauncher}/bin/ulauncher --hide-window";
+      Environment = [
+        "GDK_BACKEND=x11"
+        "PATH=${pkgs.coreutils}/bin:${pkgs.glib}/bin"
+      ];
+    };
+  };
+
   # settings gnome desktop shortcut
   programs.dconf.enable = true;
-  # programs.dconf.profiles.user.databases = [
-  #   {
-  #     settings = {
-  #       "org/gnome/desktop/wm/keybindings" = {
-  #         switch-input-source = "@as []";
-  #         switch-input-source-backward = "@as []";
-  #       };
+  programs.dconf.profiles.user.databases = [
+    {
+      settings = {
+        "org/gnome/desktop/wm/keybindings" = {
+          switch-input-source = "@as []";
+          switch-input-source-backward = "@as []";
+        };
 
-  #       "org/gnome/settings-daemon/plugins/media-keys" = {
-  #         ulauncher-toggle = [ "<Super>space" ];
-  #       };
-  #     };
-  #     locks = [
-  #       "org/gnome/settings-daemon/plugins/media-keys/ulauncher-toggle"
-  #     ];
-  #   }
-  # ];
+        "org/gnome/settings-daemon/plugins/media-keys" = {
+          custom-keybindings = [
+            "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+          ];
+        };
+
+        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+          name = "Launch Ulauncher";
+          command = "ulauncher-toggle";
+          binding = "<Super>space";
+        };
+      };
+      locks = [
+        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
+      ];
+    }
+  ];
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
