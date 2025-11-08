@@ -243,6 +243,32 @@
     wl-clipboard # クリップボード操作
     swayidle # lock 画面
     swaylock # lock 画面
+    ulauncher # gnome での launcher
+  ];
+
+  # settings gnome desktop shortcut
+  programs.dconf.enable = true;
+  programs.dconf.profiles.user.databases = [
+    {
+      settings = {
+        # "org/gnome/desktop/wm/keybindings" = {
+        #   switch-input-source = [ "<Control>space" ];
+        #   switch-input-source-backward = [ "<Shift><Control>space" ];
+        # };
+
+        "org/gnome/settings-daemon/plugins/media-keys" = {
+          custom-keybindings = [
+            "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+          ];
+        };
+
+        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+          name = "Ulauncher";
+          command = "ulauncher-toggle";
+          binding = "<Super>space";
+        };
+      };
+    }
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
