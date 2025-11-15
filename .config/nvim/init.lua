@@ -15,6 +15,7 @@ vim.opt.rtp:prepend(lazypath)
 vim.opt.number = true
 vim.g.mapleader = " "
 
+vim.opt.expandtab = true -- タブをスペースに変換
 vim.opt.shiftwidth = 2 -- インデント幅
 vim.opt.tabstop = 2 -- タブ幅
 vim.opt.smartindent = true -- スマートインデント
@@ -63,25 +64,6 @@ vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase w
 vim.keymap.set("i", "jj", "<ESC>")
 vim.keymap.set("t", "<ESC>", "<C-\\><C-n>")
 vim.keymap.set("t", "jj", "<C-\\><C-n>")
-
-vim.api.nvim_create_autocmd("FileType", {
-  pattern = {
-    "lua",
-    "python",
-    "javascript",
-    "typescript",
-    "typescriptreact",
-    "json",
-    "yaml",
-    "html",
-    "css",
-  },
-  callback = function()
-    vim.opt_local.expandtab = true
-    vim.opt_local.shiftwidth = 2
-    vim.opt_local.tabstop = 2
-  end,
-})
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = {
