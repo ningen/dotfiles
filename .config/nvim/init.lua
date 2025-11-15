@@ -61,6 +61,8 @@ vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase w
 
 -- utils
 vim.keymap.set("i", "jj", "<ESC>")
+vim.keymap.set("t", "<ESC>", "<C-\\><C-n>")
+vim.keymap.set("t", "jj", "<C-\\><C-n>")
 
 vim.api.nvim_create_autocmd("FileType", {
   pattern = {
