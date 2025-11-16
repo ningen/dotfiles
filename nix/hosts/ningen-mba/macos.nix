@@ -63,6 +63,7 @@
       "obsidian"
       "raycast"
       "kitty"
+      "rectangle"
     ];
   };
 }
