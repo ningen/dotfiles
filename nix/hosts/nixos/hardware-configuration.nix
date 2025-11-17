@@ -84,11 +84,6 @@
     forceFullCompositionPipeline = false;
   };
 
-  powerManagement = {
-    enable = true;
-    cpuFreqGovernor = "performance";
-  };
-
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
