@@ -74,7 +74,7 @@
             ./nix/packages/node-packages.nix
           ];
         };
-        "ningen@DESKTOP-0DRJD1E" = mkHome {
+        "ningen@DESKTOP-3TRFQRS" = mkHome {
           system = "x86_64-linux";
           modules = [
             ./nix/hosts/common/home.nix
