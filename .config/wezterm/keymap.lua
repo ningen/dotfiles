@@ -15,10 +15,8 @@ local keys = {
 	{ key = "h", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
 }
 
--- アクティブペインの移動系
-for key, direction in pairs(hjkl) do
-	table.insert(keys, { key = key, mods = "CTRL", action = act.ActivatePaneDirection(direction) })
-end
+-- アクティブペインの移動系は Neovim 側で wezterm cli を使って制御
+-- (Ctrl+hjkl は Neovim に直接届くようにするため、ここでは定義しない)
 
 -- アクティブペインのサイズ変更
 for key, direction in pairs(hjkl) do
