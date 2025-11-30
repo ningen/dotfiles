@@ -17,12 +17,12 @@ local keys = {
 
 -- アクティブペインの移動系
 for key, direction in pairs(hjkl) do
-	table.insert(keys, { key = key, mods = "CMD", action = act.ActivatePaneDirection(direction) })
+	table.insert(keys, { key = key, mods = "CTRL", action = act.ActivatePaneDirection(direction) })
 end
 
 -- アクティブペインのサイズ変更
 for key, direction in pairs(hjkl) do
-	table.insert(keys, { key = string.upper(key), mods = "CMD|SHIFT", action = act.AdjustPaneSize({ direction, 5 }) })
+	table.insert(keys, { key = string.upper(key), mods = "CTRL|SHIFT", action = act.AdjustPaneSize({ direction, 5 }) })
 end
 
 -- 数字キーでタブ移動（1-9）
