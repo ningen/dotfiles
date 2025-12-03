@@ -22,8 +22,8 @@ config.text_background_opacity = 0.9
 config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 
--- ウィンドウの装飾を最小限に（タイトルバーの最小化・最大化ボタンを非表示）
-config.window_decorations = "RESIZE"
+-- ウィンドウの装飾を統合ボタンスタイルに（macOSスタイルのコンパクトなボタン）
+config.window_decorations = "INTEGRATED_BUTTONS|RESIZE"
 
 -- タブのタイトルをシンプルな形式にカスタマイズ
 wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
