@@ -30,8 +30,10 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	local title = tab.active_pane.title
 	-- プロセス名を取得してシンプルに表示
 	local process_name = title:match("([^/\\]+)%s*$") or title
+	-- 1ベースのタブ番号を追加
+	local tab_number = tab.tab_index + 1
 	return {
-		{ Text = " " .. process_name .. " " },
+		{ Text = " " .. tab_number .. " " .. process_name .. " " },
 	}
 end)
 
