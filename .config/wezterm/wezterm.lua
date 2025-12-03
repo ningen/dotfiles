@@ -22,4 +22,34 @@ config.text_background_opacity = 0.9
 config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 
+-- Windows 固有の設定
+if wezterm.target_triple == "x86_64-pc-windows-msvc" or wezterm.target_triple == "aarch64-pc-windows-msvc" then
+	-- WSL をデフォルトプロファイルに設定
+	config.default_prog = { "wsl.exe", "~" }
+
+	-- 起動プロファイル一覧
+	config.launch_menu = {
+		{
+			label = "WSL (Ubuntu)",
+			args = { "wsl.exe", "~" },
+		},
+		{
+			label = "PowerShell 7",
+			args = { "pwsh.exe", "-NoLogo" },
+		},
+		{
+			label = "PowerShell 5",
+			args = { "powershell.exe", "-NoLogo" },
+		},
+		{
+			label = "Command Prompt",
+			args = { "cmd.exe" },
+		},
+		{
+			label = "Git Bash",
+			args = { "C:\\Program Files\\Git\\bin\\bash.exe", "-l" },
+		},
+	}
+end
+
 return config
