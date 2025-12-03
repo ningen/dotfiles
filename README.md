@@ -17,7 +17,9 @@ dotfiles/
 ├── flake.nix                    # メインのFlake設定ファイル
 ├── flake.lock                   # Flakeの依存関係ロックファイル
 ├── hardware-configuration.nix   # ハードウェア固有の設定
-├── setup-dotfiles.sh           # セットアップスクリプト
+├── dotfiles-links.yaml         # シンボリックリンク設定
+├── setup-dotfiles.sh           # セットアップスクリプト (macOS/Linux)
+├── setup-dotfiles.ps1          # セットアップスクリプト (Windows)
 ├── nix/
 │   ├── hosts/                   # ホスト別設定
 │   │   ├── common/             # 全ホスト共通設定
@@ -92,6 +94,7 @@ dotfiles/
 
 - **aarch64-darwin**: Apple Silicon Mac
 - **x86_64-linux**: Intel/AMD Linux
+- **Windows**: dotfilesのみ対応（Nixは非対応）
 
 ## 構成管理の特徴
 
@@ -100,7 +103,27 @@ dotfiles/
 3. **原子的更新**: 設定変更は原子的に適用され、ロールバック可能
 4. **モジュラー設計**: 機能ごとに分離された設定で保守性が高い
 
-## 適用方法
+## セットアップ方法
+
+### dotfilesのシンボリックリンク作成
+
+dotfilesの設定ファイルをシステムにリンクするには、以下のコマンドを実行します。
+
+**macOS / Linux:**
+```bash
+./setup-dotfiles.sh
+```
+
+**Windows (PowerShell - 管理者権限推奨):**
+```powershell
+.\setup-dotfiles.ps1
+```
+
+リンク設定は `dotfiles-links.yaml` で管理されており、以下の環境変数に対応しています：
+- `XDG_CONFIG_HOME`: 設定されている場合は優先使用
+- 未設定時の OS デフォルト:
+  - macOS/Linux: `~/.config`
+  - Windows: `$APPDATA` (通常 `C:\Users\<username>\AppData\Roaming`)
 
 ### NixOSの場合
 
@@ -110,7 +133,7 @@ NixOSマシンでシステム全体の設定を適用するには、以下のコ
 sudo nixos-rebuild switch --flake .#myNixOS
 ```
 
-### Home Manager（すべてのシステム共通）
+### Home Manager（macOS / Linux）
 
 NixOS、macOS、またはその他のLinuxディストリビューションで、ユーザーレベルの設定（パッケージ、シェル設定など）を適用するには、以下のコマンドを実行します。
 

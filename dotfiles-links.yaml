@@ -1,0 +1,58 @@
+# Dotfiles symlink configuration
+# Variables available:
+#   $CONFIG_DIR - XDG_CONFIG_HOME or OS default config directory
+#   $VSCODE_CONFIG_DIR - VSCode user configuration directory
+
+# Common links for all platforms
+common:
+  - source: .config/git
+    target: $CONFIG_DIR/git
+    type: directory
+
+  - source: .config/nvim
+    target: $CONFIG_DIR/nvim
+    type: directory
+
+  - source: .config/tmux
+    target: $CONFIG_DIR/tmux
+    type: directory
+
+  - source: .config/kitty
+    target: $CONFIG_DIR/kitty
+    type: directory
+
+  - source: .config/emacs
+    target: $CONFIG_DIR/emacs
+    type: directory
+
+  - source: .config/wezterm
+    target: $CONFIG_DIR/wezterm
+    type: directory
+
+  - source: .config/discord/settings.json
+    target: $CONFIG_DIR/discord/settings.json
+    type: file
+
+# Unix-only links (macOS and Linux)
+unix_only:
+  - source: .config/nix
+    target: $CONFIG_DIR/nix
+    type: directory
+
+  - source: .config/hypr
+    target: $CONFIG_DIR/hypr
+    type: directory
+
+  - source: .config/waybar
+    target: $CONFIG_DIR/waybar
+    type: directory
+
+# VSCode configuration
+vscode:
+  - source: .config/vscode/settings.json
+    target: $VSCODE_CONFIG_DIR/settings.json
+    type: file
+
+  - source: .config/vscode/keybindings.json
+    target: $VSCODE_CONFIG_DIR/keybindings.json
+    type: file
