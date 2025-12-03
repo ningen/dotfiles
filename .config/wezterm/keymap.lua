@@ -13,6 +13,8 @@ local keys = {
 	{ key = "v", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	-- 水平分割
 	{ key = "h", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	-- 新しいタブを作成
+	{ key = "t", mods = "LEADER", action = act.SpawnTab("CurrentPaneDomain") },
 	-- プロファイル選択（Windows で launch_menu を表示）
 	{ key = "p", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "LAUNCH_MENU_ITEMS" }) },
 }
