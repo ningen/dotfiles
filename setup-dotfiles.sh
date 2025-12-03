@@ -1,6 +1,9 @@
 #!/bin/bash
 
+set -e
+
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_FILE="$DOTFILES_DIR/dotfiles-links.yaml"
 
 # Detect OS
 detect_os() {
@@ -8,8 +11,6 @@ detect_os() {
         echo "macos"
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo "linux"
-    elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
-        echo "windows"
     else
         echo "unknown"
     fi
@@ -21,99 +22,153 @@ OS_TYPE=$(detect_os)
 if [[ -n "$XDG_CONFIG_HOME" ]]; then
     CONFIG_DIR="$XDG_CONFIG_HOME"
 else
-    case "$OS_TYPE" in
-        windows)
-            # Windows: Use APPDATA if available, otherwise default to a reasonable path
-            if [[ -n "$APPDATA" ]]; then
-                CONFIG_DIR="$APPDATA"
-            else
-                CONFIG_DIR="$HOME/AppData/Roaming"
-            fi
-            ;;
-        *)
-            # macOS and Linux default
-            CONFIG_DIR="$HOME/.config"
-            ;;
-    esac
+    CONFIG_DIR="$HOME/.config"
 fi
 
-echo "OS detected: $OS_TYPE"
-echo "Config directory: $CONFIG_DIR"
-
-# Create symbolic links
-echo "Creating symbolic links..."
-
-# Create local file (only for non-Windows as nix is not available on Windows)
-if [[ "$OS_TYPE" != "windows" ]]; then
-    touch "$DOTFILES_DIR/.config/nix/nix-local.conf"
-fi
-
-# Create config directories
-mkdir -p "$CONFIG_DIR"
-
-# Detect OS and set VSCode config path
+# Set VSCode config path
 case "$OS_TYPE" in
     macos)
         VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
-        ;;
-    windows)
-        if [[ -n "$APPDATA" ]]; then
-            VSCODE_CONFIG_DIR="$APPDATA/Code/User"
-        else
-            VSCODE_CONFIG_DIR="$HOME/AppData/Roaming/Code/User"
-        fi
         ;;
     *)
         VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
         ;;
 esac
 
+echo "========================================="
+echo "Dotfiles Setup"
+echo "========================================="
+echo "OS detected: $OS_TYPE"
+echo "Config directory: $CONFIG_DIR"
+echo "VSCode directory: $VSCODE_CONFIG_DIR"
+echo "========================================="
+echo ""
+
+# Create local file (only for non-Windows as nix is not available on Windows)
+if [[ "$OS_TYPE" != "windows" ]]; then
+    mkdir -p "$DOTFILES_DIR/.config/nix"
+    touch "$DOTFILES_DIR/.config/nix/nix-local.conf"
+fi
+
+# Create config directories
+mkdir -p "$CONFIG_DIR"
 mkdir -p "$VSCODE_CONFIG_DIR"
 
-# Function to create symlinks (with fallback for Windows)
+# Function to expand variables in string
+expand_vars() {
+    local str="$1"
+    str="${str//\$CONFIG_DIR/$CONFIG_DIR}"
+    str="${str//\$VSCODE_CONFIG_DIR/$VSCODE_CONFIG_DIR}"
+    echo "$str"
+}
+
+# Function to create symlink
 create_link() {
     local src="$1"
     local dest="$2"
+    local type="$3"
+
+    # Expand source path (relative to DOTFILES_DIR)
+    src="$DOTFILES_DIR/$src"
+
+    # Expand variables in destination path
+    dest=$(expand_vars "$dest")
 
     # Create parent directory if it doesn't exist
     mkdir -p "$(dirname "$dest")"
 
-    # Try to create symlink
-    if ln -sfn "$src" "$dest" 2>/dev/null; then
-        echo "✓ Linked: $dest"
+    # Remove existing symlink or file/directory if it exists
+    if [[ -L "$dest" ]]; then
+        rm "$dest"
+    elif [[ -e "$dest" ]]; then
+        echo "⚠ Warning: $dest already exists and is not a symlink. Skipping."
+        return 1
+    fi
+
+    # Create symlink
+    if ln -sfn "$src" "$dest"; then
+        echo "✓ Linked: $dest -> $src"
+        return 0
     else
-        # Fallback: copy instead of symlink (for Windows without proper permissions)
-        echo "! Symlink failed, copying instead: $dest"
-        if [[ -d "$src" ]]; then
-            cp -r "$src" "$dest"
-        else
-            cp "$src" "$dest"
-        fi
+        echo "✗ Failed to link: $dest"
+        return 1
     fi
 }
 
-# Directory symlinks (skip nix/hypr/waybar on Windows as they're Linux/macOS specific)
-if [[ "$OS_TYPE" != "windows" ]]; then
-    create_link "$DOTFILES_DIR/.config/nix" "$CONFIG_DIR/nix"
-    create_link "$DOTFILES_DIR/.config/hypr" "$CONFIG_DIR/hypr"
-    create_link "$DOTFILES_DIR/.config/waybar" "$CONFIG_DIR/waybar"
-fi
+# Simple YAML parser for our specific format
+parse_yaml_section() {
+    local section="$1"
+    local current_section=""
+    local in_target_section=false
+    local source=""
+    local target=""
+    local type=""
 
-# Common config directories
-create_link "$DOTFILES_DIR/.config/git" "$CONFIG_DIR/git"
-create_link "$DOTFILES_DIR/.config/nvim" "$CONFIG_DIR/nvim"
-create_link "$DOTFILES_DIR/.config/tmux" "$CONFIG_DIR/tmux"
-create_link "$DOTFILES_DIR/.config/kitty" "$CONFIG_DIR/kitty"
-create_link "$DOTFILES_DIR/.config/emacs" "$CONFIG_DIR/emacs"
-create_link "$DOTFILES_DIR/.config/wezterm" "$CONFIG_DIR/wezterm"
+    while IFS= read -r line; do
+        # Skip comments and empty lines
+        [[ "$line" =~ ^#.*$ ]] && continue
+        [[ -z "$line" ]] && continue
 
-# Discord (special handling for file)
-create_link "$DOTFILES_DIR/.config/discord/settings.json" "$CONFIG_DIR/discord/settings.json"
+        # Check if this is a section header (no leading spaces)
+        if [[ "$line" =~ ^([a-z_]+):$ ]]; then
+            current_section="${BASH_REMATCH[1]}"
+            if [[ "$current_section" == "$section" ]]; then
+                in_target_section=true
+            else
+                in_target_section=false
+            fi
+            continue
+        fi
 
-# VSCode config
-create_link "$DOTFILES_DIR/.config/vscode/settings.json" "$VSCODE_CONFIG_DIR/settings.json"
-create_link "$DOTFILES_DIR/.config/vscode/keybindings.json" "$VSCODE_CONFIG_DIR/keybindings.json"
+        # Skip if not in target section
+        [[ "$in_target_section" == false ]] && continue
+
+        # Parse list items
+        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]+source:[[:space:]]*(.+)$ ]]; then
+            # New item, process previous if exists
+            if [[ -n "$source" && -n "$target" && -n "$type" ]]; then
+                echo "$source|$target|$type"
+            fi
+            source="${BASH_REMATCH[1]}"
+            target=""
+            type=""
+        elif [[ "$line" =~ ^[[:space:]]+target:[[:space:]]*(.+)$ ]]; then
+            target="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]+type:[[:space:]]*(.+)$ ]]; then
+            type="${BASH_REMATCH[1]}"
+        fi
+    done < "$CONFIG_FILE"
+
+    # Output last item if exists
+    if [[ -n "$source" && -n "$target" && -n "$type" ]]; then
+        echo "$source|$target|$type"
+    fi
+}
+
+# Process common links
+echo "Creating common links..."
+while IFS='|' read -r source target type; do
+    create_link "$source" "$target" "$type"
+done < <(parse_yaml_section "common")
 
 echo ""
-echo "Dotfiles setup completed!"
-echo "Config directory: $CONFIG_DIR"
+
+# Process unix_only links
+if [[ "$OS_TYPE" == "macos" || "$OS_TYPE" == "linux" ]]; then
+    echo "Creating Unix-specific links..."
+    while IFS='|' read -r source target type; do
+        create_link "$source" "$target" "$type"
+    done < <(parse_yaml_section "unix_only")
+    echo ""
+fi
+
+# Process VSCode links
+echo "Creating VSCode links..."
+while IFS='|' read -r source target type; do
+    create_link "$source" "$target" "$type"
+done < <(parse_yaml_section "vscode")
+
+echo ""
+echo "========================================="
+echo "✓ Dotfiles setup completed!"
+echo "========================================="
