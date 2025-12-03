@@ -6,9 +6,11 @@
     volta
     uv
     docker
+    docker-compose
     direnv
     go
     gcc
+    gh
     lazygit
     tmux
     awscli2
