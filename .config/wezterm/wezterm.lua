@@ -34,11 +34,7 @@ if wezterm.target_triple == "x86_64-pc-windows-msvc" or wezterm.target_triple ==
 			args = { "wsl.exe", "~" },
 		},
 		{
-			label = "PowerShell 7",
-			args = { "pwsh.exe", "-NoLogo" },
-		},
-		{
-			label = "PowerShell 5",
+			label = "PowerShell",
 			args = { "powershell.exe", "-NoLogo" },
 		},
 		{
