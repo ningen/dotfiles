@@ -22,6 +22,19 @@ config.text_background_opacity = 0.9
 config.use_fancy_tab_bar = false
 config.show_new_tab_button_in_tab_bar = false
 
+-- ウィンドウの装飾を最小限に（タイトルバーの最小化・最大化ボタンを非表示）
+config.window_decorations = "RESIZE"
+
+-- タブのタイトルをシンプルな形式にカスタマイズ
+wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_width)
+	local title = tab.active_pane.title
+	-- プロセス名を取得してシンプルに表示
+	local process_name = title:match("([^/\\]+)%s*$") or title
+	return {
+		{ Text = " " .. process_name .. " " },
+	}
+end)
+
 -- Windows 固有の設定
 if wezterm.target_triple == "x86_64-pc-windows-msvc" or wezterm.target_triple == "aarch64-pc-windows-msvc" then
 	-- WSL をデフォルトプロファイルに設定
