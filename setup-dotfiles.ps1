@@ -110,7 +110,8 @@ function Parse-YamlSection {
     )
 
     $content = Get-Content $ConfigFile -Raw
-    $lines = $content -split "`n"
+    # Handle both Unix (LF) and Windows (CRLF) line endings
+    $lines = $content -split "\r?\n"
 
     $currentSection = ""
     $inTargetSection = $false
@@ -118,22 +119,27 @@ function Parse-YamlSection {
     $currentItem = @{}
 
     foreach ($line in $lines) {
+        # Trim the line to handle whitespace
+        $trimmedLine = $line.Trim()
+
         # Skip comments and empty lines
-        if ($line -match '^\s*#' -or $line -match '^\s*$') {
+        if ($trimmedLine -match '^#' -or $trimmedLine -eq '') {
             continue
         }
 
-        # Check for section header (no leading spaces)
-        if ($line -match '^([a-z_]+):$') {
+        # Check for section header (no leading spaces in original line)
+        if ($line -match '^([a-z_]+):\s*$') {
+            # Save current item from previous section if exists
+            if ($inTargetSection -and $currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
+                $items += $currentItem
+            }
+
             $currentSection = $matches[1]
+            $currentItem = @{}
+
             if ($currentSection -eq $Section) {
                 $inTargetSection = $true
             } else {
-                # Save current item if exists
-                if ($currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
-                    $items += $currentItem
-                }
-                $currentItem = @{}
                 $inTargetSection = $false
             }
             continue
@@ -144,7 +150,7 @@ function Parse-YamlSection {
         }
 
         # Parse list items
-        if ($line -match '^\s*-\s+source:\s*(.+)$') {
+        if ($line -match '^\s+-\s+source:\s*(.+?)\s*$') {
             # New item, save previous if exists
             if ($currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
                 $items += $currentItem
@@ -153,16 +159,16 @@ function Parse-YamlSection {
                 source = $matches[1].Trim()
             }
         }
-        elseif ($line -match '^\s+target:\s*(.+)$') {
+        elseif ($line -match '^\s+target:\s*(.+?)\s*$') {
             $currentItem.target = $matches[1].Trim()
         }
-        elseif ($line -match '^\s+type:\s*(.+)$') {
+        elseif ($line -match '^\s+type:\s*(.+?)\s*$') {
             $currentItem.type = $matches[1].Trim()
         }
     }
 
     # Add last item if exists
-    if ($currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
+    if ($inTargetSection -and $currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
         $items += $currentItem
     }
 
@@ -172,8 +178,14 @@ function Parse-YamlSection {
 # Process common links
 Write-Host "Creating common links..." -ForegroundColor Cyan
 $commonLinks = Parse-YamlSection "common"
-foreach ($link in $commonLinks) {
-    New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+Write-Host "Found $($commonLinks.Count) common links" -ForegroundColor Gray
+
+if ($commonLinks.Count -eq 0) {
+    Write-Host "⚠ No common links found. Check YAML file format." -ForegroundColor Yellow
+} else {
+    foreach ($link in $commonLinks) {
+        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+    }
 }
 Write-Host ""
 
@@ -182,8 +194,14 @@ Write-Host ""
 # Process VSCode links
 Write-Host "Creating VSCode links..." -ForegroundColor Cyan
 $vscodeLinks = Parse-YamlSection "vscode"
-foreach ($link in $vscodeLinks) {
-    New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+Write-Host "Found $($vscodeLinks.Count) VSCode links" -ForegroundColor Gray
+
+if ($vscodeLinks.Count -eq 0) {
+    Write-Host "⚠ No VSCode links found. Check YAML file format." -ForegroundColor Yellow
+} else {
+    foreach ($link in $vscodeLinks) {
+        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+    }
 }
 
 Write-Host ""
