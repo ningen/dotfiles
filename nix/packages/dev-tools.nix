@@ -15,5 +15,6 @@
     tmux
     awscli2
     emacs
+    ripgrep
   ];
 }

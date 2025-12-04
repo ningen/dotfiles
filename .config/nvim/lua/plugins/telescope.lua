@@ -1,5 +1,6 @@
 return {
   "nvim-telescope/telescope.nvim",
+  enabled = false,
   tag = "0.1.8",
   dependencies = { "nvim-lua/plenary.nvim" },
   keys = {
@@ -36,21 +37,21 @@ return {
       function()
         require("telescope.builtin").git_status()
       end,
-      desc = "show git status"
+      desc = "show git status",
     },
     {
       "<leader>gb",
       function()
         require("telescope.builtin").git_branches()
       end,
-      desc = "show git branches"
+      desc = "show git branches",
     },
     {
       "<leader>gc",
       function()
         require("telescope.builtin").git_commits()
       end,
-      desc = "show git commmits"
+      desc = "show git commmits",
     },
   },
   config = function()

@@ -43,16 +43,24 @@ vim.opt.smartcase = true
 vim.opt.splitbelow = true -- 水平分割（horizontal split）時に、新しいウィンドウを下に配置
 vim.opt.splitright = true -- 垂直分割（vertical split）時に、新しいウィンドウを右に配置
 
--- ウィンドウ操作のキーマップ
--- vim.keymap.set("n", "<leader>h", "<C-w>h", { desc = "Go to left window" })
--- vim.keymap.set("n", "<leader>j", "<C-w>j", { desc = "Go to lower window" })
--- vim.keymap.set("n", "<leader>k", "<C-w>k", { desc = "Go to upper window" })
--- vim.keymap.set("n", "<leader>l", "<C-w>l", { desc = "Go to right window" })
+-- ウィンドウ操作のキーマップ（Wezterm統合）
+-- Neovimで移動できない場合、Weztermのpaneに移動
+local function navigate_with_wezterm(direction)
+  local win_id = vim.fn.win_getid()
+  local vim_direction = ({ h = "h", j = "j", k = "k", l = "l" })[direction]
+  vim.cmd("wincmd " .. vim_direction)
 
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Go to left window" })
-vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Go to lower window" })
-vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Go to upper window" })
-vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Go to right window" })
+  -- 移動できなかった場合（window IDが変わっていない）、weztermで移動
+  if win_id == vim.fn.win_getid() then
+    local wezterm_direction = ({ h = "Left", j = "Down", k = "Up", l = "Right" })[direction]
+    vim.fn.system("wezterm cli activate-pane-direction " .. wezterm_direction)
+  end
+end
+
+vim.keymap.set("n", "<C-h>", function() navigate_with_wezterm("h") end, { desc = "Go to left window/pane" })
+vim.keymap.set("n", "<C-j>", function() navigate_with_wezterm("j") end, { desc = "Go to lower window/pane" })
+vim.keymap.set("n", "<C-k>", function() navigate_with_wezterm("k") end, { desc = "Go to upper window/pane" })
+vim.keymap.set("n", "<C-l>", function() navigate_with_wezterm("l") end, { desc = "Go to right window/pane" })
 
 -- ウィンドウサイズ調整
 vim.keymap.set("n", "<C-Up>", ":resize -2<CR>", { desc = "Decrease window height" })
