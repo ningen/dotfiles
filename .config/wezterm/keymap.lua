@@ -13,6 +13,8 @@ local keys = {
 	{ key = "v", mods = "LEADER", action = act.SplitVertical({ domain = "CurrentPaneDomain" }) },
 	-- 水平分割
 	{ key = "h", mods = "LEADER", action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }) },
+	-- プロファイル選択（Windows で launch_menu を表示）
+	{ key = "p", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "LAUNCH_MENU_ITEMS" }) },
 }
 
 -- アクティブペインの移動系は Neovim 側で wezterm cli を使って制御
