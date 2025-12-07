@@ -5,6 +5,10 @@
 
 # Common links for all platforms
 common:
+  - source: .gitconfig.local
+    target: ~/.gitconfig.local
+    type: file
+
   - source: .config/git
     target: $CONFIG_DIR/git
     type: directory

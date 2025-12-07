@@ -50,6 +50,11 @@ function Expand-Variables {
 
     $result = $String -replace '\$CONFIG_DIR', $ConfigDir
     $result = $result -replace '\$VSCODE_CONFIG_DIR', $VSCodeConfigDir
+    $result = $result -replace '\$HOME', $env:USERPROFILE
+    # Handle tilde expansion at the start of the path
+    if ($result -match '^~') {
+        $result = $result -replace '^~', $env:USERPROFILE
+    }
 
     return $result
 }
