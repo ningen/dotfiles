@@ -16,5 +16,6 @@
     awscli2
     emacs
     ripgrep
+    ghq
   ];
 }
