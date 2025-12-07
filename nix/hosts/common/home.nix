@@ -54,6 +54,15 @@
     };
   };
 
+  programs.git = {
+    enable = true;
+    extraConfig = {
+      ghq = {
+        root = "~/dev/";
+      };
+    };
+  };
+
   programs.zsh = {
     enable = true;
     initContent = ''
