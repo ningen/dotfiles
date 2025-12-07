@@ -125,6 +125,19 @@ dotfilesの設定ファイルをシステムにリンクするには、以下の
   - macOS/Linux: `~/.config`
   - Windows: `$APPDATA` (通常 `C:\Users\<username>\AppData\Roaming`)
 
+### Nixを使わない環境での設定
+
+Nixをインストールしていない環境でも、一部の設定ファイルを利用できます。
+
+**Git設定（ghqのroot設定など）:**
+```bash
+# .gitconfig.local をホームディレクトリにコピー
+cp .gitconfig.local ~/.gitconfig.local
+
+# メインの .gitconfig から include
+git config --global include.path "~/.gitconfig.local"
+```
+
 ### NixOSの場合
 
 NixOSマシンでシステム全体の設定を適用するには、以下のコマンドを実行します。
