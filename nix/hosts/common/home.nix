@@ -21,9 +21,7 @@
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
-  home.file = {
-    ".gitconfig.local".source = ../../.gitconfig.local;
-  };
+  home.file = { };
 
   # Home Manager can also manage your environment variables through
   # 'home.sessionVariables'. These will be explicitly sourced when using a
@@ -58,9 +56,6 @@
 
   programs.git = {
     enable = true;
-    includes = [
-      { path = "~/.gitconfig.local"; }
-    ];
     extraConfig = {
       ghq = {
         root = "~/dev/";

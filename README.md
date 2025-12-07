@@ -107,7 +107,7 @@ dotfiles/
 
 ### dotfilesのシンボリックリンク作成
 
-dotfilesの設定ファイルをシステムにリンクするには、以下のコマンドを実行します。
+dotfilesの設定ファイル（`.gitconfig.local`含む）をシステムにリンクするには、以下のコマンドを実行します。
 
 **macOS / Linux:**
 ```bash
@@ -119,24 +119,16 @@ dotfilesの設定ファイルをシステムにリンクするには、以下の
 .\setup-dotfiles.ps1
 ```
 
+このスクリプトは以下をセットアップします：
+- 各種設定ファイルのシンボリックリンク（Neovim、Tmux、Wezterm等）
+- Git設定（`.gitconfig.local` - ghq root設定を含む）
+- VSCode設定
+
 リンク設定は `dotfiles-links.yaml` で管理されており、以下の環境変数に対応しています：
 - `XDG_CONFIG_HOME`: 設定されている場合は優先使用
 - 未設定時の OS デフォルト:
   - macOS/Linux: `~/.config`
   - Windows: `$APPDATA` (通常 `C:\Users\<username>\AppData\Roaming`)
-
-### Nixを使わない環境での設定
-
-Nixをインストールしていない環境でも、一部の設定ファイルを利用できます。
-
-**Git設定（ghqのroot設定など）:**
-```bash
-# .gitconfig.local をホームディレクトリにコピー
-cp .gitconfig.local ~/.gitconfig.local
-
-# メインの .gitconfig から include
-git config --global include.path "~/.gitconfig.local"
-```
 
 ### NixOSの場合
 

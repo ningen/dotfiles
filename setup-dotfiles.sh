@@ -59,6 +59,8 @@ expand_vars() {
     local str="$1"
     str="${str//\$CONFIG_DIR/$CONFIG_DIR}"
     str="${str//\$VSCODE_CONFIG_DIR/$VSCODE_CONFIG_DIR}"
+    str="${str//\$HOME/$HOME}"
+    str="${str/#\~/$HOME}"
     echo "$str"
 }
 
