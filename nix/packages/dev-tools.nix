@@ -1,6 +1,7 @@
 { pkgs, ... }:
 {
   home.packages = with pkgs; [
+    git
     neovim
     zsh
     volta
@@ -17,5 +18,6 @@
     emacs
     ripgrep
     ghq
+    fzf
   ];
 }
