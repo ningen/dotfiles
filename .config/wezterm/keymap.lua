@@ -17,8 +17,10 @@ local keys = {
 	{ key = "p", mods = "LEADER", action = act.ShowLauncherArgs({ flags = "LAUNCH_MENU_ITEMS" }) },
 }
 
--- アクティブペインの移動系は Neovim 側で wezterm cli を使って制御
--- (Ctrl+hjkl は Neovim に直接届くようにするため、ここでは定義しない)
+-- ペイン移動
+for key, direction in pairs(hjkl) do
+	table.insert(keys, { key = key, mods = "ALT", action = act.ActivatePaneDirection(direction) })
+end
 
 -- アクティブペインのサイズ変更
 for key, direction in pairs(hjkl) do

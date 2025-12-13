@@ -10,6 +10,7 @@ local config = {
 	text_background_opacity = 0.9,
 	use_fancy_tab_bar = false,
 	show_new_tab_button_in_tab_bar = false,
+	treat_left_ctrlalt_as_altgr = false,
 }
 
 config.font = wezterm.font("JetBrains Mono") -- font の設定
