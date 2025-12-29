@@ -21,5 +21,6 @@
     fzf
     pnpm
     nodejs_24
+    bun
   ];
 }
