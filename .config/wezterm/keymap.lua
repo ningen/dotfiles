@@ -31,6 +31,7 @@ end
 for i = 1, 9 do
 	table.insert(keys, { key = tostring(i), mods = "CMD", action = act.ActivateTab(i - 1) })
 	table.insert(keys, { key = tostring(i), mods = "SUPER", action = act.ActivateTab(i - 1) })
+	table.insert(keys, { key = tostring(i), mods = "WIN", action = act.ActivateTab(i - 1) })
 end
 
 return keys
