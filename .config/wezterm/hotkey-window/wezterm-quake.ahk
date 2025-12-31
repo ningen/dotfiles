@@ -18,14 +18,14 @@ Control & i:: {
 
 ShowAndPositionTerminal(WinTitle) {
     global InitialHeight
-    WinShow(WinTitle)
-    WinActivate(WinTitle)
     WinGetPos(&CurX, &CurY, &CurWidth, &CurHeight, WinTitle)
     if IsInit {
-        WinMove(XPosCorrection, YPosCorrection, A_ScreenWidth + Abs(YPosCorrection * 2), InitialHeight)
+        WinMove(XPosCorrection, YPosCorrection, A_ScreenWidth + Abs(YPosCorrection * 2), InitialHeight, WinTitle)
     } else {
-        WinMove(XPosCorrection, YPosCorrection, A_ScreenWidth + Abs(YPosCorrection * 2), CurHeight)
+        WinMove(XPosCorrection, YPosCorrection, A_ScreenWidth + Abs(YPosCorrection * 2), CurHeight, WinTitle)
     }
+    WinShow(WinTitle)
+    WinActivate(WinTitle)
 }
 
 FindAppWindow() {
