@@ -29,9 +29,8 @@ end
 
 -- 数字キーでタブ移動（1-9）
 for i = 1, 9 do
-	table.insert(keys, { key = tostring(i), mods = "CMD", action = act.ActivateTab(i - 1) })
-	table.insert(keys, { key = tostring(i), mods = "SUPER", action = act.ActivateTab(i - 1) })
-	table.insert(keys, { key = tostring(i), mods = "WIN", action = act.ActivateTab(i - 1) })
+	table.insert(keys, { key = tostring(i), mods = "CMD", action = act.ActivateTab(i - 1) })  -- macOS用
+	table.insert(keys, { key = tostring(i), mods = "CTRL", action = act.ActivateTab(i - 1) }) -- Windows/Linux用
 end
 
 return keys
