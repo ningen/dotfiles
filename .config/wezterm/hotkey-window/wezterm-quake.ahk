@@ -18,6 +18,11 @@ Control & i:: {
 
 ShowAndPositionTerminal(WinTitle) {
     global InitialHeight
+    ; Validate window exists before attempting to get position
+    if !WinExist(WinTitle) {
+        return false
+    }
+    
     WinGetPos(&CurX, &CurY, &CurWidth, &CurHeight, WinTitle)
     if IsInit {
         WinMove(XPosCorrection, YPosCorrection, A_ScreenWidth + Abs(YPosCorrection * 2), InitialHeight, WinTitle)
@@ -26,6 +31,7 @@ ShowAndPositionTerminal(WinTitle) {
     }
     WinShow(WinTitle)
     WinActivate(WinTitle)
+    return true
 }
 
 FindAppWindow() {
@@ -63,7 +69,11 @@ ToggleTerminal() {
     DetectHiddenWindows true
     if !WinExist(WinIdTitle) {
         WinIdTitle := FindOrRunApp()
-        ShowAndPositionTerminal(WinIdTitle)
+        if !ShowAndPositionTerminal(WinIdTitle) {
+            ; Failed to position window, reset and try again
+            WinIdTitle := ""
+            return
+        }
         return
     }
     DetectHiddenWindows false
@@ -75,6 +85,9 @@ ToggleTerminal() {
             Send "{Blind}!{Esc}"
         }
     } else {
+        ; Window no longer exists, clear stored ID and find/run app again
+        WinIdTitle := ""
+        WinIdTitle := FindOrRunApp()
         ShowAndPositionTerminal(WinIdTitle)
     }
 }
