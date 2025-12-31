@@ -60,3 +60,15 @@ vscode:
   - source: .config/vscode/keybindings.json
     target: $VSCODE_CONFIG_DIR/keybindings.json
     type: file
+
+# macOS-specific links
+macos_only:
+  - source: .config/wezterm/hotkey-window/karabiner-wezterm.json
+    target: $CONFIG_DIR/karabiner/assets/complex_modifications/karabiner-wezterm.json
+    type: file
+
+# Windows-specific links
+windows_only:
+  - source: .config/wezterm/hotkey-window/wezterm-quake.ahk
+    target: ~/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/wezterm-quake.ahk
+    type: file

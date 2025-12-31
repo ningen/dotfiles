@@ -196,6 +196,20 @@ Write-Host ""
 
 # Skip unix_only links on Windows
 
+# Process Windows-specific links
+Write-Host "Creating Windows-specific links..." -ForegroundColor Cyan
+$windowsLinks = Parse-YamlSection "windows_only"
+Write-Host "Found $($windowsLinks.Count) Windows-specific links" -ForegroundColor Gray
+
+if ($windowsLinks.Count -eq 0) {
+    Write-Host "⚠ No Windows-specific links found." -ForegroundColor Yellow
+} else {
+    foreach ($link in $windowsLinks) {
+        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+    }
+}
+Write-Host ""
+
 # Process VSCode links
 Write-Host "Creating VSCode links..." -ForegroundColor Cyan
 $vscodeLinks = Parse-YamlSection "vscode"

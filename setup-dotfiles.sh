@@ -164,6 +164,15 @@ if [[ "$OS_TYPE" == "macos" || "$OS_TYPE" == "linux" ]]; then
     echo ""
 fi
 
+# Process macOS-specific links
+if [[ "$OS_TYPE" == "macos" ]]; then
+    echo "Creating macOS-specific links..."
+    while IFS='|' read -r source target type; do
+        create_link "$source" "$target" "$type"
+    done < <(parse_yaml_section "macos_only")
+    echo ""
+fi
+
 # Process VSCode links
 echo "Creating VSCode links..."
 while IFS='|' read -r source target type; do
