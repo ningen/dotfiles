@@ -10,7 +10,7 @@ local config = {
 		{ family = "JetBrains Mono", weight = "Medium" },
 		"Noto Color Emoji",
 	}),
-	font_size = 14.0,
+	font_size = 12.0,
 	line_height = 1.2,
 	harfbuzz_features = { "calt=1", "clig=1", "liga=1" }, -- Enable ligatures
 	
@@ -41,7 +41,7 @@ local config = {
 	
 	-- Cursor
 	default_cursor_style = "BlinkingBlock",
-	cursor_blink_rate = 500,
+	cursor_blink_rate = 800,
 	
 	-- Scrollback
 	scrollback_lines = 10000,
@@ -125,27 +125,14 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	}
 end)
 
--- Status line with battery, time, and system info
+-- Status line with time
 wezterm.on("update-right-status", function(window, pane)
 	local date = wezterm.strftime("%a %b %-d %H:%M ")
-	local bat = ""
-	
-	-- Try to get battery info (Linux/macOS)
-	local success, battery_info = pcall(function()
-		local handle = io.popen("cat /sys/class/power_supply/BAT*/capacity 2>/dev/null || pmset -g batt | grep -o '[0-9]*%' | head -1")
-		local result = handle:read("*a")
-		handle:close()
-		return result:gsub("\n", "")
-	end)
-	
-	if success and battery_info and battery_info ~= "" then
-		bat = "🔋 " .. battery_info .. "% "
-	end
-	
+
 	window:set_right_status(wezterm.format({
 		{ Background = { Color = "#414868" } },
 		{ Foreground = { Color = "#c0caf5" } },
-		{ Text = " " .. bat .. date },
+		{ Text = " " .. date },
 	}))
 end)
 
