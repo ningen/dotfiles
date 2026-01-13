@@ -96,5 +96,12 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "gleam" },
+  callback = function()
+    vim.treesitter.start()
+  end,
+})
+
 require("lazy").setup("plugins")
 require("lsp")
