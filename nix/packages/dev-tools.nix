@@ -22,5 +22,7 @@
     pnpm
     nodejs_24
     bun
+    go
+    gopls
   ];
 }
