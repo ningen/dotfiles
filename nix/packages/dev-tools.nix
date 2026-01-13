@@ -24,5 +24,7 @@
     bun
     go
     gopls
+    devenv
+    claude-code
   ];
 }

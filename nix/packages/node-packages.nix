@@ -4,8 +4,8 @@ let
 in
 {
   home.packages = with pkgs; [
-    nodePkgs."@anthropic-ai/claude-code"
-    nodePkgs."@google/gemini-cli"
-    nodePkgs."ccusage"
+    # nodePkgs."@anthropic-ai/claude-code"
+    # nodePkgs."@google/gemini-cli"
+    # nodePkgs."ccusage"
   ];
 }
