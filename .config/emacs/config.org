@@ -56,7 +56,23 @@
         (kbd "RET") #'xref-goto-xref
         (kbd "q") #'quit-window
         "n" #'xref-next-line
-        "p" #'xref-prev-line)))
+        "p" #'xref-prev-line))
+    ;; ウィンドウ移動 (Neovim互換)
+    (evil-define-key 'normal 'global
+      (kbd "C-h") #'windmove-left
+      (kbd "C-j") #'windmove-down
+      (kbd "C-k") #'windmove-up
+      (kbd "C-l") #'windmove-right)
+    ;; ウィンドウリサイズ
+    (evil-define-key 'normal 'global
+      (kbd "C-<up>") (lambda () (interactive) (shrink-window 2))
+      (kbd "C-<down>") (lambda () (interactive) (enlarge-window 2))
+      (kbd "C-<left>") (lambda () (interactive) (shrink-window-horizontally 2))
+      (kbd "C-<right>") (lambda () (interactive) (enlarge-window-horizontally 2))))
+
+  ;; split時の新ウィンドウの位置 (Neovim互換)
+  (setq split-window-below t)   ; 水平分割時、新ウィンドウを下に
+  (setq split-window-right t)   ; 垂直分割時、新ウィンドウを右に
 #+end_src
 
 * keybind
