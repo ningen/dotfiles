@@ -94,9 +94,21 @@
     :ensure t
     :init
     (vertico-mode)
+    (vertico-multiform-mode)  ; posframeに必要
     :config
     (setq vertico-count 15)
     (setq vertico-cycle t))
+
+  ;; Floating window表示 (telescope風)
+  (leaf vertico-posframe
+    :doc "Show vertico in a floating frame"
+    :ensure t
+    :after vertico
+    :config
+    (vertico-posframe-mode 1)
+    (setq vertico-posframe-parameters
+          '((left-fringe . 8)
+            (right-fringe . 8))))
 #+end_src
 
 ** Orderless - スペース区切りで絞り込み
@@ -117,18 +129,39 @@
     :doc "Consulting completing-read"
     :ensure t
     :bind
-    ;; ファイル・バッファ
-    (("C-x b" . consult-buffer)           ; バッファ切替
-     ("C-x C-r" . consult-recent-file)    ; 最近のファイル
-     ;; 検索
-     ("C-s" . consult-line)               ; バッファ内検索
-     ("C-c g" . consult-ripgrep)          ; プロジェクトgrep
-     ("C-c f" . consult-find)             ; ファイル検索
-     ;; ナビゲーション
-     ("C-c o" . consult-outline)          ; 見出しジャンプ
-     ("C-c i" . consult-imenu))           ; 関数・クラス一覧
+    ;; Emacs標準キーバインド
+    (("C-x b" . consult-buffer)
+     ("C-s" . consult-line))
     :config
-    (setq consult-preview-key "M-."))
+    (setq consult-preview-key "M-.")
+
+    ;; Neovim互換キーバインド (leader = SPC)
+    (with-eval-after-load 'evil
+      ;; ファイル検索
+      (evil-define-key 'normal 'global
+        (kbd "<leader>ff") #'consult-fd            ; Find files
+        (kbd "<leader>fr") #'consult-recent-file   ; Recent files
+        (kbd "<leader>fb") #'consult-buffer)       ; Buffers
+      ;; Grep
+      (evil-define-key 'normal 'global
+        (kbd "<leader>fg") #'consult-ripgrep       ; Live grep
+        (kbd "<leader>fw") #'consult-line-thing-at-point  ; Grep word at point
+        (kbd "<leader>fs") #'consult-line)         ; Search in buffer
+      ;; Git (magitと連携)
+      (evil-define-key 'normal 'global
+        (kbd "<leader>gs") #'magit-status          ; Git status
+        (kbd "<leader>gb") #'magit-branch          ; Git branches
+        (kbd "<leader>gc") #'magit-log-current)    ; Git commits
+      ;; ナビゲーション
+      (evil-define-key 'normal 'global
+        (kbd "<leader>fo") #'consult-outline       ; Outline
+        (kbd "<leader>fi") #'consult-imenu)))      ; Imenu
+
+  ;; カーソル位置の単語でconsult-line
+  (defun consult-line-thing-at-point ()
+    "Search for thing at point using consult-line."
+    (interactive)
+    (consult-line (thing-at-point 'symbol)))
 #+end_src
 
 ** Marginalia - 補完候補に説明を追加
@@ -356,13 +389,20 @@ tree-sitter を使用した構文解析とハイライトを設定。
 #+end_src
 
 
-** magit 連携
+** magit (Git操作)
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf magit
+    :doc "Git interface"
+    :ensure t)
+#+end_src
+
+** treemacs-magit 連携
 
 #+begin_src emacs-lisp :tangle yes
   (leaf treemacs-magit
-    :after treemacs-magit
-    :ensure t
-    )   
+    :after magit treemacs
+    :ensure t)
 #+end_src
 
 * Claude Code Integration
