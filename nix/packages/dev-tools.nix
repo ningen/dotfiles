@@ -19,7 +19,7 @@
     # emacs vterm dependencies
     cmake
     libtool
-    libvterm
+
     ripgrep
     ghq
     fzf
