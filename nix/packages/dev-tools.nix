@@ -16,6 +16,10 @@
     tmux
     awscli2
     emacs
+    # emacs vterm dependencies
+    cmake
+    libtool
+    libvterm
     ripgrep
     ghq
     fzf
