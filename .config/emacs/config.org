@@ -5,25 +5,36 @@
 ** モダンなpackage manager の leaf を使用する
 
 #+begin_src emacs-lisp :tangle yes
-  (eval-and-compile
-      (customize-set-variable
-       'package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                           ("melpa" . "https://melpa.org/packages/")))
-      (package-initialize)
-      (use-package leaf :ensure t)
+    (eval-and-compile
+        (customize-set-variable
+         'package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                             ("melpa" . "https://melpa.org/packages/")
+  			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
+        (package-initialize)
+        (use-package leaf :ensure t)
 
-      (leaf leaf-keywords
-        :ensure t
-        :init
-        (leaf blackout :ensure t)
-        :config
-        (leaf-keywords-init)))
+        (leaf leaf-keywords
+          :ensure t
+          :init
+          (leaf blackout :ensure t)
+          :config
+          (leaf-keywords-init)))
 
-  (leaf leaf-convert
-    :doc "Convert many format to leaf format"
-    :ensure t)
+    (leaf leaf-convert
+      :doc "Convert many format to leaf format"
+      :ensure t)
 #+end_src
 
+
+* Path 解決
+
+
+#+begin_src emacs-lisp :tangle yes
+(leaf exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+#+end_src
 
 * vim 関連
 
@@ -176,21 +187,26 @@
 
 * Claude Code Integration
 
-#+begin_src emacs-lisp :tangle yes
-#+end_src
 
 #+begin_src emacs-lisp :tangle yes
-(leaf vterm
-    :ensure t
-    :config
-    (setq vterm-shell "/bin/zsh")
-    )
 
-  (leaf claude-code-ide
-    :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
-    :bind ("C-c C-'" . claude-code-ide-menu)
-    :config
-    (claude-code-ide-emacs-tools-setup))
+    (leaf vterm
+        :ensure t
+        :config
+        (setq vterm-shell "/bin/zsh")
+        )
+
+  (leaf eat
+  :ensure 
+  :hook (eshell-mode-hook . eat-eshell-mode))
+
+  (setq claude-code-ide-terminal-backend 'eat)
+
+      (leaf claude-code-ide
+        :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+        :bind ("C-c C-'" . claude-code-ide-menu)
+        :config
+        (claude-code-ide-emacs-tools-setup))
 #+end_src
 
 * util 系
@@ -228,7 +244,7 @@
 ** C-c t で ターミナル起動
 
 #+begin_src emacs-lisp :tangle yes
-  (global-set-key (kbd "C-c t") 'term)
+  (global-set-key (kbd "C-c t") 'eat)
 #+end_src
 
 ** Emacs の 設定ファイルを reload する 関数の定義
@@ -240,4 +256,5 @@
     (load-file (concat user-emacs-directory "init.el"))
     )
 #+end_src
+
 
