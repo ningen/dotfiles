@@ -174,6 +174,38 @@
     (marginalia-mode))
 #+end_src
 
+** Corfu - インライン補完UI
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf corfu
+    :doc "Completion Overlay Region FUnction"
+    :ensure t
+    :init
+    (global-corfu-mode)
+    :config
+    (setq corfu-auto t)           ; 自動補完を有効化
+    (setq corfu-auto-delay 0.2)   ; 補完までの遅延（秒）
+    (setq corfu-auto-prefix 2)    ; 補完開始文字数
+    (setq corfu-cycle t)          ; 候補をサイクル
+    (setq corfu-preselect 'prompt)) ; 最初の候補を選択しない
+
+  ;; ターミナルでも動作するように
+  (leaf corfu-terminal
+    :doc "Corfu popup on terminal"
+    :ensure t
+    :unless (display-graphic-p)
+    :config
+    (corfu-terminal-mode 1))
+
+  ;; 補完候補にアイコンを追加
+  (leaf kind-icon
+    :doc "Icons for corfu completion"
+    :ensure t
+    :after corfu
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+#+end_src
+
 * org mode
 
 ** org file の 保存先
