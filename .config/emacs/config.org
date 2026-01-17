@@ -349,7 +349,10 @@ tree-sitter を使用した構文解析とハイライトを設定。
 #+begin_src emacs-lisp :tangle yes
   (leaf treemacs
     :ensure t
-    )   
+    :config
+    (treemacs-project-follow-mode t)  ; プロジェクト移動時に追従
+    (treemacs-follow-mode t)          ; カーソル位置のファイルを追従
+    (setq treemacs-is-never-other-window t))  ; other-windowでtreemacsを選択しない
 #+end_src
 
 
