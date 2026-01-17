@@ -384,38 +384,40 @@ tree-sitter を使用した構文解析とハイライトを設定。
 - auto-mode-alist で拡張子とモードを関連付け
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf treesit
-    :config
-    (setq treesit-font-lock-level 4)
-    (setq treesit-language-source-alist
-          '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-            (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-            (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-            (json "https://github.com/tree-sitter/tree-sitter-json")
-            (python "https://github.com/tree-sitter/tree-sitter-python")
-            (go "https://github.com/tree-sitter/tree-sitter-go")
-            (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
-            (css "https://github.com/tree-sitter/tree-sitter-css")
-            (html "https://github.com/tree-sitter/tree-sitter-html")
-            (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-            (bash "https://github.com/tree-sitter/tree-sitter-bash")))
-    ;; auto-mode-alist for tree-sitter modes
-    (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.js\\'" . typescript-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.py\\'" . python-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
-    (add-to-list 'auto-mode-alist '("go\\.mod\\'" . go-mod-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
-    (add-to-list 'auto-mode-alist '("\\.html?\\'" . html-ts-mode))
-    ;; Install language grammar if not available
-    (dolist (lang '(typescript tsx javascript json python go gomod css html yaml bash))
-      (unless (treesit-language-available-p lang)
-        (treesit-install-language-grammar lang)))
-   )
+      (leaf treesit
+        :config
+        (setq treesit-font-lock-level 4)
+        (setq treesit-language-source-alist
+              '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+                (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+                (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+                (json "https://github.com/tree-sitter/tree-sitter-json")
+                (python "https://github.com/tree-sitter/tree-sitter-python")
+                (go "https://github.com/tree-sitter/tree-sitter-go")
+                (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
+                (css "https://github.com/tree-sitter/tree-sitter-css")
+                (html "https://github.com/tree-sitter/tree-sitter-html")
+                (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+                (bash "https://github.com/tree-sitter/tree-sitter-bash")
+  	      (gleam "https://github.com/gleam-lang/tree-sitter-gleam")))
+        ;; auto-mode-alist for tree-sitter modes
+        (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.js\\'" . typescript-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.py\\'" . python-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
+        (add-to-list 'auto-mode-alist '("go\\.mod\\'" . go-mod-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.html?\\'" . html-ts-mode))
+        (add-to-list 'auto-mode-alist '("\\.gleam\\'" . gleam-ts-mode))
+        ;; Install language grammar if not available
+        (dolist (lang '(typescript tsx javascript json python go gomod css html yaml bash gleam))
+          (unless (treesit-language-available-p lang)
+            (treesit-install-language-grammar lang)))
+       )
 #+end_src
 
 
