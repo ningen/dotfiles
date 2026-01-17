@@ -278,6 +278,7 @@
                       ((member lang '("python" "py")) 'python-ts-mode)
                       ((member lang '("go" "golang")) 'go-ts-mode)
                       ((member lang '("json")) 'json-ts-mode)
+                      ((member lang '("gleam")) 'gleam-ts-mode)
                       (t nil)))
                (fontified (if (and mode (fboundp mode))
                               (with-temp-buffer
@@ -487,7 +488,14 @@ tree-sitter を使用した構文解析とハイライトを設定。
         :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
         :bind ("C-c C-'" . claude-code-ide-menu)
         :config
-        (claude-code-ide-emacs-tools-setup))
+        (claude-code-ide-emacs-tools-setup)
+        ;; claude-code-ideのバッファでevil-modeを無効化
+        (with-eval-after-load 'evil
+          ;; claude-code-ideの主要なモードでEmacsステート（evil無効）に設定
+          (dolist (mode '(claude-code-ide-mode
+                          claude-code-ide-chat-mode
+                          claude-code-ide-terminal-mode))
+            (evil-set-initial-state mode 'emacs))))
 #+end_src
 
 * util 系
