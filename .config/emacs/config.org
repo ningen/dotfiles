@@ -49,7 +49,14 @@
     :init
     (setq evil-want-C-u-scroll t)
     :config
-    (evil-set-leader 'normal (kbd "SPC")))  ; Neovimと同じくスペースをleaderに
+    (evil-set-leader 'normal (kbd "SPC"))  ; Neovimと同じくスペースをleaderに
+    ;; xrefバッファでのキーバインド
+    (with-eval-after-load 'xref
+      (evil-define-key 'normal xref--xref-buffer-mode-map
+        (kbd "RET") #'xref-goto-xref
+        (kbd "q") #'quit-window
+        "n" #'xref-next-line
+        "p" #'xref-prev-line)))
 #+end_src
 
 * keybind
@@ -59,6 +66,63 @@
 #+begin_src emacs-lisp :tangle yes
   (when (eq system-type 'gnu/linux)
     (setq x-super-keysym 'meta))
+#+end_src
+
+* 補完フレームワーク (Vertico + Consult + Orderless)
+
+** Vertico - 縦型補完UI
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf vertico
+    :doc "Vertical completion UI"
+    :ensure t
+    :init
+    (vertico-mode)
+    :config
+    (setq vertico-count 15)
+    (setq vertico-cycle t))
+#+end_src
+
+** Orderless - スペース区切りで絞り込み
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf orderless
+    :doc "Orderless completion style"
+    :ensure t
+    :config
+    (setq completion-styles '(orderless basic))
+    (setq completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+
+** Consult - 検索・ナビゲーションコマンド
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf consult
+    :doc "Consulting completing-read"
+    :ensure t
+    :bind
+    ;; ファイル・バッファ
+    (("C-x b" . consult-buffer)           ; バッファ切替
+     ("C-x C-r" . consult-recent-file)    ; 最近のファイル
+     ;; 検索
+     ("C-s" . consult-line)               ; バッファ内検索
+     ("C-c g" . consult-ripgrep)          ; プロジェクトgrep
+     ("C-c f" . consult-find)             ; ファイル検索
+     ;; ナビゲーション
+     ("C-c o" . consult-outline)          ; 見出しジャンプ
+     ("C-c i" . consult-imenu))           ; 関数・クラス一覧
+    :config
+    (setq consult-preview-key "M-."))
+#+end_src
+
+** Marginalia - 補完候補に説明を追加
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf marginalia
+    :doc "Annotations in the minibuffer"
+    :ensure t
+    :init
+    (marginalia-mode))
 #+end_src
 
 * org mode
@@ -108,7 +172,31 @@
 
   (leaf eldoc-box
     :doc "Display eldoc in a floating box (like Neovim hover)"
-    :ensure t)
+    :ensure t
+    :config
+    ;; マークダウンのコードブロックをシンタックスハイライト
+    (defun my/eldoc-box-fontify-markdown-code-blocks ()
+      "Fontify markdown code blocks in eldoc-box buffer."
+      (goto-char (point-min))
+      (while (re-search-forward "```\\([a-zA-Z0-9_-]*\\)\n\\(\\(?:.*\n\\)*?\\)```" nil t)
+        (let* ((lang (match-string 1))
+               (code (match-string 2))
+               (mode (cond
+                      ((member lang '("typescript" "ts" "tsx")) 'typescript-ts-mode)
+                      ((member lang '("javascript" "js" "jsx")) 'typescript-ts-mode)
+                      ((member lang '("python" "py")) 'python-ts-mode)
+                      ((member lang '("go" "golang")) 'go-ts-mode)
+                      ((member lang '("json")) 'json-ts-mode)
+                      (t nil)))
+               (fontified (if (and mode (fboundp mode))
+                              (with-temp-buffer
+                                (insert code)
+                                (delay-mode-hooks (funcall mode))
+                                (font-lock-ensure)
+                                (buffer-string))
+                            code)))
+          (replace-match fontified t t))))
+    (add-hook 'eldoc-box-buffer-hook #'my/eldoc-box-fontify-markdown-code-blocks))
 #+end_src
 
 ** LSP キーバインド (Neovim互換)
@@ -140,7 +228,7 @@ evilモードでNeovimと同じキーバインドを使用できるようにす�
   ;; K をeglotバッファでオーバーライド（evil-lookupより優先）
   (add-hook 'eglot-managed-mode-hook
             (lambda ()
-              (evil-local-set-key 'normal "K" #'eldoc-box-eglot-help-at-point)))
+              (evil-local-set-key 'normal "K" #'eldoc-box-help-at-point)))
 #+end_src
 
 
