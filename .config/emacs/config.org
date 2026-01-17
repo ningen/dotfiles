@@ -98,8 +98,8 @@
     :hook
     (python-mode . eglot-ensure)
     (sh-mode . eglot-ensure)
-    (typescript-mode-hook . eglot-ensure)
-    (tsx-ts-mode-hook . eglot-ensure)
+    (typescript-ts-mode . eglot-ensure)
+    (tsx-ts-mode . eglot-ensure)
     )
 #+end_src
 
