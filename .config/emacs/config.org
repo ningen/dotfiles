@@ -203,6 +203,7 @@
     :ensure t
     :after corfu
     :config
+    (require 'org)  ; svg-libがorg-plist-deleteを使うため
     (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 #+end_src
 
