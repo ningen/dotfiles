@@ -5,6 +5,7 @@ projects
 auto-save-list
 eln-cache/
 elpa/
+straight/
 
 bookmarks
 tree-sitter/

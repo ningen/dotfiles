@@ -48,6 +48,8 @@
     # macos cli apps
     brews = [
       "ghcup" # TODO: recovered nix package, move dev-tools.nix.
+      "libvterm" # emacs vterm dependency
+      "libtool" # emacs vterm build dependency (provides glibtool)
     ];
     # macos gui apps
     casks = [

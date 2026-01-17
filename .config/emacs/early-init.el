@@ -1,3 +1,6 @@
+;; straight.el を使用するため package.el を無効化
+(setq package-enable-at-startup nil)
+
 ;; 画面最大化
 (push '(fullscreen . maximized) default-frame-alist)
 

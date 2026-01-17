@@ -16,7 +16,8 @@
     tmux
     awscli2
     emacs
-    # emacs vterm dependencies
+    # emacs vterm dependencies (cross-platform)
+    cmake
     ripgrep
     ghq
     fzf
@@ -28,5 +29,9 @@
     devenv
     claude-code
     nixd
+  ] ++ lib.optionals pkgs.stdenv.isLinux [
+    # Linux only: emacs vterm dependencies
+    libvterm
+    libtool
   ];
 }

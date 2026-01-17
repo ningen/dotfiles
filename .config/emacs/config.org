@@ -2,27 +2,31 @@
 
 * init
 
-** モダンなpackage manager の leaf を使用する
+** straight.el のブートストラップ
 
 #+begin_src emacs-lisp :tangle yes
-    (eval-and-compile
-        (customize-set-variable
-         'package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                             ("melpa" . "https://melpa.org/packages/")
-  			   ("nongnu" . "https://elpa.nongnu.org/nongnu/")))
-        (package-initialize)
-        (use-package leaf :ensure t)
+  ;; straight.el のインストールとブートストラップ
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+         (expand-file-name
+          "straight/repos/straight.el/bootstrap.el"
+          (or (bound-and-true-p straight-base-dir)
+              user-emacs-directory)))
+        (bootstrap-version 7))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+          (url-retrieve-synchronously
+           "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+           'silent 'inhibit-cookies)
+        (goto-char (point-max))
+        (eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
 
-        (leaf leaf-keywords
-          :ensure t
-          :init
-          (leaf blackout :ensure t)
-          :config
-          (leaf-keywords-init)))
+  ;; use-package を straight.el でインストール
+  (straight-use-package 'use-package)
 
-    (leaf leaf-convert
-      :doc "Convert many format to leaf format"
-      :ensure t)
+  ;; デフォルトで :straight t を有効にする
+  (setq straight-use-package-by-default t)
 #+end_src
 
 
@@ -30,8 +34,7 @@
 
 
 #+begin_src emacs-lisp :tangle yes
-(leaf exec-path-from-shell
-  :ensure t
+(use-package exec-path-from-shell
   :config
   (exec-path-from-shell-initialize))
 #+end_src
@@ -39,9 +42,8 @@
 ** direnv 統合
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf envrc
-    :doc "direnv integration for buffer-local environment"
-    :ensure t
+  ;; direnv integration for buffer-local environment
+  (use-package envrc
     :hook (after-init-hook . envrc-global-mode))
 #+end_src
 
@@ -51,9 +53,8 @@
 
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf evil
-    :doc "vim like keybind"
-    :ensure t
+  ;; vim like keybind
+  (use-package evil
     :hook ((after-init-hook . evil-mode))
     :init
     (setq evil-want-C-u-scroll t)
@@ -98,9 +99,8 @@
 ** Vertico - 縦型補完UI
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf vertico
-    :doc "Vertical completion UI"
-    :ensure t
+  ;; Vertical completion UI
+  (use-package vertico
     :init
     (vertico-mode)
     (vertico-multiform-mode)  ; posframeに必要
@@ -109,9 +109,8 @@
     (setq vertico-cycle t))
 
   ;; Floating window表示 (telescope風)
-  (leaf vertico-posframe
-    :doc "Show vertico in a floating frame"
-    :ensure t
+  ;; Show vertico in a floating frame
+  (use-package vertico-posframe
     :after vertico
     :config
     (vertico-posframe-mode 1)
@@ -123,9 +122,8 @@
 ** Orderless - スペース区切りで絞り込み
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf orderless
-    :doc "Orderless completion style"
-    :ensure t
+  ;; Orderless completion style
+  (use-package orderless
     :config
     (setq completion-styles '(orderless basic))
     (setq completion-category-overrides '((file (styles basic partial-completion)))))
@@ -134,9 +132,8 @@
 ** Consult - 検索・ナビゲーションコマンド
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf consult
-    :doc "Consulting completing-read"
-    :ensure t
+  ;; Consulting completing-read
+  (use-package consult
     :bind
     ;; Emacs標準キーバインド
     (("C-x b" . consult-buffer)
@@ -176,9 +173,8 @@
 ** Marginalia - 補完候補に説明を追加
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf marginalia
-    :doc "Annotations in the minibuffer"
-    :ensure t
+  ;; Annotations in the minibuffer
+  (use-package marginalia
     :init
     (marginalia-mode))
 #+end_src
@@ -186,9 +182,8 @@
 ** Corfu - インライン補完UI
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf corfu
-    :doc "Completion Overlay Region FUnction"
-    :ensure t
+  ;; Completion Overlay Region FUnction
+  (use-package corfu
     :init
     (global-corfu-mode)
     :config
@@ -199,17 +194,15 @@
     (setq corfu-preselect 'prompt)) ; 最初の候補を選択しない
 
   ;; ターミナルでも動作するように
-  (leaf corfu-terminal
-    :doc "Corfu popup on terminal"
-    :ensure t
+  ;; Corfu popup on terminal
+  (use-package corfu-terminal
     :unless (display-graphic-p)
     :config
     (corfu-terminal-mode 1))
 
   ;; 補完候補にアイコンを追加
-  (leaf kind-icon
-    :doc "Icons for corfu completion"
-    :ensure t
+  ;; Icons for corfu completion
+  (use-package kind-icon
     :after corfu
     :config
     (require 'org)  ; svg-libがorg-plist-deleteを使うため
@@ -249,9 +242,8 @@
 ** Emacs 標準の LSP client の eglot をいれる
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf eglot
-    :doc "lsp clinet"
-    :ensure t
+  ;; lsp client
+  (use-package eglot
     :config
     (add-hook 'python-ts-mode-hook #'eglot-ensure)
     (add-hook 'sh-mode-hook #'eglot-ensure)
@@ -261,9 +253,8 @@
     (add-hook 'json-ts-mode-hook #'eglot-ensure)
     )
 
-  (leaf eldoc-box
-    :doc "Display eldoc in a floating box (like Neovim hover)"
-    :ensure t
+  ;; Display eldoc in a floating box (like Neovim hover)
+  (use-package eldoc-box
     :config
     ;; マークダウンのコードブロックをシンタックスハイライト
     (defun my/eldoc-box-fontify-markdown-code-blocks ()
@@ -329,8 +320,7 @@ evilモードでNeovimと同じキーバインドを使用できるようにす�
 *** nix
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf nix-mode
-    :ensure t
+  (use-package nix-mode
     :config
     (setq byte-compile-warnings '(not obsolute))
     :mode "\\.nix\\'")
@@ -339,8 +329,7 @@ evilモードでNeovimと同じキーバインドを使用できるようにす�
 *** gleam
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf gleam-ts-mode
-    :ensure t
+  (use-package gleam-ts-mode
     :mode "\\.gleam\\'"
     :hook (gleam-ts-mode-hook . eglot-ensure))
 #+end_src
@@ -366,9 +355,8 @@ evilモードでNeovimと同じキーバインドを使用できるようにす�
 ** doom emacs theme
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf doom-themes
-    :doc "emacs color theme"
-    :ensure t
+  ;; emacs color theme
+  (use-package doom-themes
     :config
     (load-theme 'doom-tokyo-night t)
     (doom-themes-org-config)
@@ -385,48 +373,45 @@ tree-sitter を使用した構文解析とハイライトを設定。
 - auto-mode-alist で拡張子とモードを関連付け
 
 #+begin_src emacs-lisp :tangle yes
-      (leaf treesit
-        :config
-        (setq treesit-font-lock-level 4)
-        (setq treesit-language-source-alist
-              '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-                (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-                (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
-                (json "https://github.com/tree-sitter/tree-sitter-json")
-                (python "https://github.com/tree-sitter/tree-sitter-python")
-                (go "https://github.com/tree-sitter/tree-sitter-go")
-                (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
-                (css "https://github.com/tree-sitter/tree-sitter-css")
-                (html "https://github.com/tree-sitter/tree-sitter-html")
-                (yaml "https://github.com/ikatyang/tree-sitter-yaml")
-                (bash "https://github.com/tree-sitter/tree-sitter-bash")
-  	      (gleam "https://github.com/gleam-lang/tree-sitter-gleam")))
-        ;; auto-mode-alist for tree-sitter modes
-        (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.js\\'" . typescript-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.py\\'" . python-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
-        (add-to-list 'auto-mode-alist '("go\\.mod\\'" . go-mod-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.html?\\'" . html-ts-mode))
-        (add-to-list 'auto-mode-alist '("\\.gleam\\'" . gleam-ts-mode))
-        ;; Install language grammar if not available
-        (dolist (lang '(typescript tsx javascript json python go gomod css html yaml bash gleam))
-          (unless (treesit-language-available-p lang)
-            (treesit-install-language-grammar lang)))
-       )
+  ;; treesit は Emacs 29+ に組み込まれているので use-package 不要
+  (setq treesit-font-lock-level 4)
+  (setq treesit-language-source-alist
+        '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+          (json "https://github.com/tree-sitter/tree-sitter-json")
+          (python "https://github.com/tree-sitter/tree-sitter-python")
+          (go "https://github.com/tree-sitter/tree-sitter-go")
+          (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
+          (css "https://github.com/tree-sitter/tree-sitter-css")
+          (html "https://github.com/tree-sitter/tree-sitter-html")
+          (yaml "https://github.com/ikatyang/tree-sitter-yaml")
+          (bash "https://github.com/tree-sitter/tree-sitter-bash")
+          (gleam "https://github.com/gleam-lang/tree-sitter-gleam")))
+  ;; auto-mode-alist for tree-sitter modes
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.js\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.py\\'" . python-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.go\\'" . go-ts-mode))
+  (add-to-list 'auto-mode-alist '("go\\.mod\\'" . go-mod-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.ya?ml\\'" . yaml-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.css\\'" . css-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . html-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.gleam\\'" . gleam-ts-mode))
+  ;; Install language grammar if not available
+  (dolist (lang '(typescript tsx javascript json python go gomod css html yaml bash gleam))
+    (unless (treesit-language-available-p lang)
+      (treesit-install-language-grammar lang)))
 #+end_src
 
 
 ** 自動でtreesitter の parser を install
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf treesit-auto
-    :ensure t
+  (use-package treesit-auto
     :init
     (require 'treesit-auto)
     (global-treesit-auto-mode)
@@ -442,8 +427,7 @@ tree-sitter を使用した構文解析とハイライトを設定。
 
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf treemacs
-    :ensure t
+  (use-package treemacs
     :config
     (treemacs-project-follow-mode t)  ; プロジェクト移動時に追従
     (treemacs-follow-mode t)          ; カーソル位置のファイルを追従
@@ -454,17 +438,15 @@ tree-sitter を使用した構文解析とハイライトを設定。
 ** magit (Git操作)
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf magit
-    :doc "Git interface"
-    :ensure t)
+  ;; Git interface
+  (use-package magit)
 #+end_src
 
 ** treemacs-magit 連携
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf treemacs-magit
-    :after magit treemacs
-    :ensure t)
+  (use-package treemacs-magit
+    :after magit treemacs)
 #+end_src
 
 * Claude Code Integration
@@ -472,20 +454,18 @@ tree-sitter を使用した構文解析とハイライトを設定。
 
 #+begin_src emacs-lisp :tangle yes
 
-    (leaf vterm
-        :ensure t
+    (use-package vterm
         :config
         (setq vterm-shell "/bin/zsh")
         )
 
-  (leaf eat
-  :ensure 
+  (use-package eat
   :hook (eshell-mode-hook . eat-eshell-mode))
 
-  (setq claude-code-ide-terminal-backend 'eat)
+  (setq claude-code-ide-terminal-backend 'vterm)
 
-      (leaf claude-code-ide
-        :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+      (use-package claude-code-ide
+        :straight (:host github :repo "manzaltu/claude-code-ide.el")
         :bind ("C-c C-'" . claude-code-ide-menu)
         :config
         (claude-code-ide-emacs-tools-setup)
@@ -503,9 +483,10 @@ tree-sitter を使用した構文解析とハイライトを設定。
 ** Emacs外でファイルが更新されたときに、ファイルを読み込みし直す
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf autorevert
-    :doc "revert buffers when files on disk change"
-    :global-minor-mode global-auto-revert-mode)
+  ;; revert buffers when files on disk change
+  (use-package autorevert
+    :config
+    (global-auto-revert-mode 1))
 #+end_src
 
 
@@ -525,9 +506,10 @@ tree-sitter を使用した構文解析とハイライトを設定。
 ** 選択状態で入力したときに、選択範囲を消す
 
 #+begin_src emacs-lisp :tangle yes
-  (leaf delsel
-    :doc "delete selection if you insert"
-    :global-minor-mode delete-selection-mode)
+  ;; delete selection if you insert
+  (use-package delsel
+    :config
+    (delete-selection-mode 1))
 #+end_src
 
 ** C-c t で ターミナル起動
