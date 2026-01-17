@@ -17,8 +17,6 @@
     awscli2
     emacs
     # emacs vterm dependencies
-    cmake
-    libtool
     ripgrep
     ghq
     fzf
@@ -30,7 +28,5 @@
     devenv
     claude-code
     nixd
-  ] ++ lib.optionals (!pkgs.stdenv.isDarwin) [
-    libvterm
   ];
 }
