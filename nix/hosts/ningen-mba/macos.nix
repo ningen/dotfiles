@@ -48,6 +48,7 @@
     # macos cli apps
     brews = [
       "ghcup" # TODO: recovered nix package, move dev-tools.nix.
+      "libvterm"
     ];
     # macos gui apps
     casks = [

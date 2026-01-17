@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   home.packages = with pkgs; [
     git
@@ -19,7 +19,6 @@
     # emacs vterm dependencies
     cmake
     libtool
-
     ripgrep
     ghq
     fzf
@@ -31,5 +30,7 @@
     devenv
     claude-code
     nixd
+  ] ++ lib.optionals (!pkgs.stdenv.isDarwin) [
+    libvterm
   ];
 }
