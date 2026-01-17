@@ -26,5 +26,6 @@
     gopls
     devenv
     claude-code
+    nixd
   ];
 }

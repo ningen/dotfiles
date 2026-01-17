@@ -1,3 +1,4 @@
+
 #+TITLE: Configration Emacs Code
 
 * init
@@ -28,6 +29,7 @@
 * vim 関連
 
 ** vim like な keybind
+
 
 #+begin_src emacs-lisp :tangle yes
   (leaf evil
@@ -64,7 +66,6 @@
   (define-key global-map "\C-cc" 'org-capture)
 #+end_src
 
-
 *** テンプレートメニューの設定
 
 #+begin_src emacs-lisp :tangle yes
@@ -87,12 +88,31 @@
     :hook
     (python-mode . eglot-ensure)
     (sh-mode . eglot-ensure)
+    (typescript-mode-hook . eglot-ensure)
+    (tsx-ts-mode-hook . eglot-ensure)
     )
 #+end_src
 
-#+RESULTS:
-: eglot
 
+** 各言語のmode 定義
+
+*** nix
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf nix-mode
+    :ensure t
+    :config
+    (setq byte-compile-warnings '(not obsolute))
+    :mode "\\.nix\\'")
+#+end_src
+
+** nixd を lsp として使用する
+
+#+begin_src emacs-lisp :tangle yes
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(nix-mode . ("nixd"))))
+#+end_src
 
 * Color Themes
 
@@ -189,7 +209,7 @@
 ** Emacs の 設定ファイルを reload する 関数の定義
 
 #+begin_src emacs-lisp :tangle yes
-  (defun reload-emacs ()
+  (defun my/reload-emacs ()
     "reload emacs config file"
     (interactive)
     (load-file (concat user-emacs-directory "init.el"))

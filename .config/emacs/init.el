@@ -1,22 +1,18 @@
 ;; (org-babel-load-file
 ;;  (expand-file-name "config.org" user-emacs-directory))
-
 (defvar my-config-dir user-emacs-directory)
 
-(org-babel-load-file
-  (expand-file-name "config.org" my-config-dir))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   '("4594d6b9753691142f02e67b8eb0fda7d12f6cc9f1299a49b819312d6addad1d"
-     default))
- '(package-selected-packages nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(defun my/tangle-config ()
+  "config.org を config.el に変換する"
+  (interactive)
+  (let ((org-file (expand-file-name "config.org" my-config-dir))
+        (el-file (expand-file-name "config.el" my-config-dir)))
+    (require 'org)
+    (org-babel-tangle-file org-file el-file "emacs-lisp")
+    (message "Tangled: %s" el-file)))
+
+
+(let ((config-el (expand-file-name "config.el" my-config-dir)))
+  (if (file-exists-p config-el)
+      (load config-el)
+    (message "config.el not found. Run M-x my/tangle-config")))

@@ -1,4 +1,7 @@
 config.el
+custom.el
+projects
+
 auto-save-list
 eln-cache/
 elpa/
