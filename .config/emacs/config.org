@@ -36,6 +36,15 @@
   (exec-path-from-shell-initialize))
 #+end_src
 
+** direnv 統合
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf envrc
+    :doc "direnv integration for buffer-local environment"
+    :ensure t
+    :hook (after-init-hook . envrc-global-mode))
+#+end_src
+
 * vim 関連
 
 ** vim like な keybind
@@ -326,12 +335,29 @@ evilモードでNeovimと同じキーバインドを使用できるようにす�
     :mode "\\.nix\\'")
 #+end_src
 
+*** gleam
+
+#+begin_src emacs-lisp :tangle yes
+  (leaf gleam-ts-mode
+    :ensure t
+    :mode "\\.gleam\\'"
+    :hook (gleam-ts-mode-hook . eglot-ensure))
+#+end_src
+
 ** nixd を lsp として使用する
 
 #+begin_src emacs-lisp :tangle yes
 (with-eval-after-load 'eglot
   (add-to-list 'eglot-server-programs
                '(nix-mode . ("nixd"))))
+#+end_src
+
+** gleam lsp を使用する
+
+#+begin_src emacs-lisp :tangle yes
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(gleam-ts-mode . ("gleam" "lsp"))))
 #+end_src
 
 * Color Themes
