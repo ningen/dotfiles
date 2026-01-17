@@ -47,7 +47,9 @@
     :ensure t
     :hook ((after-init-hook . evil-mode))
     :init
-    (setq evil-want-C-u-scroll t))
+    (setq evil-want-C-u-scroll t)
+    :config
+    (evil-set-leader 'normal (kbd "SPC")))  ; Neovimと同じくスペースをleaderに
 #+end_src
 
 * keybind
@@ -95,14 +97,50 @@
   (leaf eglot
     :doc "lsp clinet"
     :ensure t
-    :hook
-    (python-ts-mode . eglot-ensure)
-    (sh-mode . eglot-ensure)
-    (typescript-ts-mode . eglot-ensure)
-    (tsx-ts-mode . eglot-ensure)
-    (go-ts-mode . eglot-ensure)
-    (json-ts-mode . eglot-ensure)
+    :config
+    (add-hook 'python-ts-mode-hook #'eglot-ensure)
+    (add-hook 'sh-mode-hook #'eglot-ensure)
+    (add-hook 'typescript-ts-mode-hook #'eglot-ensure)
+    (add-hook 'tsx-ts-mode-hook #'eglot-ensure)
+    (add-hook 'go-ts-mode-hook #'eglot-ensure)
+    (add-hook 'json-ts-mode-hook #'eglot-ensure)
     )
+
+  (leaf eldoc-box
+    :doc "Display eldoc in a floating box (like Neovim hover)"
+    :ensure t)
+#+end_src
+
+** LSP キーバインド (Neovim互換)
+
+evilモードでNeovimと同じキーバインドを使用できるようにする。
+
+#+begin_src emacs-lisp :tangle yes
+  (with-eval-after-load 'evil
+    (with-eval-after-load 'eglot
+      ;; 移動系 (Go to)
+      (evil-define-key 'normal eglot-mode-map
+        "gd" #'xref-find-definitions      ; 定義へ
+        "gD" #'eglot-find-declaration     ; 宣言へ
+        "gr" #'xref-find-references       ; 参照一覧
+        "gi" #'eglot-find-implementation) ; 実装へ
+
+      ;; コード操作 (SPC c = Code) - leader key
+      (evil-define-key 'normal eglot-mode-map
+        (kbd "<leader>cr") #'eglot-rename           ; リネーム
+        (kbd "<leader>ca") #'eglot-code-actions     ; アクション
+        (kbd "<leader>cf") #'eglot-format-buffer)   ; フォーマット
+
+      ;; 診断 ([/] = 前後移動)
+      (evil-define-key 'normal eglot-mode-map
+        "[d" #'flymake-goto-prev-error              ; 前の診断
+        "]d" #'flymake-goto-next-error              ; 次の診断
+        (kbd "<leader>cd") #'flymake-show-buffer-diagnostics)))
+
+  ;; K をeglotバッファでオーバーライド（evil-lookupより優先）
+  (add-hook 'eglot-managed-mode-hook
+            (lambda ()
+              (evil-local-set-key 'normal "K" #'eldoc-box-eglot-help-at-point)))
 #+end_src
 
 
