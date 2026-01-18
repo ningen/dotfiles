@@ -9,6 +9,15 @@
   home.username = "ningen";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
 
+  # Fonts (Linux/WSL用)
+  home.packages = pkgs.lib.optionals pkgs.stdenv.isLinux [
+    pkgs.noto-fonts-cjk-sans
+    pkgs.noto-fonts-cjk-serif
+    pkgs.nerd-fonts.jetbrains-mono
+  ];
+
+  fonts.fontconfig.enable = pkgs.stdenv.isLinux;
+
   programs.starship = {
     enable = true;
   };
