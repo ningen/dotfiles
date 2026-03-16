@@ -5,3 +5,9 @@
 	email = ningen361@gmail.com
 [core]
 	editor = vim
+[credential "https://github.com"]
+	helper = 
+	helper = !/home/ningen/.nix-profile/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/home/ningen/.nix-profile/bin/gh auth git-credential
