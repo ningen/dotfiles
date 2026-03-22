@@ -68,6 +68,7 @@
       "rectangle"
       "tailscale-app"
       "zen"
+      "docker-desktop"
     ];
   };
 }

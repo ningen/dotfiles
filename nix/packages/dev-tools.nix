@@ -29,6 +29,9 @@
     devenv
     claude-code
     nixd
+    yazi
+    helix
+    rustup
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     # Linux only: emacs vterm dependencies
     libvterm
