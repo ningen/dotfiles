@@ -1,0 +1,107 @@
+# Yazi theme configuration
+# Uses terminal default colors for compatibility
+
+[manager]
+cwd = { fg = "cyan" }
+
+# Hovered
+hovered         = { fg = "black", bg = "blue" }
+preview_hovered = { underline = true }
+
+# Find
+find_keyword  = { fg = "yellow", bold = true, italic = true, underline = true }
+find_position = { fg = "magenta", bg = "reset", bold = true, italic = true }
+
+# Marker
+marker_copied   = { fg = "green",  bg = "green" }
+marker_cut      = { fg = "red",    bg = "red" }
+marker_marked   = { fg = "magenta", bg = "magenta" }
+marker_selected = { fg = "blue",   bg = "blue" }
+
+# Tab
+tab_active   = { fg = "black", bg = "blue" }
+tab_inactive = {}
+tab_width    = 1
+
+# Count
+count_copied   = { fg = "black", bg = "green" }
+count_cut      = { fg = "black", bg = "red" }
+count_selected = { fg = "black", bg = "blue" }
+
+# Border
+border_symbol = "│"
+border_style  = { fg = "gray" }
+
+[status]
+separator_open  = ""
+separator_close = ""
+separator_style = { fg = "darkgray", bg = "darkgray" }
+
+# Mode
+mode_normal = { fg = "black", bg = "blue",    bold = true }
+mode_select = { fg = "black", bg = "green",   bold = true }
+mode_unset  = { fg = "black", bg = "magenta", bold = true }
+
+# Progress
+progress_label  = { bold = true }
+progress_normal = { fg = "blue",  bg = "black" }
+progress_error  = { fg = "red",   bg = "black" }
+
+# Permissions
+perm_type  = { fg = "blue" }
+perm_read  = { fg = "yellow" }
+perm_write = { fg = "red" }
+perm_exec  = { fg = "green" }
+perm_sep   = { fg = "darkgray" }
+
+[input]
+border   = { fg = "blue" }
+title    = {}
+value    = {}
+selected = { reversed = true }
+
+[select]
+border   = { fg = "blue" }
+active   = { fg = "magenta" }
+inactive = {}
+
+[tasks]
+border  = { fg = "blue" }
+title   = {}
+hovered = { underline = true }
+
+[which]
+mask            = { bg = "black" }
+cand            = { fg = "cyan" }
+rest            = { fg = "darkgray" }
+desc            = { fg = "magenta" }
+separator       = "  "
+separator_style = { fg = "darkgray" }
+
+[help]
+on      = { fg = "cyan" }
+exec    = { fg = "green" }
+desc    = { fg = "gray" }
+hovered = { bg = "darkgray", bold = true }
+footer  = { fg = "black", bg = "white" }
+
+[filetype]
+rules = [
+  # Images
+  { mime = "image/*", fg = "cyan" },
+  # Videos
+  { mime = "video/*", fg = "magenta" },
+  # Audio
+  { mime = "audio/*", fg = "magenta" },
+  # Archives
+  { mime = "application/zip",             fg = "red" },
+  { mime = "application/x-tar",           fg = "red" },
+  { mime = "application/x-bzip2",         fg = "red" },
+  { mime = "application/x-7z-compressed", fg = "red" },
+  { mime = "application/x-rar",           fg = "red" },
+  # Docs
+  { mime = "application/pdf", fg = "cyan" },
+  # Fallback
+  { name = "*", is = "exec", fg = "green" },
+  { name = "*/", fg = "blue" },
+]

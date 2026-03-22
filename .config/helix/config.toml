@@ -1,0 +1,43 @@
+[editor]
+line-number = "relative"
+mouse = true
+auto-save = false
+completion-trigger-len = 2
+color-modes = true
+bufferline = "multiple"
+
+[editor.cursor-shape]
+insert = "bar"
+normal = "block"
+select = "underline"
+
+[editor.file-picker]
+hidden = false
+
+[editor.statusline]
+left = ["mode", "spinner", "file-name", "file-modification-indicator"]
+center = []
+right = ["diagnostics", "selections", "position", "file-encoding", "file-line-ending", "file-type"]
+separator = "│"
+
+[editor.indent-guides]
+render = true
+character = "╎"
+
+[editor.lsp]
+display-messages = true
+display-inlay-hints = false
+
+[keys.normal]
+# Window navigation
+"C-h" = "jump_view_left"
+"C-j" = "jump_view_down"
+"C-k" = "jump_view_up"
+"C-l" = "jump_view_right"
+# Quick save
+"C-s" = ":write"
+# Toggle file picker
+"space" = { f = "file_picker", b = "buffer_picker", s = "symbol_picker", "/" = "global_search" }
+
+[keys.insert]
+"C-s" = ["normal_mode", ":write"]

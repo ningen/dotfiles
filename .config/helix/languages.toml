@@ -1,0 +1,57 @@
+# Language server configurations
+
+[[language]]
+name = "typescript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "tsx"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "typescript"] }
+auto-format = true
+
+[[language]]
+name = "javascript"
+language-servers = ["typescript-language-server"]
+formatter = { command = "prettier", args = ["--parser", "babel"] }
+auto-format = true
+
+[[language]]
+name = "python"
+language-servers = ["pylsp"]
+formatter = { command = "black", args = ["-", "--quiet"] }
+auto-format = true
+
+[[language]]
+name = "nix"
+language-servers = ["nil"]
+formatter = { command = "nixfmt" }
+auto-format = true
+
+[[language]]
+name = "lua"
+language-servers = ["lua-language-server"]
+formatter = { command = "stylua", args = ["-"] }
+auto-format = true
+
+[[language]]
+name = "go"
+language-servers = ["gopls"]
+auto-format = true
+
+[[language]]
+name = "rust"
+language-servers = ["rust-analyzer"]
+auto-format = true
+
+[[language]]
+name = "json"
+formatter = { command = "prettier", args = ["--parser", "json"] }
+auto-format = true
+
+[[language]]
+name = "markdown"
+formatter = { command = "prettier", args = ["--parser", "markdown"] }
+auto-format = false

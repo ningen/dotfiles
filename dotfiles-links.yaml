@@ -37,6 +37,14 @@ common:
     target: $CONFIG_DIR/discord/settings.json
     type: file
 
+  - source: .config/helix
+    target: $CONFIG_DIR/helix
+    type: directory
+
+  - source: .config/yazi
+    target: $CONFIG_DIR/yazi
+    type: directory
+
 # Unix-only links (macOS and Linux)
 unix_only:
   - source: .config/nix
