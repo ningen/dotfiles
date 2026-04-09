@@ -4,7 +4,7 @@ local keys = require("keymap")
 local config = {
 	leader = { key = ";", mods = "CTRL" },
 	keys = keys,
-	
+
 	-- Font settings
 	font = wezterm.font_with_fallback({
 		{ family = "JetBrains Mono", weight = "Medium" },
@@ -13,10 +13,10 @@ local config = {
 	font_size = 12.0,
 	line_height = 1.2,
 	harfbuzz_features = { "calt=1", "clig=1", "liga=1" }, -- Enable ligatures
-	
+
 	-- Color scheme
 	color_scheme = "Tokyo Night",
-	
+
 	-- Window appearance
 	window_background_opacity = 0.85,
 	text_background_opacity = 0.8,
@@ -26,26 +26,26 @@ local config = {
 		top = 16,
 		bottom = 16,
 	},
-	
+
 	-- Tab bar
 	use_fancy_tab_bar = false,
 	tab_bar_at_bottom = false,
-	show_new_tab_button_in_tab_bar = false,
+	show_new_tab_button_in_tab_bar = true,
 	hide_tab_bar_if_only_one_tab = false,
 	show_tab_index_in_tab_bar = false,
 	tab_max_width = 32,
-	
+
 	-- Window decorations
-	window_decorations = "RESIZE",
+	-- window_decorations = "RESIZE",
 	window_close_confirmation = "NeverPrompt",
-	
+
 	-- Cursor
 	default_cursor_style = "BlinkingBlock",
 	cursor_blink_rate = 800,
-	
+
 	-- Scrollback
 	scrollback_lines = 10000,
-	
+
 	-- Other
 	treat_left_ctrlalt_as_altgr = false,
 	enable_scroll_bar = false,
@@ -85,7 +85,7 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	local edge_background = "#0f0f14"
 	local background = "#414868"
 	local foreground = "#a9b1d6"
-	
+
 	if tab.is_active then
 		background = "#bb9af7"
 		foreground = "#1a1b26"
@@ -93,25 +93,25 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 		background = "#565f89"
 		foreground = "#c0caf5"
 	end
-	
+
 	local edge_foreground = background
 	local title = tab.active_pane.title
 	local process = string.gsub(tab.active_pane.foreground_process_name, "(.*[/\\])(.*)", "%2")
-	
+
 	-- Truncate title if too long
 	if #title > 20 then
 		title = string.sub(title, 1, 17) .. "..."
 	end
-	
+
 	-- Add process name if different from title
 	if process and process ~= "" and not string.find(title, process) then
 		title = process .. ": " .. title
 	end
-	
+
 	-- Add tab index
 	local tab_index = tab.tab_index + 1
 	local formatted_title = string.format(" %d: %s ", tab_index, title)
-	
+
 	return {
 		{ Background = { Color = edge_background } },
 		{ Foreground = { Color = edge_foreground } },
@@ -142,12 +142,12 @@ wezterm.on("format-window-title", function(tab, pane, tabs, panes, config)
 	if tab.active_pane.is_zoomed then
 		zoomed = "[Z] "
 	end
-	
+
 	local index = ""
 	if #tabs > 1 then
 		index = string.format("[%d/%d] ", tab.tab_index + 1, #tabs)
 	end
-	
+
 	return zoomed .. index .. tab.active_pane.title
 end)
 
