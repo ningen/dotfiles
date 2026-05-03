@@ -69,6 +69,7 @@
       "tailscale-app"
       "zen"
       "docker-desktop"
+      "cmux"
     ];
   };
 }
