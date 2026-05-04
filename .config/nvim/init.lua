@@ -95,7 +95,11 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.opt_local.tabstop = 4
   end,
 })
+vim.api.nvim_create_user_command("ReloadConfig", function()
+  vim.cmd("source $MYVIMRC")
+  vim.notify("Config reloaded!", vim.log.levels.INFO)
+end, { desc = "Reload init.lua" })
 
 require("lazy").setup("plugins")
 require("lsp")
-require("float")
+require("memo")
