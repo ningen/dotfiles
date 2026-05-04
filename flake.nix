@@ -43,25 +43,37 @@
         };
     in
     {
-      apps = forAllSystems (system: {
-        update = {
-          type = "app";
-          program = toString (
-            nixpkgs.legacyPackages.${system}.writeShellScript "update-script" ''
-              set -e
-              echo "Updating flake..."
-              nix flake update
-              echo "Updating home-manager..."
-              nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
-              if [[ "$(uname)" == "Darwin" ]]; then
-                echo "Updating nix-darwin..."
-                sudo darwin-rebuild switch --flake .#ningen
-              fi
-              echo "Update complete!"
-            ''
-          );
-        };
-      });
+      apps = forAllSystems (system:
+        let
+          hm = "${inputs.home-manager.packages.${system}.home-manager}/bin/home-manager";
+          applyScript = nixpkgs.legacyPackages.${system}.writeShellScript "apply-script" ''
+            set -e
+            echo "Applying home-manager..."
+            ${hm} switch --flake .#ningen@$HOSTNAME
+            if [[ "$(uname)" == "Darwin" ]]; then
+              echo "Applying nix-darwin..."
+              sudo darwin-rebuild switch --flake .#ningen
+            fi
+            echo "Done!"
+          '';
+        in
+        {
+          update = {
+            type = "app";
+            program = toString (
+              nixpkgs.legacyPackages.${system}.writeShellScript "update-script" ''
+                set -e
+                echo "Updating flake..."
+                nix flake update
+                ${applyScript}
+              ''
+            );
+          };
+          switch = {
+            type = "app";
+            program = toString applyScript;
+          };
+        });
 
       homeConfigurations = {
         "ningen@ningen-mba.local" = mkHome {
