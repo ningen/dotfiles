@@ -102,4 +102,4 @@ end, { desc = "Reload init.lua" })
 
 require("lazy").setup("plugins")
 require("lsp")
-require("memo")
+require("memo").setup({})

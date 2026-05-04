@@ -1,9 +1,13 @@
+local M = {}
+
 local win = nil
 local buf = nil
 
-local MEMO_PATH = vim.fn.expand("~/memo.md")
+-- local MEMO_PATH = vim.fn.expand("~/memo.md")
+-- M.setup 時に初期化
+local MEMO_PATH = nil
 
-local function toggle_memo()
+local function toggle()
   -- 既に開いていたら閉じる
   if win and vim.api.nvim_win_is_valid(win) then
     vim.cmd("write")
@@ -46,6 +50,13 @@ local function toggle_memo()
   end, { buffer = buf, desc = "Close window" })
 end
 
-vim.api.nvim_create_user_command("Memo", toggle_memo, {
-  desc = "toggle memo window",
-})
+function M.setup(opts)
+  opts = opts or {}
+  MEMO_PATH = vim.fn.expand(opts.path or "~/memo.md")
+
+  vim.api.nvim_create_user_command("Memo", toggle, {
+    desc = "toggle memo window",
+  })
+end
+
+return M
