@@ -45,6 +45,12 @@ common:
     target: $CONFIG_DIR/yazi
     type: directory
 
+  - source: .config/nix
+    target: $CONFIG_DIR/nix
+    type: directory
+  
+  
+
 # Unix-only links (macOS and Linux)
 unix_only:
   - source: .config/nix
