@@ -98,3 +98,4 @@ vim.api.nvim_create_autocmd("FileType", {
 
 require("lazy").setup("plugins")
 require("lsp")
+require("float")
