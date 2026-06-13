@@ -180,6 +180,12 @@
 
 ;;; Projects
 
+(defun my/project-root ()
+  "Return the current project root, or `default-directory' if outside a project."
+  (if-let* ((project (project-current nil)))
+      (project-root project)
+    default-directory))
+
 (use-package project
   :ensure nil
   :custom
@@ -187,6 +193,7 @@
    '((project-find-file "Find file")
      (project-find-regexp "Find regexp")
      (project-dired "Dired")
+     (my/project-vterm "Terminal")
      (project-eshell "Eshell")
      (magit-project-status "Magit")
      (project-any-command "Other"))))
@@ -225,12 +232,77 @@
   "g" #'my/ghq-switch-project
   "f" #'project-find-file
   "s" #'project-find-regexp
-  "e" #'project-eshell
+  "e" #'my/project-vterm
+  "t" #'my/project-vterm
+  "E" #'project-eshell
   "d" #'project-dired
   "b" #'project-switch-to-buffer
   "k" #'project-kill-buffers)
 
 (keymap-global-set "C-c p" my/project-map)
+
+;;; Terminal
+
+(defvar vterm-always-compile-module)
+(defvar vterm-module-cmake-args)
+(defvar vterm-shell)
+
+(defun my/vterm-libvterm-prefix ()
+  "Return an installed libvterm prefix, if one is available."
+  (catch 'prefix
+    (dolist (prefix '("/opt/homebrew/opt/libvterm"
+                      "/usr/local/opt/libvterm"
+                      "~/.nix-profile"))
+      (let ((expanded-prefix (expand-file-name prefix)))
+        (when (file-exists-p (expand-file-name "include/vterm.h" expanded-prefix))
+          (throw 'prefix expanded-prefix))))
+    nil))
+
+(defun my/vterm-cmake-args ()
+  "Return CMake arguments for compiling the vterm module."
+  (if-let* ((prefix (my/vterm-libvterm-prefix)))
+      (format "-DCMAKE_PREFIX_PATH=%s" (shell-quote-argument prefix))
+    ""))
+
+(use-package vterm
+  :commands (vterm)
+  :init
+  (setq vterm-always-compile-module t)
+  (setq vterm-module-cmake-args (my/vterm-cmake-args))
+  :custom
+  (vterm-kill-buffer-on-exit t)
+  (vterm-max-scrollback 20000)
+  :config
+  (setq vterm-shell (or (getenv "SHELL") shell-file-name)))
+
+(defun my/vterm--buffer-name (prefix root)
+  "Return a vterm buffer name with PREFIX for ROOT."
+  (format "*%s:%s*"
+          prefix
+          (file-name-nondirectory
+           (directory-file-name root))))
+
+(defun my/vterm--command (program args)
+  "Return a shell command string for PROGRAM with ARGS."
+  (mapconcat #'shell-quote-argument (cons program args) " "))
+
+(defun my/vterm--start (buffer-name &optional command)
+  "Open vterm BUFFER-NAME, optionally starting COMMAND."
+  (if (get-buffer buffer-name)
+      (pop-to-buffer buffer-name)
+    (require 'vterm)
+    (let ((vterm-shell (or command vterm-shell)))
+      (vterm buffer-name))))
+
+(defun my/project-vterm ()
+  "Open a vterm buffer at the current project root."
+  (interactive)
+  (let* ((root (my/project-root))
+         (default-directory root)
+         (buffer-name (my/vterm--buffer-name "vterm" root)))
+    (my/vterm--start buffer-name)))
+
+(keymap-global-set "C-c t" #'my/project-vterm)
 
 ;;; Git
 
@@ -239,33 +311,15 @@
 
 ;;; Codex
 
-(use-package term
-  :ensure nil
-  :commands (make-term term-mode term-char-mode))
-
-(defun my/project-root ()
-  "Return the current project root, or `default-directory' if outside a project."
-  (if-let* ((project (project-current nil)))
-      (project-root project)
-    default-directory))
-
 (defun my/codex--start (name &rest args)
   "Start Codex in a terminal buffer named NAME with ARGS."
   (let* ((root (my/project-root))
          (default-directory root)
          (codex-program (or (executable-find "codex") "codex"))
-         (buffer-name (format "*%s:%s*"
-                              name
-                              (file-name-nondirectory
-                               (directory-file-name root)))))
-    (if (get-buffer buffer-name)
-        (pop-to-buffer buffer-name)
-      (let ((buffer (apply #'make-term buffer-name codex-program nil
-                           (append (list "--cd" root) args))))
-        (with-current-buffer buffer
-          (term-mode)
-          (term-char-mode))
-        (pop-to-buffer buffer)))))
+         (buffer-name (my/vterm--buffer-name name root))
+         (command (my/vterm--command codex-program
+                                     (append (list "--cd" root) args))))
+    (my/vterm--start buffer-name command)))
 
 (defun my/codex ()
   "Open Codex CLI at the current project root."

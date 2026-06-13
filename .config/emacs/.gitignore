@@ -1,5 +1,6 @@
 /config.el
 /custom.el
+/*.elc
 /projects
 /bookmarks
 /bookmarks~
