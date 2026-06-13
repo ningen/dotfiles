@@ -1,42 +1,57 @@
-;; (org-babel-load-file
-;;  (expand-file-name "config.org" user-emacs-directory))
-(defvar my-config-dir user-emacs-directory)
+;;; init.el --- Personal Emacs configuration -*- lexical-binding: t; -*-
 
-(defun my/tangle-config ()
-  "config.org を config.el に変換する"
-  (interactive)
-  (let ((org-file (expand-file-name "config.org" my-config-dir))
-        (el-file (expand-file-name "config.el" my-config-dir)))
-    (require 'org)
-    (org-babel-tangle-file org-file el-file "emacs-lisp")
-    (message "Tangled: %s" el-file)))
+;;; macOS modifiers
 
-(defun my/tangle-config-on-save ()
-  "config.org 保存時に自動で tangle"
-  (when (string-equal (buffer-file-name)
-                      (expand-file-name "config.org" my-config-dir))
-    (my/tangle-config)))
+(when (eq system-type 'darwin)
+  ;; Try the Emacs-native keybinding style first: Command sends Meta.
+  (setq mac-command-modifier 'meta)
+  (setq mac-option-modifier 'none)
+  (setq mac-control-modifier 'control)
+  (setq ns-function-modifier 'hyper))
 
-(add-hook 'after-save-hook #'my/tangle-config-on-save)
+;;; Defaults
 
+(setq inhibit-startup-screen t)
+(setq initial-scratch-message nil)
+(setq ring-bell-function 'ignore)
+(setq use-short-answers t)
+(setq make-backup-files nil)
+(setq auto-save-default nil)
 
-(let ((config-el (expand-file-name "config.el" my-config-dir)))
-  (if (file-exists-p config-el)
-      (load config-el)
-    (message "config.el not found. Run M-x my/tangle-config")))
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages nil)
- '(package-vc-selected-packages
-   '((claude-code-ide :url
-		      "https://github.com/manzaltu/claude-code-ide.el"
-		      :rev :newest))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
+;;; Package Management
+
+(require 'package)
+
+(setq package-archives
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+        ("nongnu" . "https://elpa.nongnu.org/nongnu/")
+        ("melpa" . "https://melpa.org/packages/")))
+
+(package-initialize)
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+;;; Discoverability
+
+(use-package which-key
+  :ensure nil
+  :init
+  (which-key-mode 1)
+  :custom
+  (which-key-idle-delay 0.4)
+  (which-key-idle-secondary-delay 0.05))
+
+(menu-bar-mode -1)
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(global-display-line-numbers-mode 1)
+(column-number-mode 1)
+(save-place-mode 1)
+(recentf-mode 1)
+
+;;; init.el ends here
