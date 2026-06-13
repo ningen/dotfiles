@@ -20,6 +20,7 @@
         AppleShowAllExtensions = true;
         ApplePressAndHoldEnabled = false;
         "com.apple.keyboard.fnState" = true;
+        NSDisableAutomaticTermination = true;
       };
       finder = {
         AppleShowAllFiles = true;
@@ -31,6 +32,14 @@
         orientation = "bottom";
       };
     };
+  };
+
+  # Codex appをスマホから操作している間にMac本体が寝ると接続が切れるため、
+  # 本体の自動スリープだけ無効化する。画面は10分で消してよい。
+  power.sleep = {
+    computer = "never";
+    display = 10;
+    harddisk = "never";
   };
 
   fonts = {
