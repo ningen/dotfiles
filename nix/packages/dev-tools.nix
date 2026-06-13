@@ -21,6 +21,7 @@
     ripgrep
     ghq
     fzf
+    fd
     pnpm
     nodejs_24
     bun

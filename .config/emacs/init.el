@@ -58,6 +58,39 @@
   (which-key-idle-delay 0.4)
   (which-key-idle-secondary-delay 0.05))
 
+;;; Completion
+
+(setq completion-ignore-case t)
+(setq read-buffer-completion-ignore-case t)
+(setq read-file-name-completion-ignore-case t)
+
+(use-package savehist
+  :ensure nil
+  :init
+  (savehist-mode 1))
+
+(use-package vertico
+  :init
+  (vertico-mode 1)
+  :custom
+  (vertico-count 20)
+  (vertico-cycle t))
+
+(use-package orderless
+  :custom
+  (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
+  (completion-category-overrides
+   '((file (styles basic partial-completion orderless)))))
+
+(use-package marginalia
+  :init
+  (marginalia-mode 1))
+
+(use-package consult
+  :custom
+  (consult-preview-key '(:debounce 0.2 any)))
+
 ;;; Theme
 
 (use-package doom-themes
@@ -180,6 +213,8 @@
 
 ;;; Projects
 
+(require 'cl-lib)
+
 (defun my/project-root ()
   "Return the current project root, or `default-directory' if outside a project."
   (if-let* ((project (project-current nil)))
@@ -190,7 +225,7 @@
   :ensure nil
   :custom
   (project-switch-commands
-   '((project-find-file "Find file")
+   '((my/project-find-file "Find file")
      (project-find-regexp "Find regexp")
      (project-dired "Dired")
      (my/project-vterm "Terminal")
@@ -198,28 +233,68 @@
      (magit-project-status "Magit")
      (project-any-command "Other"))))
 
-(defun my/ghq-repositories ()
-  "Return repositories managed by ghq as full paths."
+(defun my/project-find-file ()
+  "Find a file in the current project with a preview-friendly completion UI."
+  (interactive)
+  (let ((default-directory (my/project-root)))
+    (cond
+     ((and (require 'consult nil t)
+           (executable-find "fd"))
+      (consult-fd default-directory))
+     ((require 'consult nil t)
+      (consult-find default-directory))
+     (t
+      (project-find-file)))))
+
+(defvar my/ghq-history nil
+  "Minibuffer history for ghq repository selection.")
+
+(defun my/ghq--command-lines (&rest args)
+  "Return non-empty output lines from ghq called with ARGS."
   (unless (executable-find "ghq")
     (user-error "ghq executable was not found"))
   (let ((output
          (with-temp-buffer
-           (unless (zerop (call-process "ghq" nil t nil "list" "--full-path"))
-             (user-error "ghq list --full-path failed"))
+           (unless (zerop (apply #'call-process "ghq" nil t nil args))
+             (user-error "ghq %s failed" (mapconcat #'identity args " ")))
            (buffer-string))))
-    (sort (seq-filter #'file-directory-p
-                      (delete-dups (split-string output "\n" t)))
-          #'string<)))
+    (split-string output "\n" t)))
+
+(defun my/ghq-repositories ()
+  "Return repositories managed by ghq as (NAME . PATH) pairs."
+  (let ((names (my/ghq--command-lines "list"))
+        (paths (my/ghq--command-lines "list" "--full-path")))
+    (unless (= (length names) (length paths))
+      (user-error "ghq list output was inconsistent"))
+    (sort (cl-remove-if-not (lambda (repository)
+                              (file-directory-p (cdr repository)))
+                            (delete-dups (cl-mapcar #'cons names paths)))
+          (lambda (a b)
+            (string< (car a) (car b))))))
 
 (defun my/ghq-read-repository ()
   "Read a ghq repository path with completion."
   (let* ((repositories (my/ghq-repositories))
-         (current-project (my/project-root))
-         (default (and (member current-project repositories)
-                       current-project)))
+         (names (mapcar #'car repositories))
+         (current-project (directory-file-name
+                           (expand-file-name (my/project-root))))
+         (default (car (rassoc current-project repositories)))
+         (annotate
+          (lambda (candidate)
+            (when-let* ((path (cdr (assoc candidate repositories))))
+              (concat " " (abbreviate-file-name path)))))
+         (collection
+          (lambda (string pred action)
+            (if (eq action 'metadata)
+                `(metadata
+                  (category . my/ghq-repository)
+                  (annotation-function . ,annotate))
+              (complete-with-action action names string pred)))))
     (unless repositories
       (user-error "No ghq repositories found"))
-    (completing-read "ghq repo: " repositories nil t nil nil default)))
+    (cdr (assoc (completing-read "ghq repo: "
+                                  collection nil t nil 'my/ghq-history default)
+                repositories))))
 
 (defun my/ghq-switch-project (directory)
   "Switch to a ghq repository DIRECTORY using `project.el'."
@@ -230,7 +305,7 @@
   :doc "Project commands."
   "p" #'project-switch-project
   "g" #'my/ghq-switch-project
-  "f" #'project-find-file
+  "f" #'my/project-find-file
   "s" #'project-find-regexp
   "e" #'my/project-vterm
   "t" #'my/project-vterm
