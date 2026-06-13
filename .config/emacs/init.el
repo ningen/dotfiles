@@ -225,6 +225,7 @@
   "g" #'my/ghq-switch-project
   "f" #'project-find-file
   "s" #'project-find-regexp
+  "e" #'project-eshell
   "d" #'project-dired
   "b" #'project-switch-to-buffer
   "k" #'project-kill-buffers)

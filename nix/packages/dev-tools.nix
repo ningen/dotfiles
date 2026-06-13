@@ -32,6 +32,7 @@
     yazi
     helix
     rustup
+    codex
   ] ++ lib.optionals pkgs.stdenv.isLinux [
     # Linux only: emacs vterm dependencies
     libvterm
