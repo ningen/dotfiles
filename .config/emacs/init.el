@@ -36,6 +36,18 @@
 (require 'use-package)
 (setq use-package-always-ensure t)
 
+(unless package-archive-contents
+  (package-refresh-contents))
+
+;;; Environment
+
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns x))
+  :custom
+  (exec-path-from-shell-variables '("PATH" "MANPATH" "NIX_PROFILES" "NIX_SSL_CERT_FILE"))
+  :config
+  (exec-path-from-shell-initialize))
+
 ;;; Discoverability
 
 (use-package which-key
@@ -45,6 +57,178 @@
   :custom
   (which-key-idle-delay 0.4)
   (which-key-idle-secondary-delay 0.05))
+
+;;; Theme
+
+(use-package doom-themes
+  :custom
+  (doom-themes-enable-bold t)
+  (doom-themes-enable-italic t)
+  :config
+  (load-theme 'doom-tokyo-night t))
+
+;;; Syntax Highlighting
+
+(setq treesit-font-lock-level 4)
+
+(setq treesit-language-source-alist
+      '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+        (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+        (json "https://github.com/tree-sitter/tree-sitter-json")
+        (nix "https://github.com/nix-community/tree-sitter-nix")))
+
+(defun my/install-treesit-grammars ()
+  "Install the tree-sitter grammars used by this Emacs configuration."
+  (interactive)
+  (dolist (language '(typescript tsx javascript json nix))
+    (unless (treesit-language-available-p language)
+      (treesit-install-language-grammar language))))
+
+(use-package nix-ts-mode
+  :mode "\\.nix\\'")
+
+(add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.jsx\\'" . tsx-ts-mode))
+(add-to-list 'auto-mode-alist '("\\.json\\'" . json-ts-mode))
+
+;;; LSP
+
+(setq eldoc-idle-delay 0.2)
+(setq eldoc-echo-area-use-multiline-p 3)
+
+(use-package eldoc-box
+  :commands (eldoc-box-help-at-point))
+
+(defun my/eldoc-help-at-point ()
+  "Show hover documentation at point."
+  (interactive)
+  (if (display-graphic-p)
+      (eldoc-box-help-at-point)
+    (eldoc-doc-buffer)))
+
+(defun my/eglot-enable-hover ()
+  "Enable hover documentation for graphical Eglot buffers."
+  (when (and (display-graphic-p)
+             (fboundp 'eldoc-box-hover-at-point-mode))
+    (eldoc-box-hover-at-point-mode 1)))
+
+(defun my/eglot-enable-inlay-hints ()
+  "Enable LSP inlay hints for TypeScript buffers."
+  (when (and (eglot-managed-p)
+             (fboundp 'eglot-inlay-hints-mode)
+             (memq major-mode '(typescript-ts-mode tsx-ts-mode)))
+    (eglot-inlay-hints-mode 1)))
+
+(defun my/eglot-toggle-inlay-hints ()
+  "Toggle LSP inlay hints in the current Eglot buffer."
+  (interactive)
+  (require 'eglot)
+  (unless (eglot-current-server)
+    (user-error "Eglot is not connected in this buffer"))
+  (call-interactively #'eglot-inlay-hints-mode))
+
+(setq-default eglot-workspace-configuration
+              '(:typescript
+                (:inlayHints
+                 (:includeInlayParameterNameHints "all"
+                  :includeInlayParameterNameHintsWhenArgumentMatchesName t
+                  :includeInlayFunctionParameterTypeHints t
+                  :includeInlayVariableTypeHints t
+                  :includeInlayVariableTypeHintsWhenTypeMatchesName t
+                  :includeInlayPropertyDeclarationTypeHints t
+                  :includeInlayFunctionLikeReturnTypeHints t
+                  :includeInlayEnumMemberValueHints t))
+                :javascript
+                (:inlayHints
+                 (:includeInlayParameterNameHints "all"
+                  :includeInlayParameterNameHintsWhenArgumentMatchesName t
+                  :includeInlayFunctionParameterTypeHints t
+                  :includeInlayVariableTypeHints t
+                  :includeInlayVariableTypeHintsWhenTypeMatchesName t
+                  :includeInlayPropertyDeclarationTypeHints t
+                  :includeInlayFunctionLikeReturnTypeHints t
+                  :includeInlayEnumMemberValueHints t))))
+
+(use-package eglot
+  :ensure nil
+  :hook ((nix-ts-mode . eglot-ensure)
+         (typescript-ts-mode . eglot-ensure)
+         (tsx-ts-mode . eglot-ensure)
+         (eglot-managed-mode . my/eglot-enable-hover)
+         (eglot-managed-mode . my/eglot-enable-inlay-hints))
+  :config
+  (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nixd")))
+  (add-to-list 'eglot-server-programs
+               '((typescript-ts-mode tsx-ts-mode)
+                 . ("typescript-language-server" "--stdio"))))
+
+(defvar-keymap my/lsp-map
+  :doc "LSP commands."
+  "r" #'eglot-rename
+  "a" #'eglot-code-actions
+  "f" #'eglot-format
+  "h" #'my/eldoc-help-at-point
+  "i" #'my/eglot-toggle-inlay-hints
+  "d" #'flymake-show-buffer-diagnostics
+  "n" #'flymake-goto-next-error
+  "p" #'flymake-goto-prev-error)
+
+(keymap-global-set "C-c l" my/lsp-map)
+
+;;; Git
+
+(use-package magit
+  :bind ("C-c g" . magit-status))
+
+;;; Codex
+
+(use-package term
+  :ensure nil
+  :commands (make-term term-mode term-char-mode))
+
+(defun my/project-root ()
+  "Return the current project root, or `default-directory' if outside a project."
+  (if-let* ((project (project-current nil)))
+      (project-root project)
+    default-directory))
+
+(defun my/codex--start (name &rest args)
+  "Start Codex in a terminal buffer named NAME with ARGS."
+  (let* ((root (my/project-root))
+         (default-directory root)
+         (codex-program (or (executable-find "codex") "codex"))
+         (buffer-name (format "*%s:%s*"
+                              name
+                              (file-name-nondirectory
+                               (directory-file-name root)))))
+    (if (get-buffer buffer-name)
+        (pop-to-buffer buffer-name)
+      (let ((buffer (apply #'make-term buffer-name codex-program nil
+                           (append (list "--cd" root) args))))
+        (with-current-buffer buffer
+          (term-mode)
+          (term-char-mode))
+        (pop-to-buffer buffer)))))
+
+(defun my/codex ()
+  "Open Codex CLI at the current project root."
+  (interactive)
+  (my/codex--start "codex"))
+
+(defun my/codex-resume ()
+  "Resume a Codex CLI session at the current project root."
+  (interactive)
+  (my/codex--start "codex-resume" "resume"))
+
+(defvar-keymap my/codex-map
+  :doc "Codex commands."
+  "c" #'my/codex
+  "r" #'my/codex-resume)
+
+(keymap-global-set "C-c c" my/codex-map)
 
 (menu-bar-mode -1)
 (tool-bar-mode -1)
