@@ -225,13 +225,13 @@
   :ensure nil
   :custom
   (project-switch-commands
-   '((my/project-find-file "Find file")
-     (project-find-regexp "Find regexp")
-     (project-dired "Dired")
-     (my/project-vterm "Terminal")
-     (project-eshell "Eshell")
-     (magit-project-status "Magit")
-     (project-any-command "Other"))))
+   '((my/project-find-file "Find file" ?f)
+     (project-find-regexp "Find regexp" ?s)
+     (project-dired "Dired" ?d)
+     (my/project-vterm "Terminal" ?t)
+     (project-eshell "Eshell" ?e)
+     (my/project-magit-status "Magit" ?m)
+     (project-any-command "Other" ?o))))
 
 (defun my/project-find-file ()
   "Find a file in the current project with a preview-friendly completion UI."
@@ -307,6 +307,7 @@
   "g" #'my/ghq-switch-project
   "f" #'my/project-find-file
   "s" #'project-find-regexp
+  "m" #'my/project-magit-status
   "e" #'my/project-vterm
   "t" #'my/project-vterm
   "E" #'project-eshell
@@ -381,8 +382,22 @@
 
 ;;; Git
 
+(defun my/project-magit-status ()
+  "Open Magit status for the current project root."
+  (interactive)
+  (require 'magit)
+  (let ((default-directory (my/project-root)))
+    (magit-status default-directory)))
+
 (use-package magit
-  :bind ("C-c g" . magit-status))
+  :bind ("C-c g" . my/project-magit-status)
+  :init
+  (setq magit-save-repository-buffers 'dontask)
+  (setq magit-diff-refine-hunk t)
+  (setq magit-display-buffer-function
+        #'magit-display-buffer-same-window-except-diff-v1)
+  (setq magit-bury-buffer-function #'magit-restore-window-configuration)
+  (setq magit-repository-directories `((,(expand-file-name "~/ghq") . 3))))
 
 ;;; Codex
 
