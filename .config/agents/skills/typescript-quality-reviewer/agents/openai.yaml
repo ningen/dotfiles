@@ -1,0 +1,4 @@
+interface:
+  display_name: "TypeScript Quality Reviewer"
+  short_description: "Raise quality in TypeScript coding and review"
+  default_prompt: "Use $typescript-quality-reviewer to write or review TypeScript code with stricter quality gates."

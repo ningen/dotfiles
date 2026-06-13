@@ -60,8 +60,10 @@ common:
   - source: .config/agents/skills/dotfiles-link-manager
     target: ~/.agents/skills/dotfiles-link-manager
     type: directory
-  
-  
+
+  - source: .config/agents/skills/typescript-quality-reviewer
+    target: ~/.agents/skills/typescript-quality-reviewer
+    type: directory
 
 # Unix-only links (macOS and Linux)
 unix_only:

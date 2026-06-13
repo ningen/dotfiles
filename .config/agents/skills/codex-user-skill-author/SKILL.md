@@ -39,4 +39,12 @@ After editing a skill, run:
 python3 /Users/ningen/.codex/skills/.system/skill-creator/scripts/quick_validate.py .config/agents/skills/<skill-name>
 ```
 
+If validation fails with `ModuleNotFoundError: No module named 'yaml'`, rerun it with a Python interpreter that includes PyYAML:
+
+```bash
+nix shell --impure --expr 'let pkgs = import <nixpkgs> {}; in pkgs.python3.withPackages (ps: [ ps.pyyaml ])' -c python /Users/ningen/.codex/skills/.system/skill-creator/scripts/quick_validate.py .config/agents/skills/<skill-name>
+```
+
+Do not rely on `nix shell nixpkgs#python3Packages.pyyaml -c python3 ...` for this check; it can still pick up the system Python instead of a Python environment with PyYAML installed.
+
 When the symlink delivery changes, also inspect `dotfiles-links.yaml` and run `./setup-dotfiles.sh` only when the user wants to apply links on this machine.
