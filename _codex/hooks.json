@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.codex/hooks/codex-process-awake.sh\"",
+            "timeout": 5,
+            "statusMessage": "Preventing sleep while Codex is running"
+          }
+        ]
+      }
+    ]
+  }
+}
