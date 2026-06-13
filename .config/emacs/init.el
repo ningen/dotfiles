@@ -178,6 +178,59 @@
 
 (keymap-global-set "C-c l" my/lsp-map)
 
+;;; Projects
+
+(use-package project
+  :ensure nil
+  :custom
+  (project-switch-commands
+   '((project-find-file "Find file")
+     (project-find-regexp "Find regexp")
+     (project-dired "Dired")
+     (project-eshell "Eshell")
+     (magit-project-status "Magit")
+     (project-any-command "Other"))))
+
+(defun my/ghq-repositories ()
+  "Return repositories managed by ghq as full paths."
+  (unless (executable-find "ghq")
+    (user-error "ghq executable was not found"))
+  (let ((output
+         (with-temp-buffer
+           (unless (zerop (call-process "ghq" nil t nil "list" "--full-path"))
+             (user-error "ghq list --full-path failed"))
+           (buffer-string))))
+    (sort (seq-filter #'file-directory-p
+                      (delete-dups (split-string output "\n" t)))
+          #'string<)))
+
+(defun my/ghq-read-repository ()
+  "Read a ghq repository path with completion."
+  (let* ((repositories (my/ghq-repositories))
+         (current-project (my/project-root))
+         (default (and (member current-project repositories)
+                       current-project)))
+    (unless repositories
+      (user-error "No ghq repositories found"))
+    (completing-read "ghq repo: " repositories nil t nil nil default)))
+
+(defun my/ghq-switch-project (directory)
+  "Switch to a ghq repository DIRECTORY using `project.el'."
+  (interactive (list (my/ghq-read-repository)))
+  (project-switch-project (file-name-as-directory directory)))
+
+(defvar-keymap my/project-map
+  :doc "Project commands."
+  "p" #'project-switch-project
+  "g" #'my/ghq-switch-project
+  "f" #'project-find-file
+  "s" #'project-find-regexp
+  "d" #'project-dired
+  "b" #'project-switch-to-buffer
+  "k" #'project-kill-buffers)
+
+(keymap-global-set "C-c p" my/project-map)
+
 ;;; Git
 
 (use-package magit
