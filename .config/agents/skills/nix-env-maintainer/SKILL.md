@@ -21,11 +21,7 @@ Use this workflow for the personal Nix Flake, Home Manager, nix-darwin, and NixO
 2. Prefer existing module boundaries: shared Home Manager settings in `nix/hosts/common`, package collections in `nix/packages`, macOS system defaults in `nix/hosts/ningen-mba`, and NixOS system services in `nix/hosts/nixos`.
 3. Keep generated files untouched unless regenerating them with the documented generator.
 4. When adding a CLI tool, decide whether it belongs in `nix/packages/dev-tools.nix`, `language-servers.nix`, `formatters.nix`, or node2nix-managed packages.
-5. When current package or option names are uncertain, use the repository guidance for web lookup:
-
-```bash
-gemini -p "WebSearch: <query>"
-```
+5. When current package or option names are uncertain, verify them with the available web search or official Nix documentation before editing.
 
 ## Verification
 

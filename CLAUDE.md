@@ -125,14 +125,4 @@ Node.jsパッケージを更新するには：
 
 ## Web検索について
 
-Web検索が必要な場合は、Claude Code内蔵の検索機能ではなく、以下のコマンドを使用してください：
-
-```bash
-gemini -p "WebSearch: ${検索したい内容}"
-```
-
-例：
-```bash
-gemini -p "WebSearch: nix の概要"
-gemini -p "WebSearch: home manager 使い方"
-```
+Web検索が必要な場合は、その実行環境で利用可能な検索手段を使ってください。

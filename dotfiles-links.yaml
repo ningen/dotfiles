@@ -65,6 +65,14 @@ common:
     target: ~/.agents/skills/typescript-quality-reviewer
     type: directory
 
+  - source: .config/agents/skills/git-message-style
+    target: ~/.agents/skills/git-message-style
+    type: directory
+
+  - source: .config/agents/skills/natural-writing-editor
+    target: ~/.agents/skills/natural-writing-editor
+    type: directory
+
 # Unix-only links (macOS and Linux)
 unix_only:
   - source: .config/nix

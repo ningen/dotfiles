@@ -1,0 +1,4 @@
+interface:
+  display_name: "Natural Writing Editor"
+  short_description: "Make writing clear and less generic"
+  default_prompt: "Use $natural-writing-editor to revise this text into natural, specific writing."

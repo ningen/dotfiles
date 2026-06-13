@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Message Style"
+  short_description: "Standardize commit and PR wording"
+  default_prompt: "Use $git-message-style to write a clear commit message or PR description."
