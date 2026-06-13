@@ -77,6 +77,42 @@ common:
     target: ~/.agents/skills/verify-ui-with-screenshots
     type: directory
 
+  - source: .config/agents/vendor/cloudflare-skills/skills/agents-sdk
+    target: ~/.agents/skills/agents-sdk
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/cloudflare
+    target: ~/.agents/skills/cloudflare
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/cloudflare-email-service
+    target: ~/.agents/skills/cloudflare-email-service
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/durable-objects
+    target: ~/.agents/skills/durable-objects
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/sandbox-sdk
+    target: ~/.agents/skills/sandbox-sdk
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/turnstile-spin
+    target: ~/.agents/skills/turnstile-spin
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/web-perf
+    target: ~/.agents/skills/web-perf
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/workers-best-practices
+    target: ~/.agents/skills/workers-best-practices
+    type: directory
+
+  - source: .config/agents/vendor/cloudflare-skills/skills/wrangler
+    target: ~/.agents/skills/wrangler
+    type: directory
+
 # Unix-only links (macOS and Linux)
 unix_only:
   - source: .config/nix

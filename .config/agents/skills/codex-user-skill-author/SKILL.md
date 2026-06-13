@@ -1,6 +1,6 @@
 ---
 name: codex-user-skill-author
-description: Create, update, validate, and symlink-deliver personal Codex user-level skills from the ningen/dotfiles repository. Use when adding or revising skills under .config/agents/skills, editing SKILL.md or agents/openai.yaml, deciding whether a workflow belongs in AGENTS.md vs a skill, or wiring user-level skills into ~/.agents/skills through dotfiles-links.yaml.
+description: Create, update, validate, and symlink-deliver personal Codex user-level skills from the ningen/dotfiles repository. Use when adding or revising skills under .config/agents/skills, importing third-party skills under .config/agents/vendor as Git submodules, editing SKILL.md or agents/openai.yaml, deciding whether a workflow belongs in AGENTS.md vs a skill, or wiring user-level skills into ~/.agents/skills through dotfiles-links.yaml.
 ---
 
 # Codex User Skill Author
@@ -20,6 +20,28 @@ Use this workflow to maintain user-level Codex skills as dotfiles-managed artifa
 
 - Do not symlink the entire `~/.agents/skills` directory; leave room for unmanaged local experiments.
 - Use `.agents/skills` only for repo-scoped workflows. Use this `.config/agents/skills` layout for user-level workflows that should follow the person across repositories.
+
+## External Skills
+
+- Store third-party skill collections as Git submodules under `/Users/ningen/ghq/github.com/ningen/dotfiles/.config/agents/vendor/<owner-or-project>-<repo>`, preserving the upstream layout, license, and metadata.
+- Add submodules with a stable path, for example:
+
+```bash
+git submodule add https://github.com/cloudflare/skills.git .config/agents/vendor/cloudflare-skills
+```
+
+- Deliver submodule-backed skills with individual `dotfiles-links.yaml` entries that point at the upstream skill directory, for example:
+
+```yaml
+  - source: .config/agents/vendor/cloudflare-skills/skills/<skill-name>
+    target: ~/.agents/skills/<skill-name>
+    type: directory
+```
+
+- Do not link the whole vendor collection or the whole `~/.agents/skills` directory.
+- Keep upstream files unmodified. If local behavior needs to differ, prefer a wrapper skill in `.config/agents/skills/<skill-name>` instead of committing edits inside the submodule.
+- Use `.gitmodules` and the submodule gitlink as the source of truth for upstream URL and pinned commit. Update with `git submodule update --remote .config/agents/vendor/<owner-or-project>-<repo>`, then inspect and commit the changed gitlink.
+- The `quick_validate.py` check is required for authored or wrapper skills. Submodule-backed third-party skills may use upstream frontmatter that the local validator does not recognize, so validate their delivery by checking that each linked directory contains `SKILL.md` and that `dotfiles-links.yaml` points to the intended skill directory.
 
 ## Authoring
 

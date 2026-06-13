@@ -1,0 +1,3 @@
+[submodule ".config/agents/vendor/cloudflare-skills"]
+	path = .config/agents/vendor/cloudflare-skills
+	url = https://github.com/cloudflare/skills.git
