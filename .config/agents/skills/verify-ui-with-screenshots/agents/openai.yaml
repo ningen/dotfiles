@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify UI With Screenshots"
+  short_description: "Capture screenshots for UI checks and E2E notes"
+  default_prompt: "Use $verify-ui-with-screenshots to capture the current UI, return the screenshot, and turn observations into test steps."

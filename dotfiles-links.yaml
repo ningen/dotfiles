@@ -73,6 +73,10 @@ common:
     target: ~/.agents/skills/natural-writing-editor
     type: directory
 
+  - source: .config/agents/skills/verify-ui-with-screenshots
+    target: ~/.agents/skills/verify-ui-with-screenshots
+    type: directory
+
 # Unix-only links (macOS and Linux)
 unix_only:
   - source: .config/nix
