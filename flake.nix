@@ -83,6 +83,7 @@
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
+            ./nix/packages/linters.nix
             ./nix/packages/node-packages.nix
           ];
         };
@@ -93,6 +94,7 @@
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
+            ./nix/packages/linters.nix
             ./nix/packages/node-packages.nix
           ];
         };
@@ -104,6 +106,7 @@
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
+            ./nix/packages/linters.nix
             ./nix/packages/node-packages.nix
           ];
         };

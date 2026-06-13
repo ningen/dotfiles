@@ -109,14 +109,19 @@
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
         (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
         (json "https://github.com/tree-sitter/tree-sitter-json")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (lua "https://github.com/tree-sitter-grammars/tree-sitter-lua")
         (nix "https://github.com/nix-community/tree-sitter-nix")))
 
 (defun my/install-treesit-grammars ()
   "Install the tree-sitter grammars used by this Emacs configuration."
   (interactive)
-  (dolist (language '(typescript tsx javascript json nix))
+  (dolist (language '(typescript tsx javascript json python lua nix))
     (unless (treesit-language-available-p language)
       (treesit-install-language-grammar language))))
+
+(use-package lua-mode
+  :mode "\\.lua\\'")
 
 (use-package nix-ts-mode
   :mode "\\.nix\\'")
@@ -163,6 +168,17 @@
     (user-error "Eglot is not connected in this buffer"))
   (call-interactively #'eglot-inlay-hints-mode))
 
+(defun my/format-buffer ()
+  "Format the current buffer with the configured formatter."
+  (interactive)
+  (cond
+   ((fboundp 'apheleia-format-buffer)
+    (apheleia-format-buffer))
+   ((and (fboundp 'eglot-managed-p) (eglot-managed-p))
+    (eglot-format))
+   (t
+    (indent-region (point-min) (point-max)))))
+
 (setq-default eglot-workspace-configuration
               '(:typescript
                 (:inlayHints
@@ -188,6 +204,11 @@
 (use-package eglot
   :ensure nil
   :hook ((nix-ts-mode . eglot-ensure)
+         (python-mode . eglot-ensure)
+         (python-ts-mode . eglot-ensure)
+         (lua-mode . eglot-ensure)
+         (lua-ts-mode . eglot-ensure)
+         (js-ts-mode . eglot-ensure)
          (typescript-ts-mode . eglot-ensure)
          (tsx-ts-mode . eglot-ensure)
          (eglot-managed-mode . my/eglot-enable-hover)
@@ -195,17 +216,72 @@
   :config
   (add-to-list 'eglot-server-programs '(nix-ts-mode . ("nixd")))
   (add-to-list 'eglot-server-programs
-               '((typescript-ts-mode tsx-ts-mode)
+               '((python-mode python-ts-mode)
+                 . ("pyright-langserver" "--stdio")))
+  (add-to-list 'eglot-server-programs
+               '((lua-mode lua-ts-mode)
+                 . ("lua-language-server")))
+  (add-to-list 'eglot-server-programs
+               '((js-ts-mode typescript-ts-mode tsx-ts-mode)
                  . ("typescript-language-server" "--stdio"))))
+
+(use-package flymake
+  :ensure nil
+  :hook (prog-mode . flymake-mode)
+  :custom
+  (flymake-no-changes-timeout 0.5)
+  (flymake-start-on-save-buffer t))
+
+(defun my/flymake-eslint-enable-maybe ()
+  "Enable ESLint diagnostics in JavaScript and TypeScript buffers."
+  (when (memq major-mode '(js-ts-mode typescript-ts-mode tsx-ts-mode))
+    (flymake-eslint-enable)))
+
+(use-package flymake-eslint
+  :commands (flymake-eslint-enable)
+  :hook ((js-ts-mode typescript-ts-mode tsx-ts-mode eglot-managed-mode)
+         . my/flymake-eslint-enable-maybe)
+  :custom
+  (flymake-eslint-executable-name "eslint_d"))
+
+(use-package flymake-ruff
+  :commands (flymake-ruff-load)
+  :hook ((python-mode python-ts-mode eglot-managed-mode) . flymake-ruff-load))
+
+(use-package apheleia
+  :commands (apheleia-format-buffer apheleia-mode)
+  :hook (prog-mode . apheleia-mode)
+  :config
+  (setf (alist-get 'prettier apheleia-formatters)
+        '("prettier" "--stdin-filepath" filepath))
+  (setf (alist-get 'black apheleia-formatters)
+        '("black" "--quiet" "--stdin-filename" filepath "-"))
+  (setf (alist-get 'stylua apheleia-formatters)
+        '("stylua" "-"))
+  (setf (alist-get 'nixfmt apheleia-formatters)
+        '("nixfmt" "-"))
+  (dolist (formatter '((js-ts-mode . prettier)
+                       (typescript-ts-mode . prettier)
+                       (tsx-ts-mode . prettier)
+                       (json-ts-mode . prettier)
+                       (python-mode . black)
+                       (python-ts-mode . black)
+                       (lua-mode . stylua)
+                       (lua-ts-mode . stylua)
+                       (nix-ts-mode . nixfmt)))
+    (setf (alist-get (car formatter) apheleia-mode-alist)
+          (cdr formatter))))
 
 (defvar-keymap my/lsp-map
   :doc "LSP commands."
   "r" #'eglot-rename
   "a" #'eglot-code-actions
-  "f" #'eglot-format
+  "f" #'my/format-buffer
+  "F" #'apheleia-mode
   "h" #'my/eldoc-help-at-point
   "i" #'my/eglot-toggle-inlay-hints
   "d" #'flymake-show-buffer-diagnostics
+  "l" #'consult-flymake
   "n" #'flymake-goto-next-error
   "p" #'flymake-goto-prev-error)
 
