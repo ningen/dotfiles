@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nix Env Maintainer"
+  short_description: "Maintain personal Nix environment"
+  default_prompt: "Use $nix-env-maintainer to update or troubleshoot my Nix dotfiles environment."

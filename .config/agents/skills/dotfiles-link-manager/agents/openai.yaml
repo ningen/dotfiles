@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dotfiles Link Manager"
+  short_description: "Maintain symlinked dotfiles delivery"
+  default_prompt: "Use $dotfiles-link-manager to add or repair a symlinked dotfiles entry."

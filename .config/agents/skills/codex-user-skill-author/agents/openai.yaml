@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex User Skill Author"
+  short_description: "Create and maintain user-level skills"
+  default_prompt: "Use $codex-user-skill-author to create or update a user-level Codex skill."

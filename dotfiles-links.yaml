@@ -48,6 +48,18 @@ common:
   - source: .config/nix
     target: $CONFIG_DIR/nix
     type: directory
+
+  - source: .config/agents/skills/codex-user-skill-author
+    target: ~/.agents/skills/codex-user-skill-author
+    type: directory
+
+  - source: .config/agents/skills/nix-env-maintainer
+    target: ~/.agents/skills/nix-env-maintainer
+    type: directory
+
+  - source: .config/agents/skills/dotfiles-link-manager
+    target: ~/.agents/skills/dotfiles-link-manager
+    type: directory
   
   
 
