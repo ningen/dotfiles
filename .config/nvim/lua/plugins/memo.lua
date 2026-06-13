@@ -3,4 +3,7 @@ return {
   config = function()
     require("memo").setup()
   end,
+  dependencies = {
+    "nvim-lua/plenary.nvim"
+  }
 }
