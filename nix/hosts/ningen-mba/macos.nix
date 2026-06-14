@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 {
 
   # nix自体の設定
@@ -45,6 +45,9 @@
     display = 10;
     harddisk = "never";
   };
+  system.activationScripts.power.text = lib.mkAfter ''
+    /usr/bin/pmset -c disablesleep 1
+  '';
 
   fonts = {
     packages = with pkgs; [
