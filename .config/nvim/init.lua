@@ -15,6 +15,12 @@ vim.opt.rtp:prepend(lazypath)
 vim.opt.number = true
 vim.g.mapleader = " "
 
+vim.filetype.add({
+  extension = {
+    astro = "astro",
+  },
+})
+
 vim.opt.expandtab = true -- タブをスペースに変換
 vim.opt.shiftwidth = 2 -- インデント幅
 vim.opt.tabstop = 2 -- タブ幅

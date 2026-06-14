@@ -25,6 +25,7 @@
 ;;; Package Management
 
 (require 'package)
+(require 'treesit)
 
 (setq package-archives
       '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -91,6 +92,12 @@
   :custom
   (consult-preview-key '(:debounce 0.2 any)))
 
+(use-package corfu
+  :hook (eglot-managed-mode . corfu-mode)
+  :custom
+  (corfu-auto t)
+  (corfu-cycle t))
+
 ;;; Theme
 
 (use-package doom-themes
@@ -105,9 +112,11 @@
 (setq treesit-font-lock-level 4)
 
 (setq treesit-language-source-alist
-      '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+      '((astro "https://github.com/virchau13/tree-sitter-astro")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
         (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
         (javascript "https://github.com/tree-sitter/tree-sitter-javascript")
+        (css "https://github.com/tree-sitter/tree-sitter-css")
         (json "https://github.com/tree-sitter/tree-sitter-json")
         (python "https://github.com/tree-sitter/tree-sitter-python")
         (lua "https://github.com/tree-sitter-grammars/tree-sitter-lua")
@@ -116,7 +125,7 @@
 (defun my/install-treesit-grammars ()
   "Install the tree-sitter grammars used by this Emacs configuration."
   (interactive)
-  (dolist (language '(typescript tsx javascript json python lua nix))
+  (dolist (language '(astro typescript tsx javascript css json python lua nix))
     (unless (treesit-language-available-p language)
       (treesit-install-language-grammar language))))
 
@@ -125,6 +134,9 @@
 
 (use-package nix-ts-mode
   :mode "\\.nix\\'")
+
+(use-package astro-ts-mode
+  :mode "\\.astro\\'")
 
 (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
 (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
@@ -208,6 +220,7 @@
          (python-ts-mode . eglot-ensure)
          (lua-mode . eglot-ensure)
          (lua-ts-mode . eglot-ensure)
+         (astro-ts-mode . eglot-ensure)
          (js-ts-mode . eglot-ensure)
          (typescript-ts-mode . eglot-ensure)
          (tsx-ts-mode . eglot-ensure)
@@ -222,6 +235,8 @@
                '((lua-mode lua-ts-mode)
                  . ("lua-language-server")))
   (add-to-list 'eglot-server-programs
+               '(astro-ts-mode . ("astro-ls" "--stdio")))
+  (add-to-list 'eglot-server-programs
                '((js-ts-mode typescript-ts-mode tsx-ts-mode)
                  . ("typescript-language-server" "--stdio"))))
 
@@ -234,12 +249,12 @@
 
 (defun my/flymake-eslint-enable-maybe ()
   "Enable ESLint diagnostics in JavaScript and TypeScript buffers."
-  (when (memq major-mode '(js-ts-mode typescript-ts-mode tsx-ts-mode))
+  (when (memq major-mode '(astro-ts-mode js-ts-mode typescript-ts-mode tsx-ts-mode))
     (flymake-eslint-enable)))
 
 (use-package flymake-eslint
   :commands (flymake-eslint-enable)
-  :hook ((js-ts-mode typescript-ts-mode tsx-ts-mode eglot-managed-mode)
+  :hook ((astro-ts-mode js-ts-mode typescript-ts-mode tsx-ts-mode eglot-managed-mode)
          . my/flymake-eslint-enable-maybe)
   :custom
   (flymake-eslint-executable-name "eslint_d"))
@@ -261,6 +276,7 @@
   (setf (alist-get 'nixfmt apheleia-formatters)
         '("nixfmt" "-"))
   (dolist (formatter '((js-ts-mode . prettier)
+                       (astro-ts-mode . prettier)
                        (typescript-ts-mode . prettier)
                        (tsx-ts-mode . prettier)
                        (json-ts-mode . prettier)
