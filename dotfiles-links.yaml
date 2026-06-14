@@ -137,15 +137,5 @@ vscode:
     target: $VSCODE_CONFIG_DIR/keybindings.json
     type: file
 
-# macOS-specific links
-macos_only:
-  - source: _codex/hooks.json
-    target: ~/.codex/hooks.json
-    type: file
-
-  - source: _codex/hooks/codex-process-awake.sh
-    target: ~/.codex/hooks/codex-process-awake.sh
-    type: file
-
 # Windows-specific links
 windows_only: []

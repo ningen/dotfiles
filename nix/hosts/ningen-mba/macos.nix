@@ -31,11 +31,15 @@
         show-recents = false;
         orientation = "bottom";
       };
+      screensaver = {
+        askForPassword = false;
+        askForPasswordDelay = 0;
+      };
     };
   };
 
   # Codex appをスマホから操作している間にMac本体が寝ると接続が切れるため、
-  # 本体の自動スリープだけ無効化する。画面は10分で消してよい。
+  # 充電中を含めて本体の自動スリープを無効化する。画面は10分で消してよい。
   power.sleep = {
     computer = "never";
     display = 10;
