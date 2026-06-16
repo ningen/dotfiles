@@ -90,7 +90,8 @@
     enable = true;
   };
 
-  services.desktopManager.gnome.enable = true;
+  services.desktopManager.gnome.enable = false;
+  services.displayManager.defaultSession = "hyprland";
   services.displayManager.gdm = {
     enable = true;
     # wayland = true;
@@ -117,7 +118,7 @@
   hardware.nvidia.prime.offload.enable = false;
 
   programs.hyprland = {
-    enable = false;
+    enable = true;
     xwayland.enable = true;
   };
   programs.gamemode.enable = true;

@@ -11,6 +11,7 @@
     obs-studio
     vlc
     alacritty
+    ghostty
     playerctl
     slack
     google-chrome
