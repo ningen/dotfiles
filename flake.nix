@@ -41,9 +41,19 @@
           extraSpecialArgs = { inherit inputs; };
           inherit modules;
         };
+      mkNixos = inputs.nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./nix/hosts/nixos/configuration.nix
+        ];
+        specialArgs = {
+          inherit inputs;
+        };
+      };
     in
     {
-      apps = forAllSystems (system:
+      apps = forAllSystems (
+        system:
         let
           hm = "${inputs.home-manager.packages.${system}.home-manager}/bin/home-manager";
           applyScript = nixpkgs.legacyPackages.${system}.writeShellScript "apply-script" ''
@@ -73,7 +83,8 @@
             type = "app";
             program = toString applyScript;
           };
-        });
+        }
+      );
 
       homeConfigurations = {
         "ningen@ningen-mba.local" = mkHome {
@@ -113,15 +124,8 @@
       };
 
       nixosConfigurations = {
-        myNixOS = inputs.nixpkgs.lib.nixosSystem {
-          system = "x86_64-linux";
-          modules = [
-            ./nix/hosts/nixos/configuration.nix
-          ];
-          specialArgs = {
-            inherit inputs;
-          };
-        };
+        myNixOS = mkNixos;
+        nixos = mkNixos;
       };
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {

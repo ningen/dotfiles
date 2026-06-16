@@ -15,7 +15,6 @@
   ];
 
   boot.initrd.availableKernelModules = [
-    "vmd"
     "xhci_pci"
     "ahci"
     "nvme"
@@ -27,37 +26,17 @@
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
-  boot.kernelParams = [
-    "nvidia-drm.modeset=1"
-    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
-    # VRRを有効にしつつ、フレームペーシングを改善
-    "nvidia.NVreg_EnableGpuFirmware=0"
-  ];
-
   fileSystems."/" = {
-    device = "/dev/disk/by-uuid/ef82a90f-08bf-4ab3-a3da-27ea57154134";
+    device = "/dev/disk/by-uuid/89535378-00c0-48ec-811c-6823fbd3adfa";
     fsType = "ext4";
   };
 
   fileSystems."/boot" = {
-    device = "/dev/disk/by-uuid/C08C-B9F2";
+    device = "/dev/disk/by-uuid/E6B8-97F9";
     fsType = "vfat";
     options = [
       "fmask=0077"
       "dmask=0077"
-    ];
-  };
-
-  fileSystems."/mnt/external-ssd" = {
-    device = "/dev/disk/by-uuid/f6d051c6-ac2a-4bff-9ec8-b8591dda07b3";
-    fsType = "ext4";
-    options = [
-      "defaults"
-      "noatime"
-      "nofail"
-      "user"
-      "exec"
-      "dev"
     ];
   };
 
@@ -74,21 +53,4 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-  hardware.nvidia = {
-    open = false;
-    modesetting.enable = false;
-    powerManagement.enable = false;
-    nvidiaSettings = true;
-    package = config.boot.kernelPackages.nvidiaPackages.stable;
-
-    forceFullCompositionPipeline = false;
-  };
-
-  hardware.graphics = {
-    enable = true;
-    enable32Bit = true;
-  };
-
-  hardware.nvidia.prime.sync.enable = false;
-  hardware.nvidia.prime.offload.enable = false;
 }

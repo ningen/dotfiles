@@ -36,6 +36,10 @@
     "pcie_aspm=off"
     # キャプチャーボードのパススルー機能を常時有効にするために設定
     "usbcore.autosuspend=-1"
+    "nvidia-drm.modeset=1"
+    "nvidia.NVreg_PreserveVideoMemoryAllocations=1"
+    # VRRを有効にしつつ、フレームペーシングを改善
+    "nvidia.NVreg_EnableGpuFirmware=0"
   ];
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -70,15 +74,15 @@
   i18n.defaultLocale = "en_US.UTF-8";
 
   i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
+    LC_ADDRESS = "ja_JP.UTF-8";
+    LC_IDENTIFICATION = "ja_JP.UTF-8";
+    LC_MEASUREMENT = "ja_JP.UTF-8";
+    LC_MONETARY = "ja_JP.UTF-8";
+    LC_NAME = "ja_JP.UTF-8";
+    LC_NUMERIC = "ja_JP.UTF-8";
+    LC_PAPER = "ja_JP.UTF-8";
+    LC_TELEPHONE = "ja_JP.UTF-8";
+    LC_TIME = "ja_JP.UTF-8";
   };
 
   # Enable the X11 windowing system.
@@ -93,6 +97,24 @@
   };
 
   services.xserver.videoDrivers = [ "nvidia" ];
+
+  hardware.nvidia = {
+    open = false;
+    modesetting.enable = false;
+    powerManagement.enable = false;
+    nvidiaSettings = true;
+    package = config.boot.kernelPackages.nvidiaPackages.stable;
+
+    forceFullCompositionPipeline = false;
+  };
+
+  hardware.graphics = {
+    enable = true;
+    enable32Bit = true;
+  };
+
+  hardware.nvidia.prime.sync.enable = false;
+  hardware.nvidia.prime.offload.enable = false;
 
   programs.hyprland = {
     enable = false;
@@ -322,7 +344,7 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = "26.05"; # Did you read the comment?
 
   nix = {
     settings = {
