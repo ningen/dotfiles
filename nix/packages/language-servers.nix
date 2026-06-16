@@ -3,6 +3,7 @@
     lua-language-server
     astro-language-server
     typescript-language-server
+    typescript
     pyright
     nil
   ];

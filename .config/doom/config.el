@@ -11,6 +11,19 @@
 (setq display-line-numbers-type t)
 (setq-default show-trailing-whitespace t)
 
+(defun ningen/add-exec-path (path)
+  "Add PATH to both `exec-path' and the process PATH when it exists."
+  (when (file-directory-p path)
+    (add-to-list 'exec-path path)
+    (setenv "PATH" (concat path path-separator (getenv "PATH")))))
+
+(dolist (path (list (expand-file-name "~/.nix-profile/bin")
+                    (expand-file-name "~/.local/state/nix/profiles/profile/bin")
+                    (format "/etc/profiles/per-user/%s/bin" user-login-name)
+                    "/run/current-system/sw/bin"
+                    "/nix/var/nix/profiles/default/bin"))
+  (ningen/add-exec-path path))
+
 (after! org
   (setq org-todo-keywords '((sequence "TODO" "DOING" "|" "DONE" "CANCELLED"))
         org-export-backends '(md html)
@@ -32,12 +45,24 @@
   '(org-level-3 :height 1.1)
   '(org-level-4 :height 1.0))
 
+(defun ningen/projectile-sync-ghq-projects (&optional quiet)
+  "Add projects from `ghq list --full-path' to Projectile."
+  (interactive)
+  (if-let ((ghq (executable-find "ghq")))
+      (let ((added 0))
+        (dolist (project (condition-case nil
+                             (process-lines ghq "list" "--full-path")
+                           (error nil)))
+          (when (file-directory-p project)
+            (projectile-add-known-project project)
+            (setq added (1+ added))))
+        (unless quiet
+          (message "Added %d ghq projects to Projectile" added)))
+    (unless quiet
+      (message "ghq not found"))))
+
 (after! projectile
-  (when (executable-find "ghq")
-    (setq projectile-known-projects
-          (delete "" (split-string
-                      (shell-command-to-string "ghq list --full-path")
-                      "\n")))))
+  (ningen/projectile-sync-ghq-projects t))
 
 (defun org-export-markdown-to-clipboard ()
   "Export the current Org buffer to Markdown and copy it."
@@ -51,3 +76,6 @@
   (shell-command-on-region (point-min) (point-max)
                            "pandoc -f markdown -t org"
                            (current-buffer) t))
+
+(after! eglot
+        (typescript-ts-mode . eglot-ensure))

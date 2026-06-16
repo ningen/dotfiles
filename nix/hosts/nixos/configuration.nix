@@ -224,10 +224,12 @@
     fontconfig = {
       defaultFonts = {
         serif = [
+          "JetBrainsMono Nerd Font"
           "Noto Serif CJK JP"
           "Noto Color Emoji"
         ];
         sansSerif = [
+          "JetBrainsMono Nerd Font"
           "Noto Sans CJK JP"
           "Noto Color Emoji"
         ];

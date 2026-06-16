@@ -83,13 +83,14 @@
     fi
 
     if [ ! -d "$doom_target" ]; then
-      ${pkgs.git}/bin/git clone --depth 1 "$doom_repo" "$doom_target"
+      ${pkgs.git}/bin/git clone --depth 1 --recurse-submodules "$doom_repo" "$doom_target"
     elif [ -d "$doom_target/.git" ]; then
       echo "Doom Emacs already installed at $doom_target"
+      ${pkgs.git}/bin/git -C "$doom_target" submodule update --init --recursive
     else
       echo "Replacing non-git Doom Emacs copy at $doom_target with a git clone"
       doom_tmp="$(${pkgs.coreutils}/bin/mktemp -d)"
-      ${pkgs.git}/bin/git clone --depth 1 "$doom_repo" "$doom_tmp/emacs"
+      ${pkgs.git}/bin/git clone --depth 1 --recurse-submodules "$doom_repo" "$doom_tmp/emacs"
 
       if [ -d "$doom_target/.local" ]; then
         mv "$doom_target/.local" "$doom_tmp/local"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -84,7 +84,7 @@ create_link() {
         rm "$dest"
     elif [[ -e "$dest" ]]; then
         echo "⚠ Warning: $dest already exists and is not a symlink. Skipping."
-        return 1
+        return 0
     fi
 
     # Create symlink

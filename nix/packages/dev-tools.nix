@@ -1,43 +1,47 @@
 { pkgs, lib, ... }:
 {
-  home.packages = with pkgs; [
-    git
-    neovim
-    zsh
-    volta
-    uv
-    docker
-    docker-compose
-    direnv
-    go
-    gcc
-    gh
-    lazygit
-    tmux
-    awscli2
-    emacs
-    # emacs vterm dependencies (cross-platform)
-    cmake
-    ripgrep
-    ghq
-    fzf
-    fd
-    pnpm
-    nodejs_24
-    bun
-    go
-    gopls
-    devenv
-    claude-code
-    nixd
-    yazi
-    helix
-    rustup
-    codex
-    tree-sitter
-  ] ++ lib.optionals pkgs.stdenv.isLinux [
-    # Linux only: emacs vterm dependencies
-    libvterm
-    libtool
-  ];
+  home.packages =
+    with pkgs;
+    [
+      git
+      neovim
+      zsh
+      volta
+      uv
+      docker
+      docker-compose
+      direnv
+      go
+      gcc
+      gh
+      lazygit
+      tmux
+      awscli2
+      emacs
+      # emacs vterm dependencies (cross-platform)
+      cmake
+      ripgrep
+      ghq
+      fzf
+      fd
+      pnpm
+      nodejs_24
+      bun
+      go
+      gopls
+      devenv
+      claude-code
+      nixd
+      yazi
+      helix
+      rustup
+      codex
+      tree-sitter
+      pandoc
+    ]
+    ++ lib.optionals pkgs.stdenv.isLinux [
+      # Linux only: emacs vterm dependencies
+      libvterm
+      libtool
+    ];
 }

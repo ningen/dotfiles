@@ -9,7 +9,7 @@
 
  :ui
  doom
- doom-dashboard
+ dashboard
  hl-todo
  modeline
  nav-flash
@@ -59,12 +59,12 @@
  :lang
  emacs-lisp
  json
- javascript
+ (javascript +lsp)
  markdown
  (org +pretty)
  python
  sh
- web
+ (web +lsp)
  yaml
  nix
 
