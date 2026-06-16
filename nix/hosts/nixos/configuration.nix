@@ -60,6 +60,21 @@
   # Enable networking
   networking.networkmanager.enable = true;
 
+  fileSystems."/mnt/hdd" = {
+    device = "/dev/disk/by-uuid/0C20743A20742CB8";
+    fsType = "ntfs3";
+    options = [
+      "nofail"
+      "rw"
+      "uid=1000"
+      "gid=100"
+      "umask=022"
+      "windows_names"
+      "x-systemd.automount"
+      "x-systemd.idle-timeout=600"
+    ];
+  };
+
   # ネットワークデバイスの電源管理を無効化
   services.udev.extraRules = ''
     # イーサネットアダプターの電源管理を無効化してリンク安定性を向上
@@ -140,6 +155,7 @@
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.udisks2.enable = true;
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -166,6 +182,33 @@
       pkgs.fcitx5-gtk
       pkgs.fcitx5-anthy
     ];
+    fcitx5.settings = {
+      globalOptions = {
+        "Hotkey"."EnumerateSkipFirst" = "False";
+        "Hotkey/TriggerKeys"."0" = "Control+space";
+        "Hotkey/EnumerateForwardKeys"."0" = "Alt+Shift_L";
+        "Hotkey/EnumerateBackwardKeys"."0" = "Alt+Shift_R";
+      };
+      inputMethod = {
+        "GroupOrder"."0" = "Default";
+        "Groups/0" = {
+          "Default Layout" = "us";
+          "DefaultIM" = "skk";
+          "Name" = "Default";
+        };
+        "Groups/0/Items/0" = {
+          "Name" = "keyboard-us";
+        };
+        "Groups/0/Items/1" = {
+          "Layout" = "us";
+          "Name" = "skk";
+        };
+        "Groups/0/Items/2" = {
+          "Layout" = "us";
+          "Name" = "mozc";
+        };
+      };
+    };
   };
 
   fonts = {
