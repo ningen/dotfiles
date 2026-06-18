@@ -77,6 +77,14 @@ common:
     target: ~/.agents/skills/verify-ui-with-screenshots
     type: directory
 
+  - source: .config/agents/skills/diff-command-worker
+    target: ~/.agents/skills/diff-command-worker
+    type: directory
+
+  - source: .claude/agents
+    target: ~/.claude/agents
+    type: directory
+
   - source: .config/agents/vendor/cloudflare-skills/skills/agents-sdk
     target: ~/.agents/skills/agents-sdk
     type: directory

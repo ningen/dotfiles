@@ -1,0 +1,4 @@
+interface:
+  display_name: Diff Command Worker
+  short_description: Low-cost worker pattern for diffs, commands, searches, and logs.
+  default_prompt: "Use $diff-command-worker to delegate read-only diff and command gathering to a cheaper worker model while keeping orchestration in the strongest available model."
