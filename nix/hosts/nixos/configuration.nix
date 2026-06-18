@@ -61,15 +61,11 @@
   networking.networkmanager.enable = true;
 
   fileSystems."/mnt/hdd" = {
-    device = "/dev/disk/by-uuid/0C20743A20742CB8";
-    fsType = "ntfs3";
+    device = "/dev/disk/by-label/steam-hdd";
+    fsType = "ext4";
     options = [
       "nofail"
       "rw"
-      "uid=1000"
-      "gid=100"
-      "umask=022"
-      "windows_names"
       "x-systemd.automount"
       "x-systemd.idle-timeout=600"
     ];
