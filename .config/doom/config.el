@@ -77,5 +77,35 @@
                            "pandoc -f markdown -t org"
                            (current-buffer) t))
 
+(defun ningen/xwidget-available-p ()
+  "Return non-nil when this Emacs can render xwidget WebKit buffers."
+  (and (display-graphic-p)
+       (featurep 'xwidget-internal)
+       (fboundp 'xwidget-webkit-browse-url)))
+
+(defun ningen/browse-url-in-emacs (url &optional new-window)
+  "Open URL inside Emacs, preferring xwidget WebKit when available."
+  (interactive (browse-url-interactive-arg "URL: "))
+  (if (ningen/xwidget-available-p)
+      (xwidget-webkit-browse-url url new-window)
+    (eww-browse-url url new-window)))
+
+(setq browse-url-browser-function #'ningen/browse-url-in-emacs)
+
+(map! :leader
+      :desc "Browse URL in Emacs" "o w" #'ningen/browse-url-in-emacs)
+
+(use-package! xwidgets-reuse
+  :when (featurep 'xwidget-internal)
+  :config
+  (xwidgets-reuse-mode 1))
+
+(after! xwidget
+  (map! :map xwidget-webkit-mode-map
+        :n "H" #'xwidget-webkit-back
+        :n "L" #'xwidget-webkit-forward
+        :n "r" #'xwidget-webkit-reload
+        :n "q" #'quit-window))
+
 (after! eglot
         (typescript-ts-mode . eglot-ensure))

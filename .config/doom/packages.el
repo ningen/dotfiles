@@ -2,3 +2,4 @@
 
 (package! doom-themes)
 (package! org-modern)
+(package! xwidgets-reuse)
