@@ -5,7 +5,7 @@
     hyprland
     xdg-desktop-portal-hyprland
     (waybar.override { cavaSupport = true; })
-    swww
+    awww
     eww
     qt6Packages.fcitx5-configtool
     # rofi-wayland
@@ -31,6 +31,7 @@
   # Firefox設定（MPRIS対応）
   programs.firefox = {
     enable = true;
+    configPath = ".mozilla/firefox";
     profiles.default = {
       settings = {
         # MPRIS (Media Player Remote Interfacing Specification) 有効化

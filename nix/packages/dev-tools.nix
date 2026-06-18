@@ -13,10 +13,12 @@
       direnv
       go
       gcc
+      gnumake
       gh
       lazygit
       tmux
       awscli2
+      bitwarden-cli
       emacs
       # emacs vterm dependencies (cross-platform)
       cmake

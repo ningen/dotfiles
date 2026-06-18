@@ -1,1 +1,3 @@
 nix-local.conf
+.envrc
+.envrc.local
