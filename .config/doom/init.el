@@ -62,7 +62,7 @@
  (javascript +lsp)
  markdown
  (org +pretty)
- python
+ (python +lsp +pyright)
  sh
  (web +lsp)
  yaml

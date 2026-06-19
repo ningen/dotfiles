@@ -8,6 +8,7 @@
       zsh
       volta
       uv
+      python3
       docker
       docker-compose
       direnv
@@ -40,6 +41,7 @@
       codex
       tree-sitter
       pandoc
+      kicad
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies

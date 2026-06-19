@@ -107,5 +107,7 @@
         :n "r" #'xwidget-webkit-reload
         :n "q" #'quit-window))
 
-(after! eglot
-        (typescript-ts-mode . eglot-ensure))
+(after! flycheck
+  (add-to-list 'flycheck-checkers 'python-ruff)
+  (after! lsp-mode
+    (flycheck-add-next-checker 'lsp '(warning . python-ruff))))
