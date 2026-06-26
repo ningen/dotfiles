@@ -1,5 +1,45 @@
 { lib, pkgs, ... }:
+let
+  karabinerConfig = pkgs.writeText "karabiner.json" (
+    builtins.toJSON {
+      global = {
+        check_for_updates_on_startup = true;
+        show_in_menu_bar = true;
+        show_profile_name_in_menu_bar = false;
+      };
+      profiles = [
+        {
+          name = "Default profile";
+          selected = true;
+          simple_modifications = [ ];
+          fn_function_keys = [ ];
+          complex_modifications = {
+            parameters = { };
+            rules = [ ];
+          };
+          virtual_hid_keyboard = {
+            keyboard_type = "ansi";
+            caps_lock_delay_milliseconds = 0;
+          };
+          devices = [
+            {
+              identifiers = {
+                is_keyboard = true;
+                is_pointing_device = false;
+                is_built_in_keyboard = false;
+              };
+              ignore = false;
+              manipulate_caps_lock_led = true;
+              disable_built_in_keyboard_if_exists = true;
+            }
+          ];
+        }
+      ];
+    }
+  );
+in
 {
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [ "symbola" ];
 
   # nix自体の設定
   nix = {
@@ -48,6 +88,10 @@
   system.activationScripts.power.text = lib.mkAfter ''
     /usr/bin/pmset -c disablesleep 1
   '';
+  system.activationScripts.karabiner.text = lib.mkAfter ''
+    /bin/mkdir -p /Users/ningen/.config/karabiner
+    /usr/bin/install -m 0644 -o ningen -g staff ${karabinerConfig} /Users/ningen/.config/karabiner/karabiner.json
+  '';
 
   fonts = {
     packages = with pkgs; [
@@ -88,6 +132,7 @@
       "zen"
       "docker-desktop"
       "cmux"
+      "karabiner-elements"
     ];
   };
 }
