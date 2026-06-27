@@ -62,6 +62,7 @@
   #
   home.sessionVariables = {
     # EDITOR = "emacs";
+    DOOMPROFILE = "default";
   };
   home.sessionPath = [
     "$HOME/.config/emacs/bin"

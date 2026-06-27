@@ -92,6 +92,9 @@ in
     /bin/mkdir -p /Users/ningen/.config/karabiner
     /usr/bin/install -m 0644 -o ningen -g staff ${karabinerConfig} /Users/ningen/.config/karabiner/karabiner.json
   '';
+  system.activationScripts.doomProfile.text = lib.mkAfter ''
+    /bin/launchctl asuser 501 /bin/launchctl setenv DOOMPROFILE default
+  '';
 
   fonts = {
     packages = with pkgs; [

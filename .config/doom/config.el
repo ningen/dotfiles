@@ -87,18 +87,16 @@
   "Open URL inside Emacs, preferring xwidget WebKit when available."
   (interactive (browse-url-interactive-arg "URL: "))
   (if (ningen/xwidget-available-p)
-      (xwidget-webkit-browse-url url new-window)
+      (if (and (require 'xwidgets-reuse nil t)
+               (fboundp 'xwidgets-reuse-xwidget-reuse-browse-url))
+          (xwidgets-reuse-xwidget-reuse-browse-url url)
+        (xwidget-webkit-browse-url url new-window))
     (eww-browse-url url new-window)))
 
 (setq browse-url-browser-function #'ningen/browse-url-in-emacs)
 
 (map! :leader
       :desc "Browse URL in Emacs" "o w" #'ningen/browse-url-in-emacs)
-
-(use-package! xwidgets-reuse
-  :when (featurep 'xwidget-internal)
-  :config
-  (xwidgets-reuse-mode 1))
 
 (after! xwidget
   (map! :map xwidget-webkit-mode-map
