@@ -123,7 +123,6 @@ in
       "discord"
       "google-chrome"
       "aquaskk"
-      "floorp"
       "notion"
       "ghostty"
       "cursor"
@@ -132,9 +131,8 @@ in
       "kitty"
       "rectangle"
       "tailscale-app"
-      "zen"
-      "docker-desktop"
       "cmux"
+      "docker-desktop"
       "karabiner-elements"
     ];
   };
