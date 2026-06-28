@@ -59,7 +59,7 @@
  :lang
  emacs-lisp
  json
- (javascript +lsp)
+ (javascript +lsp +tree-sitter)
  markdown
  (org +pretty)
  (python +lsp +pyright)

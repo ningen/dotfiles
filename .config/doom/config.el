@@ -64,6 +64,39 @@
 (after! projectile
   (ningen/projectile-sync-ghq-projects t))
 
+(require 'web-mode)
+
+(define-derived-mode astro-mode web-mode "Astro"
+  "Major mode for Astro files.")
+
+(add-to-list 'auto-mode-alist '("\\.astro\\'" . astro-mode))
+
+(defun ningen/typescript-sdk-path-from-tsserver ()
+  "Return the TypeScript SDK path that belongs to `tsserver'."
+  (when-let ((tsserver (executable-find "tsserver")))
+    (let* ((package-root (file-name-directory
+                          (directory-file-name
+                           (file-name-directory (file-truename tsserver)))))
+           (tsdk (expand-file-name "lib/node_modules/typescript/lib" package-root)))
+      (when (file-directory-p tsdk)
+        tsdk))))
+
+(after! lsp-mode
+  (require 'lsp-astro nil t)
+  (add-to-list 'lsp-language-id-configuration '(astro-mode . "astro"))
+  (add-hook 'astro-mode-local-vars-hook #'lsp!))
+
+(after! lsp-astro
+  (defun lsp-astro--get-initialization-options ()
+    "Return TypeScript SDK initialization options for astro-ls."
+    (when-let ((tsdk (or (let ((project-tsdk
+                                (expand-file-name "node_modules/typescript/lib"
+                                                  (lsp-workspace-root))))
+                           (when (file-directory-p project-tsdk)
+                             project-tsdk))
+                         (ningen/typescript-sdk-path-from-tsserver))))
+      `(:typescript (:tsdk ,tsdk)))))
+
 (defun org-export-markdown-to-clipboard ()
   "Export the current Org buffer to Markdown and copy it."
   (interactive)
