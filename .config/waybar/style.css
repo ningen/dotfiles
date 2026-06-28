@@ -46,6 +46,33 @@ window#waybar {
     font-weight: bold;
 }
 
+#taskbar {
+    margin: 0 5px;
+}
+
+#taskbar button {
+    padding: 0 8px;
+    margin: 0 2px;
+    background: transparent;
+    color: #d8dee9;
+    border-bottom: 3px solid transparent;
+}
+
+#taskbar button.active {
+    background: #3b4252;
+    color: #eceff4;
+    border-bottom: 3px solid #88c0d0;
+}
+
+#taskbar button.minimized {
+    color: #7b8494;
+}
+
+#taskbar button.urgent {
+    background: #bf616a;
+    color: #ffffff;
+}
+
 #battery {
     /*background-color: #000000;*/
     color: #e5e9f0;

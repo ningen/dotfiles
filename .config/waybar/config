@@ -1,6 +1,6 @@
 {
     "layer": "top", // Waybar at top layer
-    "modules-left": ["clock"],
+    "modules-left": ["clock", "wlr/taskbar"],
     "modules-center": ["cava", "mpris"],
     "modules-right": ["cpu", "memory", "pulseaudio", "tray"],
     "tray": {
@@ -11,6 +11,19 @@
         "tooltip-format": "{:%Y-%m-%d | %H:%M}",
         "format-alt": "{:%Y-%m-%d}",
         "format": "{:%Y-%m-%d %H:%M}"
+    },
+    "wlr/taskbar": {
+        "format": "{icon} {title:.32}",
+        "icon-size": 18,
+        "all-outputs": true,
+        "tooltip-format": "{title}\n{app_id}",
+        "on-click": "activate",
+        "on-click-right": "minimize",
+        "on-click-middle": "close",
+        "ignore-list": [
+            "wofi",
+            "ulauncher"
+        ]
     },
     "cpu": {
         "format": " 󰻠 {usage}%"
