@@ -128,6 +128,8 @@
 
 (setq browse-url-browser-function #'ningen/browse-url-in-emacs)
 
+(load! "lisp/ningen-codex")
+
 (map! :leader
       :desc "Browse URL in Emacs" "o w" #'ningen/browse-url-in-emacs)
 
