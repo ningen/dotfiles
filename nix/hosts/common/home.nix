@@ -109,6 +109,22 @@
     fi
   '';
 
+  home.activation.configureDoomEmacs = lib.hm.dag.entryAfter [ "installDoomEmacs" ] ''
+    doom_target="$HOME/.config/emacs"
+    doom_bin="$doom_target/bin/doom"
+    doom_profile_loader="$HOME/.local/share/doom/profiles.el"
+
+    if [ -x "$doom_bin" ] && [ -d "$HOME/.config/doom" ]; then
+      ${lib.optionalString pkgs.stdenv.isDarwin ''
+        /bin/launchctl setenv DOOMPROFILE default
+      ''}
+
+      if [ ! -f "$doom_profile_loader" ] || ${pkgs.findutils}/bin/find "$HOME/.config/doom" -type f -newer "$doom_profile_loader" | ${pkgs.gnugrep}/bin/grep -q .; then
+        "$doom_bin" sync --profile default
+      fi
+    fi
+  '';
+
   dconf.settings = {
     "org/gnome/desktop/interface" = {
       font-name = "JetBrainsMono Nerd Font 11";
