@@ -63,7 +63,7 @@
           (label :xalign 0 :text "Super + Space  Launcher")
           (label :xalign 0 :text "Super + E      File manager")
           (label :xalign 0 :text "Super + L      Lock")
-          (label :xalign 0 :text "Ctrl + Space   Toggle SKK"))
+          (label :xalign 0 :text "Ctrl + Space   Toggle Mozc"))
         (box :class "section" :orientation "v" :space-evenly false
           (label :class "section-title" :xalign 0 :text "Windows")
           (label :xalign 0 :text "Super + C      Close")

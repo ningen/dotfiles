@@ -174,9 +174,7 @@
     type = "fcitx5";
     fcitx5.addons = [
       pkgs.fcitx5-mozc
-      pkgs.fcitx5-skk
       pkgs.fcitx5-gtk
-      pkgs.fcitx5-anthy
     ];
     fcitx5.settings = {
       globalOptions = {
@@ -189,17 +187,13 @@
         "GroupOrder"."0" = "Default";
         "Groups/0" = {
           "Default Layout" = "us";
-          "DefaultIM" = "skk";
+          "DefaultIM" = "mozc";
           "Name" = "Default";
         };
         "Groups/0/Items/0" = {
           "Name" = "keyboard-us";
         };
         "Groups/0/Items/1" = {
-          "Layout" = "us";
-          "Name" = "skk";
-        };
-        "Groups/0/Items/2" = {
           "Layout" = "us";
           "Name" = "mozc";
         };
