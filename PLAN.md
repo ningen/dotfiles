@@ -22,13 +22,17 @@ NixOS + Hyprland 環境を `end-4/dots-hyprland` 風の Quickshell ベース UI 
   - Linux GUI Home Manager module は `nix/packages/gui.nix`。
 - Hyprland:
   - 実設定は `.config/hypr/hyprland.conf`。
-  - 現在の autostart は `fcitx5`, `waybar`, `eww hypr-keymap`, `hyprshell`。
-  - 現在の launcher は `rofi -show drun`。
+  - 現在の autostart は `fcitx5`, `end4-qs -c ii`。
+  - `waybar`, `eww hypr-keymap`, `hyprshell` は end-4 Quickshell preview と競合するためコメントアウト中。
+  - 現在の launcher は `rofi -show drun` のまま。end-4 overview/launcher への切り替え可否は実セッションで確認する。
 - Packages:
-  - `nix/packages/gui.nix` で `hyprland`, `xdg-desktop-portal-hyprland`, `waybar`, `awww`, `eww`, `rofi`, `ghostty`, `playerctl` などを導入済み。
-  - `nixpkgs#quickshell.meta.mainProgram` は `quickshell` として評価できることを確認済み。
+  - `nix/packages/gui.nix` で `hyprland`, `xdg-desktop-portal-hyprland`, `quickshell`, `waybar`, `awww`, `eww`, `rofi`, `ghostty`, `playerctl` などを導入済み。
+  - end-4 用に `end4-qs` wrapper, Qt/KDE QML runtime, `ddcutil`, `brightnessctl`, `libqalculate` などを追加済み。
+  - `end-4/dots-hyprland` は fixed-output fetch で pin し、Home Manager から `~/.config/quickshell/ii` に配置する。
+- NixOS services:
+  - end-4 smoke test の警告解消用に `services.upower.enable = true;` を追加済み。
 - Git:
-  - 作業開始時点の `git status --short` は clean。
+  - 現在の未コミット差分は end-4 Quickshell preview の作業メモ更新と Material Symbols font 追加。
 
 ## Upstream Notes
 
@@ -141,6 +145,15 @@ Expected result:
 - [x] `timeout 15s end4-qs -p /tmp/dots-hyprland-end4/dots/.config/quickshell/ii/shell.qml` が `Configuration Loaded` まで到達。
 - [x] `end-4/dots-hyprland` を fixed-output fetch し、Home Manager で `~/.config/quickshell/ii` に配置する方針にした。
 - [x] Hyprland autostart を `end4-qs -c ii &` に寄せ、`waybar`, `eww hypr-keymap`, `hyprshell` はコメントアウト候補として残した。
+- [x] `PLAN.md` の Current State を現在の `end4-qs -c ii` autostart 状態に更新。
+- [x] sandbox 外で `timeout 15s end4-qs -c ii` を実行し、Home Manager 配置済み config でも `Configuration Loaded` まで到達することを確認。
+- [x] sandbox 外の `hyprctl configerrors` は空で、Hyprland config error は出ていないことを確認。
+- [x] 現時点では `qs` プロセスは常駐していないため、autostart の実確認は次回 Hyprland login/reload 後に行う。
+- [x] end-4 UI で `expand_more`, `memory` などの Material Symbols 名が文字列として表示され、曜日周辺の表示が重なる問題を確認。
+- [x] 原因は `Material Symbols Rounded` が fontconfig で JetBrainsMono に fallback していたこと。
+- [x] `material-symbols` を Home Manager と NixOS system fonts に追加し、`fc-match 'Material Symbols Rounded'` が正しい font を返すことを確認。
+- [x] `nix run .#switch` を実行し、既存 Quickshell instance を `quickshell kill -c ii --any-display` で終了後、`end4-qs -d -c ii` で再起動。
+- [x] 再起動後の Quickshell は `Configuration Loaded` まで到達し、`hyprctl configerrors` は空。
 
 ## Next Action
 
@@ -148,6 +161,16 @@ end-4 Quickshell preview は `end4-qs -c ii` で autostart する段階まで進
 
 次にやること:
 
-1. 次回 Hyprland login/reload 後に `end4-qs -c ii` の常用感を確認する。
-2. 問題があれば `waybar` / `eww` / `hyprshell` のコメントアウトを一部戻す。
-3. upstream config を pin 更新する運用にするか、必要部分だけ手動移植へ切り替えるか決める。
+1. 次回 Hyprland login/reload 後に `end4-qs -c ii` が実際に起動しているか確認する。
+2. `expand_more`, `memory`, `ram` などが文字列ではなく Material Symbols icon として描画されているか確認する。
+3. 起動している場合は bar, notification, overview/launcher, clipboard, wallpaper/color 周りの常用感を確認する。
+4. 問題があれば `waybar` / `eww` / `hyprshell` のコメントアウトを一部戻す。
+5. 常用できそうなら upstream config を pin 更新する運用にするか、必要部分だけ手動移植へ切り替えるか決める。
+
+Immediate check commands from an active Hyprland session:
+
+```bash
+pgrep -a qs
+hyprctl configerrors
+end4-qs -c ii
+```

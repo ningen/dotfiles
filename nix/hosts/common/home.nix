@@ -18,6 +18,7 @@
   ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
     pkgs.noto-fonts-cjk-sans
     pkgs.noto-fonts-cjk-serif
+    pkgs.material-symbols
     pkgs.nerd-fonts.jetbrains-mono
     pkgs.nerd-fonts.symbols-only
     pkgs.symbola
