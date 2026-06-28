@@ -1,24 +1,67 @@
 { pkgs, ... }:
-{
-  home.packages = with pkgs; [
-    discord
-    hyprland
-    xdg-desktop-portal-hyprland
-    (waybar.override { cavaSupport = true; })
-    awww
-    eww
-    qt6Packages.fcitx5-configtool
-    # rofi-wayland
-    rofi
-    obs-studio
-    vlc
-    alacritty
-    ghostty
-    playerctl
-    slack
-    google-chrome
-    adwaita-icon-theme
+let
+  end4QtRuntimePackages = with pkgs; [
+    qt6Packages.qt5compat
+    qt6Packages.qtpositioning
+    qt6Packages.qtmultimedia
+    qt6Packages.qtsensors
+    qt6Packages.qtsvg
+    kdePackages.syntax-highlighting
+    kdePackages.kirigami.unwrapped
   ];
+  end4QmlImportPath = pkgs.lib.makeSearchPath "lib/qt-6/qml" end4QtRuntimePackages;
+  end4QtPluginPath = pkgs.lib.makeSearchPath "lib/qt-6/plugins" end4QtRuntimePackages;
+  end4Qs = pkgs.writeShellScriptBin "end4-qs" ''
+    export QML2_IMPORT_PATH="${end4QmlImportPath}''${QML2_IMPORT_PATH:+:}''${QML2_IMPORT_PATH:-}"
+    export QT_PLUGIN_PATH="${end4QtPluginPath}''${QT_PLUGIN_PATH:+:}''${QT_PLUGIN_PATH:-}"
+    exec ${pkgs.quickshell}/bin/qs "$@"
+  '';
+  end4DotsHyprland = pkgs.fetchFromGitHub {
+    owner = "end-4";
+    repo = "dots-hyprland";
+    rev = "c04b0bbc8143a2b2166c1f699f7583cb28ff78fe";
+    hash = "sha256-UxCPWLQYFlPEyqqOJ+Xxv+SvYTo0JRA9d3DFqPtNCmg=";
+    fetchSubmodules = true;
+  };
+in
+{
+  home.packages =
+    (with pkgs; [
+      discord
+      hyprland
+      xdg-desktop-portal-hyprland
+      hypridle
+      hyprlock
+      quickshell
+      (waybar.override { cavaSupport = true; })
+      awww
+      eww
+      wallust
+      matugen
+      cliphist
+      swappy
+      hyprpicker
+      ddcutil
+      brightnessctl
+      libqalculate
+      qt6Packages.fcitx5-configtool
+      fuzzel
+      wlogout
+      # rofi-wayland
+      rofi
+      obs-studio
+      vlc
+      alacritty
+      ghostty
+      playerctl
+      slack
+      google-chrome
+      adwaita-icon-theme
+    ])
+    ++ end4QtRuntimePackages
+    ++ [
+      end4Qs
+    ];
 
   home.pointerCursor = {
     package = pkgs.adwaita-icon-theme;
@@ -121,4 +164,6 @@
       line-height: 1.42;
     }
   '';
+
+  xdg.configFile."quickshell/ii".source = "${end4DotsHyprland}/dots/.config/quickshell/ii";
 }
