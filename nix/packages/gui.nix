@@ -16,6 +16,22 @@ let
     export QT_PLUGIN_PATH="${end4QtPluginPath}''${QT_PLUGIN_PATH:+:}''${QT_PLUGIN_PATH:-}"
     exec ${pkgs.quickshell}/bin/qs "$@"
   '';
+  end4Launcher = pkgs.writeShellScriptBin "end4-launcher" ''
+    if ${end4Qs}/bin/end4-qs ipc -c ii --any-display call search toggle; then
+      exit 0
+    fi
+
+    if ! ${end4Qs}/bin/end4-qs -c ii list --all | ${pkgs.gnugrep}/bin/grep -q "Config path: .*quickshell/ii/shell.qml"; then
+      ${end4Qs}/bin/end4-qs -d -c ii
+      ${pkgs.coreutils}/bin/sleep 0.4
+
+      if ${end4Qs}/bin/end4-qs ipc -c ii --any-display call search open; then
+        exit 0
+      fi
+    fi
+
+    exec ${pkgs.rofi}/bin/rofi -show drun
+  '';
   end4DotsHyprland = pkgs.fetchFromGitHub {
     owner = "end-4";
     repo = "dots-hyprland";
@@ -61,6 +77,7 @@ in
     ++ end4QtRuntimePackages
     ++ [
       end4Qs
+      end4Launcher
     ];
 
   home.pointerCursor = {

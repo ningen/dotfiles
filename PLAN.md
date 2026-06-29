@@ -24,11 +24,13 @@ NixOS + Hyprland 環境を `end-4/dots-hyprland` 風の Quickshell ベース UI 
   - 実設定は `.config/hypr/hyprland.conf`。
   - 現在の autostart は `fcitx5`, `end4-qs -c ii`。
   - `waybar`, `eww hypr-keymap`, `hyprshell` は end-4 Quickshell preview と競合するためコメントアウト中。
-  - 現在の launcher は `rofi -show drun` のまま。end-4 overview/launcher への切り替え可否は実セッションで確認する。
+  - 現在の launcher は `end4-launcher` で、`Super + Space` から end-4 overview/search を開く。
+  - `end4-launcher` は Quickshell IPC を優先し、失敗時のみ rofi に fallback する。
 - Packages:
   - `nix/packages/gui.nix` で `hyprland`, `xdg-desktop-portal-hyprland`, `quickshell`, `waybar`, `awww`, `eww`, `rofi`, `ghostty`, `playerctl` などを導入済み。
-  - end-4 用に `end4-qs` wrapper, Qt/KDE QML runtime, `ddcutil`, `brightnessctl`, `libqalculate` などを追加済み。
+  - end-4 用に `end4-qs`, `end4-launcher` wrapper, Qt/KDE QML runtime, `ddcutil`, `brightnessctl`, `libqalculate` などを追加済み。
   - `end-4/dots-hyprland` は fixed-output fetch で pin し、Home Manager から `~/.config/quickshell/ii` に配置する。
+  - end-4 の mutable user config は upstream tree ではなく `~/.config/illogical-impulse/config.json` に保存される。
 - NixOS services:
   - end-4 smoke test の警告解消用に `services.upower.enable = true;` を追加済み。
 - Git:
@@ -105,6 +107,19 @@ Expected result:
 
 - 完全移行、部分移植、現状維持の判断ができる。
 
+### 6. Promote To Daily Driver
+
+- [ ] `preview` という扱いをやめ、end-4 Quickshell を primary shell として記録する。
+- [ ] `waybar`, `eww`, `hyprshell`, `ulauncher` のうち不要になったものを fallback 以外から外す。
+- [ ] `~/.config/illogical-impulse/config.json` の個人設定をバックアップまたは dotfiles 管理する範囲を決める。
+- [ ] end-4 の IPC wrapper をよく使う操作分だけ追加する。
+- [ ] lock/screenshot/clipboard/wallpaper/sidebar の既存 keybind と end-4 機能の役割分担を決める。
+- [ ] upstream pin 更新手順をドキュメント化する。
+
+Expected result:
+
+- end-4 を常用 UI として扱い、fallback と update/rollback の手順が明確になる。
+
 ## Progress Log
 
 ### 2026-06-28
@@ -155,22 +170,34 @@ Expected result:
 - [x] `nix run .#switch` を実行し、既存 Quickshell instance を `quickshell kill -c ii --any-display` で終了後、`end4-qs -d -c ii` で再起動。
 - [x] 再起動後の Quickshell は `Configuration Loaded` まで到達し、`hyprctl configerrors` は空。
 
+### 2026-06-30
+
+- [x] 実使用上、end-4 Quickshell preview は大きな問題なしと確認。
+- [x] `Super + Space` の launcher を `rofi -show drun` から end-4 Quickshell overview/search に切り替え。
+- [x] Home Manager package として `end4-launcher` wrapper を追加。
+- [x] `end4-launcher` は `end4-qs ipc -c ii --any-display call search toggle` を優先し、Quickshell 未起動時は起動後に `search open`、失敗時だけ rofi fallback する。
+- [x] `nix build .#homeConfigurations."ningen@nixos".activationPackage` と `nix run .#switch` が成功。
+- [x] `hyprctl reload config-only` が成功し、`hyprctl configerrors` は空。
+- [x] `end4-launcher` の IPC 呼び出しが exit 0 で成功することを確認。
+- [x] 本格運用に向け、end-4 の mutable user config が `~/.config/illogical-impulse/config.json` に保存され、`~/.config/quickshell/ii` は read-only pin 配置で運用できることを確認。
+- [x] primary shell 化の checkpoint を `Promote To Daily Driver` として追加。
+
 ## Next Action
 
-end-4 Quickshell preview は `end4-qs -c ii` で autostart する段階まで進んだ。
+end-4 Quickshell preview は `end4-qs -c ii` で autostart し、`Super + Space` は Quickshell overview/search を開く段階まで進んだ。実使用上は問題が少ないため、次は preview ではなく daily driver として整える。
 
 次にやること:
 
-1. 次回 Hyprland login/reload 後に `end4-qs -c ii` が実際に起動しているか確認する。
-2. `expand_more`, `memory`, `ram` などが文字列ではなく Material Symbols icon として描画されているか確認する。
-3. 起動している場合は bar, notification, overview/launcher, clipboard, wallpaper/color 周りの常用感を確認する。
-4. 問題があれば `waybar` / `eww` / `hyprshell` のコメントアウトを一部戻す。
-5. 常用できそうなら upstream config を pin 更新する運用にするか、必要部分だけ手動移植へ切り替えるか決める。
+1. `waybar`, `eww`, `hyprshell`, `ulauncher` を fallback として残すか削るか決める。
+2. `~/.config/illogical-impulse/config.json` を dotfiles 管理するか、runtime user state として残すか決める。
+3. lock/screenshot/clipboard/sidebar/wallpaper の keybind を end-4 IPC wrapper に寄せるか決める。
+4. upstream pin 更新手順と rollback 手順を docs にまとめる。
 
 Immediate check commands from an active Hyprland session:
 
 ```bash
 pgrep -a qs
 hyprctl configerrors
-end4-qs -c ii
+end4-launcher
+end4-qs ipc -c ii --any-display show
 ```
