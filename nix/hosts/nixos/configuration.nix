@@ -294,36 +294,15 @@
   environment.systemPackages = with pkgs; [
     kitty
     wofi
-    waybar
     pavucontrol
     kdePackages.dolphin
     kdePackages.dolphin-plugins
     kdePackages.kio-extras
-    grimblast # スクリーンショット
+    grim # スクリーンショット
     slurp # 範囲選択
     wl-clipboard # クリップボード操作
     swayidle # lock 画面
-    swaylock # lock 画面
-    ulauncher # gnome での launcher
   ];
-
-  systemd.user.services.ulauncher = {
-    enable = true;
-    description = "Ulauncher";
-    wantedBy = [ "graphical-session.target" ];
-    wants = [ "graphical-session.target" ];
-    after = [ "graphical-session.target" ];
-    serviceConfig = {
-      Type = "simple";
-      Restart = "on-failure";
-      RestartSec = 1;
-      ExecStart = "${pkgs.ulauncher}/bin/ulauncher --hide-window";
-      Environment = [
-        "GDK_BACKEND=x11"
-        "PATH=${pkgs.coreutils}/bin:${pkgs.glib}/bin"
-      ];
-    };
-  };
 
   # settings gnome desktop shortcut
   programs.dconf.enable = true;
@@ -334,22 +313,7 @@
           switch-input-source = "@as []";
           switch-input-source-backward = "@as []";
         };
-
-        "org/gnome/settings-daemon/plugins/media-keys" = {
-          custom-keybindings = [
-            "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
-          ];
-        };
-
-        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
-          name = "Launch Ulauncher";
-          command = "ulauncher-toggle";
-          binding = "<Super>space";
-        };
       };
-      locks = [
-        "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
-      ];
     }
   ];
 

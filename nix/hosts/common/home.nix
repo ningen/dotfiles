@@ -138,9 +138,6 @@
       switch-input-source-backward = "@as []";
     };
 
-    "org/gnome/settings-daemon/plugins/media-keys" = {
-      ulauncher-toggle = [ "<Super>space" ];
-    };
   };
 
   programs.zsh = {
