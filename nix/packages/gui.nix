@@ -29,9 +29,21 @@ let
         exit 0
       fi
     fi
+
+    exit 1
   '';
   end4Ipc = pkgs.writeShellScriptBin "end4-ipc" ''
-    exec ${end4Qs}/bin/end4-qs ipc -c ii --any-display call "$@"
+    if ${end4Qs}/bin/end4-qs ipc -c ii --any-display call "$@"; then
+      exit 0
+    fi
+
+    if ! ${end4Qs}/bin/end4-qs -c ii list --all | ${pkgs.gnugrep}/bin/grep -q "Config path: .*quickshell/ii/shell.qml"; then
+      ${end4Qs}/bin/end4-qs -d -c ii
+      ${pkgs.coreutils}/bin/sleep 0.4
+      exec ${end4Qs}/bin/end4-qs ipc -c ii --any-display call "$@"
+    fi
+
+    exit 1
   '';
   end4DotsHyprland = pkgs.fetchFromGitHub {
     owner = "end-4";
