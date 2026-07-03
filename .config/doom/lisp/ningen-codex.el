@@ -1,6 +1,7 @@
 ;;; ningen-codex.el -*- lexical-binding: t; -*-
 
 (require 'subr-x)
+(require 'seq)
 (require 'project nil t)
 
 (defgroup ningen-codex nil
@@ -24,6 +25,16 @@
   :type '(choice (const "untrusted")
                  (const "on-request")
                  (const "never"))
+  :group 'ningen-codex)
+
+(defcustom ningen-codex-no-alt-screen t
+  "Run Codex TUI without the terminal alternate screen in vterm."
+  :type 'boolean
+  :group 'ningen-codex)
+
+(defcustom ningen-codex-vterm-term "xterm-256color"
+  "TERM value used for Codex TUI sessions inside vterm."
+  :type 'string
   :group 'ningen-codex)
 
 (defcustom ningen-codex-exec-sandbox "read-only"
@@ -60,6 +71,38 @@
              (cons ningen-codex-command args)
              " "))
 
+(defun ningen-codex--terminfo-dirs ()
+  "Return readable terminfo directories for Codex TUI sessions."
+  (string-join
+   (seq-filter #'file-directory-p
+               (list (expand-file-name "~/.nix-profile/share/terminfo")
+                     (expand-file-name "~/.local/state/nix/profiles/profile/share/terminfo")
+                     (format "/etc/profiles/per-user/%s/share/terminfo" user-login-name)
+                     "/run/current-system/sw/share/terminfo"
+                     "/usr/share/terminfo"))
+   path-separator))
+
+(defun ningen-codex--vterm-shell-command (args)
+  "Return a shell command for Codex ARGS with vterm-safe terminal env."
+  (let ((env-args (append (list "-u" "TERMINFO"
+                                (format "TERM=%s" ningen-codex-vterm-term))
+                          (when-let ((terminfo-dirs (ningen-codex--terminfo-dirs)))
+                            (unless (string-empty-p terminfo-dirs)
+                              (list (format "TERMINFO_DIRS=%s" terminfo-dirs)))))))
+    (mapconcat #'shell-quote-argument
+               (append (list "env") env-args (cons ningen-codex-command args))
+               " ")))
+
+(defun ningen-codex--interactive-args (&optional extra)
+  "Return Codex interactive ARGS for the current project plus EXTRA."
+  (let ((root (ningen-codex--project-root)))
+    (append extra
+            (list "--cd" root
+                  "--sandbox" ningen-codex-sandbox
+                  "--ask-for-approval" ningen-codex-approval)
+            (when ningen-codex-no-alt-screen
+              (list "--no-alt-screen")))))
+
 (defun ningen-codex--vterm-run (args buffer-suffix)
   "Run Codex with ARGS in a project-local vterm BUFFER-SUFFIX."
   (ningen-codex--ensure-command)
@@ -77,30 +120,20 @@
     (if buffer
         (pop-to-buffer buffer)
       (vterm buffer-name)
-      (vterm-send-string (ningen-codex--shell-command args))
+      (vterm-send-string (ningen-codex--vterm-shell-command args))
       (vterm-send-return))))
 
 (defun ningen-codex-open ()
   "Open Codex TUI for the current project."
   (interactive)
-  (let ((root (ningen-codex--project-root)))
-    (ningen-codex--vterm-run
-     (list "--cd" root
-           "--sandbox" ningen-codex-sandbox
-           "--ask-for-approval" ningen-codex-approval)
-     "tui")))
+  (ningen-codex--vterm-run (ningen-codex--interactive-args) "tui"))
 
 (defun ningen-codex-resume-last ()
   "Resume the latest Codex session for the current project."
   (interactive)
-  (let ((root (ningen-codex--project-root)))
-    (ningen-codex--vterm-run
-     (list "resume"
-           "--last"
-           "--cd" root
-           "--sandbox" ningen-codex-sandbox
-           "--ask-for-approval" ningen-codex-approval)
-     "resume")))
+  (ningen-codex--vterm-run
+   (ningen-codex--interactive-args (list "resume" "--last"))
+   "resume"))
 
 (defun ningen-codex-doctor ()
   "Run `codex doctor' in vterm."

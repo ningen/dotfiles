@@ -46,5 +46,7 @@
       # Linux only: emacs vterm dependencies
       libvterm-neovim
       libtool
+      # Codex CLI Linux sandbox dependency
+      bubblewrap
     ];
 }
