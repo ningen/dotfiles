@@ -1,0 +1,4 @@
+interface:
+  display_name: Tmux Interactive Runner
+  short_description: Run interactive or long-running commands in tmux for user input and monitoring.
+  default_prompt: "Use $tmux-interactive-runner to run password-gated, interactive, TUI, or long-running commands through tmux so I can attach when input is needed."

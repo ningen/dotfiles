@@ -81,6 +81,10 @@ common:
     target: ~/.agents/skills/diff-command-worker
     type: directory
 
+  - source: .config/agents/skills/tmux-interactive-runner
+    target: ~/.agents/skills/tmux-interactive-runner
+    type: directory
+
   - source: .claude/agents
     target: ~/.claude/agents
     type: directory
