@@ -44,7 +44,7 @@
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies
-      libvterm
+      libvterm-neovim
       libtool
     ];
 }
