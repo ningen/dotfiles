@@ -149,6 +149,8 @@
     variant = "";
   };
 
+  hardware.keyboard.qmk.enable = true;
+
   # Enable CUPS to print documents.
   services.printing.enable = true;
   services.udisks2.enable = true;
@@ -157,6 +159,16 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings = {
+      General = {
+        Experimental = true;
+        FastConnectable = true;
+        NameResolving = true;
+      };
+      Policy = {
+        AutoEnable = true;
+      };
+    };
   };
   services.blueman.enable = true;
 
