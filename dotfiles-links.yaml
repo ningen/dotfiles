@@ -135,6 +135,10 @@ unix_only:
     target: $CONFIG_DIR/hypr
     type: directory
 
+  - source: .config/wallpapers
+    target: $CONFIG_DIR/wallpapers
+    type: directory
+
   - source: .config/illogical-impulse/config.json
     target: $CONFIG_DIR/illogical-impulse/config.json
     type: file

@@ -79,8 +79,8 @@
             "widgetsFactor": 1.2,
             "workspaceZoom": 1.07
         },
-        "thumbnailPath": "",
-        "wallpaperPath": "",
+        "thumbnailPath": "~/.config/wallpapers/hyprland-tokyo-rain.png",
+        "wallpaperPath": "~/.config/wallpapers/hyprland-tokyo-rain.png",
         "widgets": {
             "clock": {
                 "cookie": {
