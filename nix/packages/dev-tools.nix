@@ -1,4 +1,12 @@
 { pkgs, lib, ... }:
+let
+  emacsGoTreesitGrammars = pkgs.runCommand "emacs-go-treesit-grammars" { } ''
+    mkdir -p "$out/lib"
+    ln -s ${pkgs.tree-sitter-grammars.tree-sitter-go}/parser "$out/lib/libtree-sitter-go.so"
+    ln -s ${pkgs.tree-sitter-grammars.tree-sitter-gomod}/parser "$out/lib/libtree-sitter-gomod.so"
+    ln -s ${pkgs.tree-sitter-grammars.tree-sitter-gowork}/parser "$out/lib/libtree-sitter-gowork.so"
+  '';
+in
 {
   home.packages =
     with pkgs;
@@ -21,6 +29,7 @@
       awscli2
       bitwarden-cli
       emacs
+      emacsGoTreesitGrammars
       # emacs vterm dependencies (cross-platform)
       cmake
       ripgrep

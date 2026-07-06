@@ -25,6 +25,20 @@
                     "/nix/var/nix/profiles/default/bin"))
   (ningen/add-exec-path path))
 
+(defun ningen/add-treesit-extra-load-path (profile)
+  "Add PROFILE's lib directory to `treesit-extra-load-path' when it exists."
+  (let ((lib (expand-file-name "lib" profile)))
+    (when (file-directory-p lib)
+      (add-to-list 'treesit-extra-load-path lib))))
+
+(after! treesit
+  (dolist (profile (list (expand-file-name "~/.nix-profile")
+                         (expand-file-name "~/.local/state/nix/profiles/profile")
+                         (format "/etc/profiles/per-user/%s" user-login-name)
+                         "/run/current-system/sw"
+                         "/nix/var/nix/profiles/default"))
+    (ningen/add-treesit-extra-load-path profile)))
+
 (after! org
   (setq org-todo-keywords '((sequence "TODO" "DOING" "|" "DONE" "CANCELLED"))
         org-export-backends '(md html)
@@ -117,10 +131,10 @@
   (add-hook 'before-save-hook #'ningen/go-format-buffer nil t))
 
 (setq gofmt-command "gofumpt")
-(add-hook 'go-mode-hook #'subword-mode)
-(add-hook 'go-mode-hook #'ningen/go-mode-setup)
-(add-hook 'go-ts-mode-hook #'subword-mode)
-(add-hook 'go-ts-mode-hook #'ningen/go-mode-setup)
+(dolist (hook '(go-mode-hook go-ts-mode-hook))
+  (add-hook hook #'subword-mode)
+  (add-hook hook #'ningen/go-mode-setup)
+  (add-hook hook #'lsp-deferred))
 
 (after! lsp-mode
   (setq lsp-go-use-gofumpt t
