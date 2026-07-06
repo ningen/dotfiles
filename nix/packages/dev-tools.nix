@@ -32,6 +32,9 @@
       bun
       go
       gopls
+      gotools
+      gofumpt
+      golangci-lint
       devenv
       claude-code
       nixd

@@ -64,6 +64,7 @@
  (org +pretty)
  (python +lsp +pyright)
  sh
+ (go +lsp +tree-sitter)
  (web +lsp)
  yaml
  nix

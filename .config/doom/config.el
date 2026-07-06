@@ -1,5 +1,6 @@
 ;;; config.el -*- lexical-binding: t; -*-
 
+
 (setq user-full-name "ningen"
       doom-theme 'doom-one
       doom-font (font-spec :family "JetBrainsMono Nerd Font" :size 14)
@@ -96,6 +97,46 @@
                              project-tsdk))
                          (ningen/typescript-sdk-path-from-tsserver))))
       `(:typescript (:tsdk ,tsdk)))))
+
+(defun ningen/go-format-buffer ()
+  "Format Go buffers and organize imports."
+  (when (derived-mode-p 'go-mode 'go-ts-mode)
+    (if (bound-and-true-p lsp-mode)
+        (progn
+          (lsp-organize-imports)
+          (lsp-format-buffer))
+      (when (fboundp 'gofmt)
+        (gofmt)))))
+
+(defun ningen/go-mode-setup ()
+  "Apply local Go editing defaults."
+  (setq tab-width 4
+        indent-tabs-mode t)
+  (when (boundp 'go-ts-mode-indent-offset)
+    (setq-local go-ts-mode-indent-offset 4))
+  (add-hook 'before-save-hook #'ningen/go-format-buffer nil t))
+
+(setq gofmt-command "gofumpt")
+(add-hook 'go-mode-hook #'subword-mode)
+(add-hook 'go-mode-hook #'ningen/go-mode-setup)
+(add-hook 'go-ts-mode-hook #'subword-mode)
+(add-hook 'go-ts-mode-hook #'ningen/go-mode-setup)
+
+(after! lsp-mode
+  (setq lsp-go-use-gofumpt t
+        lsp-go-staticcheck t
+        lsp-go-analyses '((fieldalignment . t)
+                          (nilness . t)
+                          (shadow . t)
+                          (unusedparams . t)
+                          (unusedwrite . t)
+                          (useany . t))))
+
+(custom-set-faces!
+  '(go-package-name :foreground "LightGoldenrod" :weight bold)
+  '(go-func-name :foreground "DeepSkyBlue" :weight bold)
+  '(go-builtins :foreground "LightSkyBlue")
+  '(go-keyword :foreground "Violet" :weight bold))
 
 (defun org-export-markdown-to-clipboard ()
   "Export the current Org buffer to Markdown and copy it."
