@@ -1,18 +1,24 @@
 { pkgs, ... }:
 let
   orgProtocolClient = pkgs.writeShellScriptBin "org-protocol-client" ''
-    exec ${pkgs.emacs}/bin/emacsclient -n -a "" "$@"
+    exec ${pkgs.emacs}/bin/emacsclient -n --alternate-editor=false "$@"
   '';
 in
 {
   xdg.enable = true;
-  xdg.desktopEntries.org-protocol = {
-    name = "Org Protocol";
-    exec = "${orgProtocolClient}/bin/org-protocol-client %u";
-    terminal = false;
-    type = "Application";
-    mimeType = [ "x-scheme-handler/org-protocol" ];
-  };
+  xdg.dataFile."applications/org-protocol.desktop".text = ''
+    [Desktop Entry]
+    Name=Org Protocol
+    Exec=${orgProtocolClient}/bin/org-protocol-client %u
+    MimeType=x-scheme-handler/org-protocol;
+    Terminal=false
+    Type=Application
+    Version=1.5
+  '';
+  xdg.dataFile."applications/mimeinfo.cache".text = ''
+    [MIME Cache]
+    x-scheme-handler/org-protocol=org-protocol.desktop;
+  '';
   xdg.mimeApps = {
     enable = true;
     defaultApplications = {
@@ -42,6 +48,10 @@ in
       "x-scheme-handler/chrome" = "firefox.desktop";
       "x-scheme-handler/http" = "firefox.desktop";
       "x-scheme-handler/https" = "firefox.desktop";
+      "x-scheme-handler/org-protocol" = "org-protocol.desktop";
+    };
+    associations.removed = {
+      "x-scheme-handler/org-protocol" = "emacsclient.desktop";
     };
   };
   xdg.configFile."mimeapps.list".force = true;

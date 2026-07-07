@@ -39,11 +39,14 @@
                          "/nix/var/nix/profiles/default"))
     (ningen/add-treesit-extra-load-path profile)))
 
+(require 'server)
+(require 'org-protocol)
+(unless (advice-member-p #'org--protocol-detect-protocol-server #'server-visit-files)
+  (advice-add #'server-visit-files :around #'org--protocol-detect-protocol-server))
+(unless (server-running-p)
+  (server-start))
+
 (after! org
-  (require 'org-protocol)
-  (require 'server)
-  (unless (server-running-p)
-    (server-start))
   (setq org-todo-keywords '((sequence "TODO" "DOING" "|" "DONE" "CANCELLED"))
         org-export-backends '(md html)
         org-startup-indented t
