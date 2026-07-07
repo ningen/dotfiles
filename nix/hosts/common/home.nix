@@ -142,6 +142,7 @@
 
   programs.zsh = {
     enable = true;
+    dotDir = config.home.homeDirectory;
     initContent = builtins.readFile ./zshrc.zsh;
     shellAliases = {
       g = "git";
