@@ -49,7 +49,19 @@
         org-capture-templates
         `(("t" "Task" entry
            (file+headline ,org-default-notes-file "Inbox")
-           "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n**調査内容\n\n** メモ\n"))))
+           "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%a\n")
+          ("n" "Note" entry
+           (file+headline ,(expand-file-name "notes.org" org-directory) "Inbox")
+           "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%i\n%a\n")
+          ("l" "Link" entry
+           (file+headline ,(expand-file-name "links.org" org-directory) "Inbox")
+           "* %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n%a\n%i\n")
+          ("w" "Web capture" entry
+           (file+headline ,(expand-file-name "links.org" org-directory) "Inbox")
+           "* %:description\n:PROPERTIES:\n:CREATED: %U\n:URL: %:link\n:END:\n\n%i\n")
+          ("r" "Research" entry
+           (file+headline ,(expand-file-name "research.org" org-directory) "Inbox")
+           "* %^{Topic}\n:PROPERTIES:\n:CREATED: %U\n:END:\n\n** Question\n%?\n\n** Sources\n- %a\n\n** Notes\n%i\n\n** Next\n- TODO \n"))))
 
 (after! org-modern
   (global-org-modern-mode 1))
