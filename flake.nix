@@ -91,6 +91,7 @@
           system = "aarch64-darwin";
           modules = [
             ./nix/hosts/common/home.nix
+            ./nix/hosts/ningen-mba/home.nix
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
