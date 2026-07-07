@@ -40,6 +40,10 @@
     (ningen/add-treesit-extra-load-path profile)))
 
 (after! org
+  (require 'org-protocol)
+  (require 'server)
+  (unless (server-running-p)
+    (server-start))
   (setq org-todo-keywords '((sequence "TODO" "DOING" "|" "DONE" "CANCELLED"))
         org-export-backends '(md html)
         org-startup-indented t

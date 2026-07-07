@@ -113,6 +113,7 @@
           system = "x86_64-linux";
           modules = [
             ./nix/hosts/common/home.nix
+            ./nix/hosts/nixos/home.nix
             ./nix/packages/gui.nix
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
