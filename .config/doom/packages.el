@@ -2,4 +2,5 @@
 
 (package! doom-themes)
 (package! org-modern)
+(package! vertico-posframe)
 (package! xwidgets-reuse)

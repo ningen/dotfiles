@@ -12,6 +12,16 @@
 (setq display-line-numbers-type t)
 (setq-default show-trailing-whitespace t)
 
+(use-package! vertico-posframe
+  :when (display-graphic-p)
+  :after vertico
+  :config
+  (setq vertico-posframe-width 100
+        vertico-posframe-height 20
+        vertico-posframe-border-width 1
+        vertico-posframe-poshandler #'posframe-poshandler-frame-center)
+  (vertico-posframe-mode 1))
+
 (defun ningen/add-exec-path (path)
   "Add PATH to both `exec-path' and the process PATH when it exists."
   (when (file-directory-p path)
