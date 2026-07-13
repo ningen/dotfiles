@@ -1,288 +1,372 @@
-# Windows + Ubuntu WSL + macOS 移行計画
+# Windows 11 + Ubuntu WSL 2 + macOS 移行計画
 
 更新日: 2026-07-14
 
 ## 目的
 
-現在の NixOS デスクトップを Windows ホストと Ubuntu WSL 2 に置き換え、macOS と合わせて次の役割分担にする。
+現在の NixOS デスクトップを Windows 11 ホストと Ubuntu WSL 2 に置き換える。移行後の役割は次のとおり。
 
-- Windows は GUI、IME、ブラウザ、ターミナル、Docker Desktop を担当する。
-- Ubuntu WSL はシェル、エディタ、言語処理系、CLI、開発用ソースコードを担当する。
-- macOS は現在の Home Manager と nix-darwin 構成を維持する。
-- 共通の CLI 設定は Home Manager で共有し、Windows 固有設定は PowerShell と winget で管理する。
-- Windows のブラウザから Ubuntu WSL の Emacsへ `org-protocol` URL を渡せるようにする。
+- Windows 11 は GUI、IME、ブラウザ、ターミナル、VS Code、Docker Desktop を担当する。
+- Ubuntu WSL 2 はシェル、エディタ、言語処理系、CLI、開発用ソースコードを担当する。
+- macOS は既存の Home Manager と nix-darwin 構成を維持する。
+- Unix 共通の CLI 設定は Home Manager で共有し、Windows ネイティブ設定は PowerShell と winget で管理する。
+- Chrome の bookmarklet から Ubuntu WSL の Doom Emacs へ `org-protocol` URL を渡す。
 
-移行完了までは現在の NixOS 設定をロールバック用に残す。Windows + WSL を日常利用できると確認してから、NixOS 固有の出力、input、ドキュメントを整理する。
+移行完了までは NixOS 構成を残す。Windows + WSL を7日間連続で日常利用し、受け入れ条件をすべて満たした後に NixOS 固有構成を削除する。
 
-## 決定事項
+## 固定する前提
 
-- WSL distro は Ubuntu WSL 2 を使う。
-- WSL のユーザー名は `ningen` とする。
-- Home Manager の WSL 出力名はホスト名に依存しない `ningen@wsl` とする。
-- Windows ネイティブアプリと WSL の設定は混ぜない。
-- 開発リポジトリは WSL の Linux ファイルシステム、原則として `~/ghq` 以下に置く。
-- Windows 用 dotfiles は Windows 側の別 checkout から適用する。Windows アプリから `\\wsl$` 上の設定へ恒常的にリンクしない。
-- Windows の秘密情報、資格情報、ブラウザプロファイル、SSH 秘密鍵は Git 管理しない。
-- NixOS の Hyprland/end-4 設定は WSL に移植しない。
+| 項目 | 値 |
+| --- | --- |
+| Windows | Windows 11 x86_64 |
+| WSL | WSL 2 / `Ubuntu-24.04` |
+| WSL ユーザー | `ningen` |
+| Home Manager 出力 | `ningen@wsl` |
+| Windows checkout | `%USERPROFILE%\ghq\github.com\ningen\dotfiles` |
+| WSL checkout | `~/ghq/github.com/ningen/dotfiles` |
+| WSL 開発リポジトリ | `~/ghq` 以下 |
+| Org データ | private repository `git@github.com:ningen/org.git` |
+| Docker daemon / CLI | Docker Desktop WSL Integration |
+| SSH / GPG agent | WSL 内で管理 |
+| Emacs | WSLg GUI + `default` daemon |
+| Chrome capture | リポジトリ管理の bookmarklet |
 
-## 推奨する最終構成
+Windows checkout と WSL checkout は分離する。Windows アプリから `\\wsl$` 上の dotfiles へ恒常的にリンクしない。秘密鍵、トークン、ブラウザプロファイル、Windows Credential Manager、Docker 認証ファイル、Org データは dotfiles repository に含めない。
+
+## 完成時の構成
 
 ```text
-Windows host
-├── WezTerm
-├── VS Code
-├── Chrome / browser extensions
-├── Windows IME
+Windows 11
+├── WezTerm / Windows Terminal
+├── VS Code + WSL extension
+├── Chrome / Windows IME
 ├── Docker Desktop
-├── PowerShell 7
-├── winget
-├── Nerd Font
+├── PowerShell 7 / winget / Git for Windows
+├── JetBrainsMono Nerd Font
 ├── %USERPROFILE%\.wslconfig
 └── org-protocol URL handler
          │
-         └── wsl.exe -d Ubuntu -u ningen
+         └── wsl.exe -d Ubuntu-24.04 -u ningen
                          │
-Ubuntu WSL 2             │
-├── Nix + Home Manager   │
+Ubuntu 24.04 WSL 2      │
+├── Nix + Home Manager  │
 ├── zsh / starship / tmux
 ├── Git / gh / ghq
 ├── Neovim / Doom Emacs ◀┘
 ├── Node.js / Python / Go / language servers
-├── Docker CLI
-└── ~/ghq 以下の開発リポジトリ
+├── Docker Desktop 提供の Docker CLI
+├── ~/ghq 以下の開発リポジトリ
+└── ~/org -> git@github.com:ningen/org.git
 
 macOS
-├── Home Manager
-├── nix-darwin
+├── Home Manager / nix-darwin
 ├── Homebrew casks
-└── 既存の macOS org-protocol handler
+├── 既存の org-protocol AppleScript handler
+└── ~/org -> git@github.com:ningen/org.git
 ```
 
-## 現状の問題
+## 公開インターフェース
 
-### Home Manager 出力がホスト名に依存している
+### Flake apps
 
-`nix run .#switch` は `ningen@$HOSTNAME` を選んでいる。新しい Windows のコンピューター名、WSL の hostname、Ubuntu distro の設定が現在の `ningen@DESKTOP-3TRFQRS` と一致しないと適用できない。
+- `nix run .#switch-wsl`: flake 内の Home Manager binaryで `ningen@wsl` を適用する。
+- `nix run .#switch-macos`: macOS Home Managerを適用した後、nix-darwinを適用する。
+- `nix run .#update-lock`: `nix flake update` だけを実行する。
+- hostname 依存の `switch` と、lock更新後に設定まで適用する `update` は削除する。
 
-### Linux と WSL の区別がない
+通常の switch は `flake.lock` を変更しない。
 
-現在は `pkgs.stdenv.isLinux` や `unix_only` により、通常のデスクトップ Linux と WSL が同じ扱いになる。フォント、dconf、Hyprland、wallpaper、illogical-impulse など、WSL に不要な設定が混ざる可能性がある。
+### Windows 環境変数
 
-### Windows 用リンク範囲が広すぎる
+Windows setup が次のユーザースコープ環境変数を設定する。
 
-`setup-dotfiles.ps1` は `common` の全項目を Windows に適用する。現在の `common` には tmux、Doom Emacs、Nix、Kitty、Yazi などが含まれ、Windows ネイティブ側では使わない設定も多い。一方、`windows_only` は空になっている。
+```powershell
+[Environment]::SetEnvironmentVariable('DOTFILES_WSL_DISTRO', 'Ubuntu-24.04', 'User')
+[Environment]::SetEnvironmentVariable('DOTFILES_WSL_USER', 'ningen', 'User')
+```
 
-### Docker daemon の所有者が決まっていない
+WezTerm、Windows Terminal profile generator、org-protocol handlerはこの2値を参照する。未設定時はエラーで停止し、暗黙の既定 distro へ接続しない。
 
-Home Manager は Docker CLI と Compose を導入するが、通常の Ubuntu WSL ではそれだけでは daemon が動かない。Docker Desktop の WSL Integration と WSL 内 Docker Engine を重複させない方針が必要になる。
+### Setup scripts
 
-### Windows/WSL 間の連携が不足している
+- `setup-dotfiles.sh --dry-run`: リンク対象、source の存在、既存targetの扱いを表示し、ファイルを変更しない。
+- `setup-dotfiles.ps1 -DryRun`: Windows側で同じ検証を行い、symlink、環境変数、レジストリを変更しない。
+- `setup-dotfiles.sh --config PATH` / `setup-dotfiles.ps1 -ConfigPath PATH`: defaultの`dotfiles-links.yaml`の代わりに検証用configを読む。
+- source が1件でも存在しなければ、リンクを1件も変更せず非ゼロ終了する。
+- 既存の非symlink targetは上書きせず、警告してskipする。
+- Windows実適用前の環境変数、Git設定、managed fragment、`.wslconfig`所有状態は`%LOCALAPPDATA%\ningen-dotfiles\setup-state.json`へ記録する。secretは記録しない。
+- setup stateのbaseline fieldは最初の実適用時だけ書き、installer/setupの再実行では上書きしない。Terminal original backupと`.wslconfig`の`createdBySetup`も初回値を保持する。
 
-- Neovim は `unnamedplus` を使うが、WSL 用 clipboard provider がない。
-- Yazi は Linux で `xdg-open` を使うため、Windows アプリへ渡せない場合がある。
-- Windows の `org-protocol` URL handler がない。
-- Windows と WSL の GitHub、SSH、GPG 認証方針が未定義。
-- WezTerm は既定 WSL distro を起動しており、接続先が固定されていない。
+### org-protocol client
 
-## 設定の責任範囲
+- WSL側の固定パスは `/home/ningen/.local/bin/org-protocol-client` とする。
+- clientは `org-protocol://...` URLをちょうど1引数で受け取る。引数が0件または2件以上なら失敗する。
+- `DOOMPROFILE=default` と daemon名 `default` を明示し、URLを `emacsclient` へ1引数のまま渡す。
 
-### このリポジトリで管理するもの
+## 管理対象
+
+このrepositoryで次を管理する。
 
 - Nix flake、Home Manager、nix-darwin
-- Ubuntu WSL 用 Home Manager モジュール
-- Windows アプリの winget パッケージ一覧
+- WSL用Home Manager moduleと明示的なflake apps
+- winget package installer
 - PowerShell profile
-- `.wslconfig` の共通設定またはテンプレート
-- WezTerm、VS Code、Windows Terminalを使う場合の設定
-- `org-protocol` の PowerShell handler と登録スクリプト
-- WSL 側の `org-protocol-client`
-- clipboard、ファイルオープンなどの Windows/WSL bridge
-- Windows、WSL、macOS それぞれのセットアップスクリプト
-- セットアップ手順、手動確認項目、ロールバック手順
+- `.wslconfig` template
+- WezTerm、Windows Terminal、VS CodeのWindows設定
+- Windows用org-protocol handler、登録・解除script、bookmarklet生成元
+- WSL用org-protocol client、clipboard wrapper、opener wrapper
+- Windows、WSL、macOSのsetup・検証・rollback手順
 
-### このリポジトリで管理しないもの
+次は管理しない。
 
-- SSH 秘密鍵、GPG 秘密鍵
-- GitHub、AWS、Docker、Bitwarden のトークン
-- Windows Credential Manager の内容
-- ブラウザプロファイルとログイン状態
-- Docker の認証ファイル
-- WSL の `ext4.vhdx`
-- `%APPDATA%` 全体やレジストリ全体の export
-- GPU、Bluetoothなどハードウェア固有ドライバー
+- SSH/GPG秘密鍵とagent socket
+- GitHub、AWS、Docker、Bitwardenのtoken
+- Windows Credential Manager、ブラウザprofile、Docker認証ファイル
+- WSLの`ext4.vhdx`
+- `%APPDATA%` 全体やregistry全体のexport
+- CPU、memory、swapのマシン固有値
+- GPU、Bluetooth等のdriver
+- `ningen/org` の内容
 
-## 予定するディレクトリ構成
-
-既存構造を一度に変えず、必要なファイルから段階的に追加する。
+## 実装する構成
 
 ```text
 nix/hosts/
-├── common/
-│   ├── home.nix
-│   └── zshrc.zsh
-├── wsl/
-│   └── home.nix
+├── common/home.nix
+├── wsl/home.nix
 ├── ningen-mba/
-│   ├── home.nix
-│   └── macos.nix
-└── nixos/                 # 移行確認までは残す
+└── nixos/                    # Phase 7までは保持
 
 windows/
-├── packages/
-│   └── winget.json        # または再現可能な install script
-├── powershell/
-│   └── Microsoft.PowerShell_profile.ps1
-├── wsl/
-│   └── .wslconfig
-├── org-protocol/
-│   ├── invoke-wsl-emacs.ps1
-│   └── register.ps1
-└── terminal/              # Windows Terminalを使う場合
-    └── settings.json
+├── packages/install.ps1
+├── powershell/Microsoft.PowerShell_profile.ps1
+├── rollback.ps1
+├── wsl/.wslconfig.example
+├── terminal/profile.template.json
+└── org-protocol/
+    ├── bookmarklet.js
+    ├── get-bookmarklet.ps1
+    ├── invoke-wsl-emacs.ps1
+    ├── register.ps1
+    └── unregister.ps1
 
-docs/
-└── windows-wsl.md
+docs/windows-wsl.md
 ```
 
-## 実施手順
+## Phase 0: バックアップと移行条件をそろえる
 
-### Phase 0: 移行前のバックアップと前提確認
-
-- [ ] NixOS の最新コミットを push し、未コミット変更がないことを確認する。
-- [ ] 必要なら `pre-windows-wsl-migration` タグまたは退避ブランチを作る。
-- [ ] `~/ghq`、Org ファイル、SSH/GPG、ブラウザ、パスワード管理ツールなどのバックアップ先を確認する。
-- [ ] BitLocker 回復キーと Windows インストールメディアを確認する。
-- [ ] Windows の CPU アーキテクチャを確認する。ARM Windows の場合は flake に `aarch64-linux` を追加する。
-- [ ] Windows で使う Ubuntu の正式な distro 名を `wsl.exe -l -v` で確認する。
-- [ ] Windows のユーザー名と WSL のユーザー名 `ningen` を確認する。
-- [ ] Docker は Windows の Docker Desktop + WSL Integration を使う方針で確定する。
+- [ ] 作業ツリーをcleanにし、現在のNixOS構成をpushする。
+- [ ] 現在の`~/org`、`~/ghq`、SSH/GPG秘密鍵、ブラウザ、Bitwardenのバックアップを確認する。
+- [ ] `ningen/org` がなければprivate repositoryとして作成し、現在の`~/org`を最初にpushする。
+- [ ] 別の場所へcloneしてOrgファイルを読めることを確認する。
+- [ ] BitLocker回復キーとWindows 11インストールメディアを確認する。
+- [ ] 対象CPUがx86_64であることを確認する。異なる場合はこの計画を停止する。
+- [ ] Windows Developer Modeを有効にする。
+- [ ] NixOSへ戻す手順とバックアップ場所を`docs/windows-wsl.md`へ記録する。
 
 完了条件:
 
-- NixOS に戻せるバックアップがある。
-- Windows と WSL のユーザー名、distro 名、CPU アーキテクチャが分かっている。
+- NixOSへ戻せるcommitとバックアップがある。
+- Org repositoryを別cloneから復元できる。
+- Windows 11 x86_64を導入できる。
 
-### Phase 1: flake に固定名の WSL 出力を追加する
+## Phase 1: WSL出力とモジュール境界を作る
 
 - [ ] `nix/hosts/wsl/home.nix` を追加する。
-- [ ] `flake.nix` に `homeConfigurations."ningen@wsl"` を追加する。
-- [ ] 現在の `ningen@DESKTOP-3TRFQRS` は移行中だけ alias として残すか、利用箇所を確認してから削除する。
-- [ ] `nix run .#switch` が `$HOSTNAME` に依存しないようにする。
-- [ ] `switch-wsl`、`switch-macos` など、対象が明確な flake app を用意するか検討する。
-- [ ] `nix run .#update` と設定適用を分離する。通常の switch で `flake.lock` を自動更新しないようにする。
-- [ ] WSL モジュールへ共通 CLI、開発ツール、language servers、formatters、linters、node packages を読み込む。
-- [ ] WSL モジュールへ `nix/hosts/nixos/home.nix` と `nix/packages/gui.nix` を読み込まない。
+- [ ] `homeConfigurations."ningen@wsl"` をx86_64-linuxとして追加する。
+- [ ] `switch-wsl`、`switch-macos`、`update-lock`を追加し、既存の`switch`と`update`を削除する。
+- [ ] `common/home.nix` をmacOS/WSL共通CLI設定に絞る。
+- [ ] GNOME dconfとdesktop Linux用font設定をNixOS moduleへ移す。
+- [ ] Doom Emacsのclone/sync activationはmacOSとWSLの両方で有効にする。
+- [ ] `home.username = "ningen"` と、Darwin/Linuxで分岐する`home.homeDirectory`は維持する。
+- [ ] Docker CLIとComposeを共有`dev-tools.nix`から分離し、macOS/NixOSだけに導入する。
+- [ ] WSL出力へNixOS home moduleとGUI package moduleをimportしない。
+- [ ] `ningen@DESKTOP-3TRFQRS` はrollback用としてPhase 7まで残す。
 
 検証:
 
 ```bash
-nix build '.#homeConfigurations."ningen@wsl".activationPackage'
 nix eval '.#homeConfigurations."ningen@wsl".activationPackage.drvPath'
+nix build '.#homeConfigurations."ningen@wsl".activationPackage'
+nix flake check
 ```
 
-完了条件:
-
-- hostname に関係なく WSL の Home Manager 出力を build できる。
-- Hyprland、NVIDIA、Steam、デスクトップ Linux GUI が WSL 出力へ入っていない。
-
-### Phase 2: 共通設定を役割ごとに分離する
-
-- [ ] `nix/hosts/common/home.nix` を「全 Unix 環境で必要な CLI 設定」に絞る。
-- [ ] GNOME dconf 設定をデスクトップ Linux 固有モジュールへ移す。
-- [ ] Linux フォント設定を WSLg 用とデスクトップ Linux 用で分ける。
-- [ ] `isLinux` だけで WSL 固有動作を決めないようにする。
-- [ ] Doom Emacs の clone/sync activation を macOS と WSL の両方で使うか確認する。
-- [ ] WSL で不要な GUI パッケージが共通 package module に混ざっていないか確認する。
-- [ ] Docker CLI を共通の `dev-tools.nix` に残すか、WSL/Darwin モジュールへ分ける。
-- [ ] `home.username` と `home.homeDirectory` の固定値をホスト引数にする必要があるか確認する。
+closureまたは設定評価を調べ、WSL出力にHyprland、NVIDIA、Steam、GNOME dconf、desktop Linux GUI、Nix版Docker CLIが含まれないことを確認する。
 
 完了条件:
 
-- `common`、`wsl`、`darwin`、`desktop Linux` の責任範囲が明確になっている。
-- WSL と macOS の Home Manager build が両方成功する。
+- hostnameに依存せずWSL出力をbuildできる。
+- switchとlock更新が分離されている。
+- WSL、macOS、desktop Linuxの責任範囲がmodule単位で分かれている。
 
-### Phase 3: dotfiles の配布先を分離する
+## Phase 2: dotfiles配布をプラットフォーム別に分ける
 
-- [ ] `dotfiles-links.yaml` の `common` を本当に全環境共通の項目だけにする。
-- [ ] `wsl_only` と `desktop_linux_only` を追加する。
-- [ ] 既存の `unix_only` を macOS/WSL共通とデスクトップ Linux 固有に分ける。
-- [ ] `windows_only` に PowerShell、`.wslconfig`、org-protocol、Windows terminal設定を追加する。
-- [ ] VS Code は既存の `vscode` セクションを維持する。
-- [ ] Neovim、tmux、Doom Emacs、Nix、Yazi、Codex/agent skills を WSL/macOS 側へ移す。
-- [ ] WezTerm は Windows と macOS の両方へ正しいパスで配布する。
-- [ ] `setup-dotfiles.sh` で WSL を `/proc` または環境変数から識別する。
-- [ ] `setup-dotfiles.sh` が WSL へ Hyprland、wallpaper、illogical-impulse をリンクしないようにする。
-- [ ] `setup-dotfiles.ps1` が Windows に tmux、Doom Emacs、Nix などをリンクしないようにする。
-- [ ] Windows の Developer Mode 有効時は非管理者 symlink を許容し、管理者権限なしでも動く範囲を維持する。
-- [ ] Windows ネイティブアプリ固有の config path を `%APPDATA%` 一括ではなく個別に確認する。
+`dotfiles-links.yaml` のsectionを次の責任に固定する。
+
+| section | 適用先 | 内容 |
+| --- | --- | --- |
+| `unix_only` | macOS、WSL、desktop Linux | Git、Neovim、tmux、Doom、Helix、Yazi、Nix、agent skills |
+| `desktop_linux_only` | desktop Linuxのみ | Kitty、Discord、Hyprland、wallpaper、illogical-impulse |
+| `macos_only` | macOSのみ | macOS側WezTerm等 |
+| `wsl_only` | WSLのみ | clipboard、opener等のWSL bridge |
+| `windows_only` | Windowsのみ | PowerShell、WezTerm、org-protocol |
+| `vscode` | Windows、macOS | VS Code User settingsとkeybindings |
+
+- [ ] 旧`common` sectionは削除し、すべてのlinkを上表の最も狭いsectionへ移す。
+- [ ] `setup-dotfiles.sh` は `/proc/sys/kernel/osrelease` の`microsoft`を優先し、次に`WSL_INTEROP`を調べてWSLを識別する。
+- [ ] WSLでは`unix_only`と`wsl_only`を処理し、`desktop_linux_only`と`vscode`を処理しない。
+- [ ] macOSでは`unix_only`、`macos_only`、`vscode`を処理する。
+- [ ] PowerShell setupは`windows_only`と`vscode`だけを処理し、`common`をWindowsへ配布しない。
+- [ ] sourceファイルを追加してからYAMLへ登録する。
+- [ ] 両setupへdry-runと全sourceの事前検証を追加する。
+- [ ] `.gitattributes` は`* text=auto eol=lf`を基本とし、PNG、JPEG、GIF、ICO、PDF、TTF、OTFを`binary`として列挙する。
+- [ ] 追跡中の空`.gitconfig.local`を`.gitconfig.local.example`へ変更し、実際の`.gitconfig.local`を`.gitignore`へ追加する。
+- [ ] Unix実適用はpreflightより前に、repository内の`.gitconfig.local`がなければexampleからcopyする。既存local fileは変更しない。
+- [ ] dry-runはlocal fileを作らず、copy予定として表示し、生成後のsourceが存在するものとしてpreflightを続ける。
 
 検証:
 
 ```bash
 bash -n setup-dotfiles.sh
+./setup-dotfiles.sh --dry-run
 ```
 
-Windows では PowerShell の parser check またはテスト用ディレクトリへの dry-run を用意する。
+WindowsではPowerShell parserと`-DryRun`を実行する。存在しないsourceを含む一時configを`--config`または`-ConfigPath`へ渡し、targetが1件も変更されず非ゼロ終了することを確認する。Phase 2では既存sourceの移動だけを登録し、Phase 5で追加するbridgeはsource作成後に登録する。
 
 完了条件:
 
-- Windows、WSL、macOS の各セットアップで対象外設定が配布されない。
-- 既存ファイルを破壊せず、既存の非 symlink は従来どおり skip する。
+- 各platformへ対象外設定が配布されない。
+- dry-runはrepositoryやhome directoryを変更しない。
+- 既存の非symlinkは上書きされない。
 
-### Phase 4: Windows ホスト設定を追加する
+## Phase 3: Windowsホスト設定を作る
 
-- [ ] winget で管理するアプリ一覧を決める。
-- [ ] WezTerm、VS Code、Docker Desktop、Chrome、PowerShell 7、Git for Windows、Nerd Font を一覧へ追加する。
-- [ ] Windows Terminal、Obsidian、Discordなどを使う場合は一覧へ追加する。
-- [ ] パッケージのインストール処理を再実行可能にする。
-- [ ] PowerShell profile を追加し、WSL 起動や dotfiles 更新の補助関数だけを置く。
-- [ ] `.wslconfig` を追加する。
-- [ ] `.wslconfig` の memory、processors、swap はマシン依存値として local override またはテンプレートにする。
-- [ ] Windows 11 を使う場合は mirrored networking、DNS tunneling、auto proxy の必要性を確認する。
-- [ ] WezTerm の起動先を `wsl.exe -d Ubuntu -u ningen --cd ~` 相当へ固定する。
-- [ ] Windows のフォントを Windows 側へインストールする。WSL の Nix font package だけに依存しない。
-- [ ] Windows 用セットアップのうち、管理者権限が必要な処理を明記する。
-- [ ] Docker Desktop の WSL Integration は自動化できない場合、手動チェックリストにする。
+`windows/packages/install.ps1` をwinget packageの唯一の定義元とし、次のIDを固定する。
+
+```text
+wez.wezterm
+Microsoft.VisualStudioCode
+Docker.DockerDesktop
+Google.Chrome
+Microsoft.PowerShell
+Git.Git
+Microsoft.WindowsTerminal
+Obsidian.Obsidian
+Discord.Discord
+DEVCOM.JetBrainsMonoNerdFont
+```
+
+新規Windowsでは、標準搭載のWindows PowerShellとwingetでGitとPowerShell 7を先に導入し、Windows checkoutを作る。
+
+```powershell
+winget install --exact --id Git.Git --accept-package-agreements --accept-source-agreements
+winget install --exact --id Microsoft.PowerShell --accept-package-agreements --accept-source-agreements
+New-Item -ItemType Directory -Force "$env:USERPROFILE\ghq\github.com\ningen" | Out-Null
+git clone https://github.com/ningen/dotfiles.git "$env:USERPROFILE\ghq\github.com\ningen\dotfiles"
+Set-Location "$env:USERPROFILE\ghq\github.com\ningen\dotfiles"
+```
+
+- [ ] installerは`winget list --exact --id`で導入済みpackageをskipし、未導入packageを`winget install --exact --id`で入れる。
+- [ ] source/package agreementを非対話で受諾し、失敗したpackage IDを一覧表示して非ゼロ終了する。
+- [ ] Git for Windows導入後、変更前値をsetup stateへ保存してから`git config --global core.autocrlf false`を設定する。同梱のGit Credential Managerを維持し、WindowsへUnix用Git configをリンクしない。
+- [ ] VS Code導入後に`ms-vscode-remote.remote-wsl` extensionを冪等導入する。
+- [ ] WindowsのVS Code User settingsを配布し、WSL内の`~/.config/Code/User`は作らない。
+- [ ] PowerShell profileにはWSL起動、Windows/WSL各checkoutの更新、各setupの補助関数だけを置く。
+- [ ] Windows setupが`DOTFILES_WSL_DISTRO`と`DOTFILES_WSL_USER`をユーザースコープへ設定する。
+- [ ] Windows setupは変更前の環境変数値と`core.autocrlf`をsetup stateへ保存する。値が未設定だった場合も`null`として記録する。
+- [ ] WezTermは環境変数のdistro/userを使い、home directoryから起動する。
+- [ ] Windows Terminal profileはtemplateから生成し、同じ環境変数を埋め込む。
+- [ ] 生成先は`%LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\ningen\wsl.json`とする。同名fileがあればlocal state directoryへbackupしてsetup stateへ記録してから上書きする。Windows Terminalの`settings.json`と既存profileは変更しない。
+- [ ] `.wslconfig.example` を次の内容で管理する。setupはtargetがない場合だけcopyし、作成した事実をsetup stateへ記録する。既存targetは変更せず、setup stateへ`createdBySetup = false`を記録する。
+
+```ini
+[wsl2]
+networkingMode=mirrored
+dnsTunneling=true
+autoProxy=true
+
+[experimental]
+autoMemoryReclaim=gradual
+```
+
+CPU、memory、swapは設定しない。変更を反映するときは`wsl.exe --shutdown`を実行する。
+
+Windows checkout作成後、次の順で適用する。
+
+```powershell
+pwsh -File .\windows\packages\install.ps1
+pwsh -File .\setup-dotfiles.ps1 -DryRun
+pwsh -File .\setup-dotfiles.ps1
+```
 
 完了条件:
 
-- 新規 Windows 環境で必要なホストアプリと設定をこのリポジトリから復元できる。
-- secret やログイン状態をリポジトリへ保存していない。
+- installerを2回実行しても重複導入やエラーが発生しない。
+- WezTermとWindows Terminalが必ず`Ubuntu-24.04`の`ningen`を起動する。
+- secretやlogin状態がrepositoryへ入っていない。
 
-### Phase 5: Ubuntu WSL を構築する
+## Phase 4: Ubuntu 24.04 WSLを構築する
 
-- [ ] Windows へ WSL 2 と Ubuntu をインストールする。
-- [ ] Ubuntu の既定ユーザーを `ningen` にする。
-- [ ] WSL と Ubuntu を最新状態にする。
-- [ ] systemd が有効か確認し、必要な場合だけ `/etc/wsl.conf` で有効化する。
-- [ ] Nix を Ubuntu WSL にインストールする。
-- [ ] flakes と nix-command を有効化する。
-- [ ] dotfiles を `~/ghq/github.com/ningen/dotfiles` へ clone する。
-- [ ] `home-manager switch --flake .#ningen@wsl` を実行する。
-- [ ] `setup-dotfiles.sh` の WSL 対象だけを適用する。
-- [ ] zsh、starship、direnv、tmux、Git、gh、ghq を確認する。
-- [ ] Neovim、Doom Emacs、Node.js、Python、Go、language servers を確認する。
-- [ ] `gh auth login` は WSL 内で実行し、Windows の資格情報へ暗黙依存しない。
-- [ ] SSH agent と GPG agent を WSL 内で完結させるか、Windows と bridge するか決めて文書化する。
-- [ ] Windows checkout と WSL checkout で改行コードや executable bit が不要に変わらないよう、Git の `core.autocrlf` と `.gitattributes` 方針を確認する。
+Windows PowerShellからdistroを導入する。
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+- [ ] 初回起動でユーザー`ningen`を作る。
+- [ ] ユーザー作成後、次のcommandでdistro、WSL version、ユーザーを確認する。
+
+```powershell
+wsl -l -v
+wsl -d Ubuntu-24.04 -u ningen -- whoami
+```
+
+- [ ] `/etc/wsl.conf`へsystemdとdefault userを明示する。
+
+```ini
+[boot]
+systemd=true
+
+[user]
+default=ningen
+```
+
+- [ ] `wsl.exe --shutdown`後、systemdとdefault userを確認する。
+- [ ] Ubuntu packageを更新し、Gitとcurlをbootstrap用に導入する。
+- [ ] 公式multi-user installerでNixを導入する。
+
+```bash
+sh <(curl -L https://nixos.org/nix/install) --daemon
+```
+
+- [ ] dotfilesを`~/ghq/github.com/ningen/dotfiles`へcloneする。
+- [ ] 初回だけCLI flagでflakesと`nix-command`を有効化し、次を実行する。
+
+```bash
+cd ~/ghq/github.com/ningen/dotfiles
+nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
+```
+
+- [ ] `setup-dotfiles.sh --dry-run`を確認してから実適用する。
+- [ ] SSH鍵とGPG鍵をバックアップからWSL内へ復元し、permissionとagentを確認する。
+- [ ] `gh auth login`をWSL内で行う。
+- [ ] `ssh -T git@github.com`でSSH接続を確認してから`git@github.com:ningen/org.git`を`~/org`へcloneする。
+- [ ] Windows側agentへのbridgeは作らない。
 
 完了条件:
 
-- 新しい WSL shell で開発ツールが利用できる。
-- Home Manager を固定名の出力から再適用できる。
-- ソースコードが `/mnt/c` ではなく WSL ファイルシステムにある。
+- `ningen@wsl`からHome Managerを再適用できる。
+- zsh、starship、direnv、tmux、Git、gh、ghq、Neovim、Doom Emacs、Node.js、Python、Go、language serversを実行できる。
+- ソースコードとOrgファイルが`/mnt/c`ではなくWSL filesystemにある。
 
-### Phase 6: Docker Desktop と WSL を連携する
+## Phase 5: Docker、clipboard、opener、org-protocolを接続する
 
-- [ ] Windows に Docker Desktop をインストールする。
-- [ ] WSL 2 backend を有効にする。
-- [ ] Ubuntu distro の WSL Integration を有効にする。
-- [ ] Ubuntu 内に独立した Docker Engine daemon を重複インストールしない。
-- [ ] Home Manager の Docker CLI が Docker Desktop の socket/context を利用できるか確認する。
-- [ ] CLI の競合があれば、Nix 版 Docker CLIを外して Docker Desktop 提供の連携を使うか判断する。
-- [ ] Linux ファイルシステム上のプロジェクトを bind mount して動作とファイル監視を確認する。
+### Docker Desktop
 
-検証:
+- [ ] Docker DesktopのWSL 2 backendを有効にする。
+- [ ] `Ubuntu-24.04`のWSL Integrationを有効にする。
+- [ ] UbuntuへDocker EngineまたはNix版Docker CLIを導入しない。
+- [ ] Linux filesystem上のprojectをbind mountし、file watchを確認する。
 
 ```bash
 docker version
@@ -291,222 +375,152 @@ docker run --rm hello-world
 docker compose version
 ```
 
-完了条件:
+Docker daemon、socket、contextが一系統だけであることを完了条件とする。
 
-- WSL から Docker Desktop の daemon を一意に利用できる。
-- Docker Engine、socket、context が重複していない。
+### Clipboardとopener
 
-### Phase 7: Windows/WSL の clipboard と opener を連携する
+- [ ] WSLへ`win-copy`と`win-paste` wrapperを追加する。
+- [ ] `win-copy`は`clip.exe`、`win-paste`は`powershell.exe -NoProfile -Command Get-Clipboard -Raw`を使う。
+- [ ] Neovimの`g:clipboard`へwrapperを登録し、`:checkhealth clipboard`を成功させる。
+- [ ] WSLg GUI EmacsはWSLg native clipboardを使う。
+- [ ] YaziのURLはWindows browser、fileはWindows既定アプリ、directoryはExplorerへ渡す。
+- [ ] file/directory pathは`wslpath -w`でWindows pathへ変換する。
 
-- [ ] Neovim の clipboard provider を決める。
-- [ ] WSL Emacs と Windows clipboard の連携方法も決める。
-- [ ] `win32yank.exe`、`clip.exe`/PowerShell bridge、WSLg Wayland clipboard の候補を比較する。
-- [ ] `:checkhealth clipboard` が成功する設定を WSL module に追加する。
-- [ ] Yazi の WSL opener を Windows 側の既定アプリへ渡す wrapper に変更する。
-- [ ] Windows path と Linux path の変換が必要な操作で `wslpath` を使う。
-- [ ] URL は Windows browser、ローカルファイルは用途に応じて Explorer または WSLg アプリへ渡す。
-- [ ] `explorer.exe .` または専用 wrapper で WSL のカレントディレクトリを Windows Explorer から開けるようにする。
+日本語、複数行、末尾改行、空白を含むpathで往復確認する。
 
-完了条件:
+### org-protocol
 
-- Neovim と Windows 間でコピー/ペーストできる。
-- Yazi から Windows のブラウザ、Explorer、既定アプリを開ける。
+- [ ] Home Managerで`~/.local/bin/org-protocol-client`を配置する。
+- [ ] WSLではGUI対応の`pkgs.emacs`を導入し、WSLgからGUI frameを開けることを確認する。
+- [ ] GUI起動commandを`DOOMPROFILE=default emacsclient --socket-name=default --create-frame`に固定し、独立した別Emacs serverを起動しない。
+- [ ] clientは`DOOMPROFILE=default`を設定し、`emacsclient --socket-name=default --eval t`で接続を調べる。
+- [ ] 接続できなければ`emacs --daemon=default`を起動する。
+- [ ] daemon接続を500ms間隔、最大30秒でpollする。
+- [ ] 接続後、`emacsclient --socket-name=default --no-wait "$url"`でURLを単一引数として渡す。
+- [ ] Windows handlerもURLを単一引数として`wsl.exe`へ渡す。
+- [ ] handlerは環境変数のdistro/userを使い、未設定時は停止する。
+- [ ] `HKCU\Software\Classes\org-protocol`へ登録する`register.ps1`と、対象キーだけを消す`unregister.ps1`を追加する。
+- [ ] timeoutまたは起動失敗時は非ゼロ終了し、Windows error dialogと診断logを出す。
+- [ ] error dialogはPresentationFrameworkの`System.Windows.MessageBox`を使う。
+- [ ] logは`%LOCALAPPDATA%\ningen-dotfiles\org-protocol.log`へ保存する。時刻、処理段階、終了codeだけを記録し、URL、title、selectionを保存しない。
+- [ ] `bookmarklet.js`はtitle、URL、selectionをUTF-8でpercent encodeし、template `w`へ渡す。
+- [ ] `get-bookmarklet.ps1`でChromeへ登録する`javascript:` URLを生成する。
 
-### Phase 8: Windows の org-protocol から WSL Emacsへ接続する
+次の3状態でcaptureを確認する。
 
-- [ ] WSL 側に安定したパスの `org-protocol-client` を作る。
-- [ ] handler で `DOOMPROFILE=default` を明示する。
-- [ ] Emacs server が起動済みか確認する。
-- [ ] server がなければ `emacs --daemon` を起動し、接続可能になるまで短時間待つ。
-- [ ] server 起動失敗や timeout を Windows 側へ分かる形で返し、必要最小限の診断ログを保存する。
-- [ ] `emacsclient --no-wait` へ受け取った URL を単一引数として渡す。
-- [ ] Windows 側に `invoke-wsl-emacs.ps1` を追加する。
-- [ ] `wsl.exe --distribution Ubuntu --user ningen --exec ...` で distro とユーザーを固定する。
-- [ ] URL 全体を安全に一引数として渡し、`&`、`%`、引用符、空白を壊さないようにする。
-- [ ] `HKCU\Software\Classes\org-protocol` へ URL protocol を登録する PowerShell script を追加する。
-- [ ] レジストリ登録はユーザースコープに限定し、管理者権限を不要にする。
-- [ ] 登録解除スクリプトまたは rollback 処理を用意する。
-- [ ] ブラウザ拡張の capture URL と Doom Emacs の template key `w` を合わせる。
-- [ ] WSL が停止している状態、Emacs server が停止している状態、起動済み状態をそれぞれテストする。
-- [ ] URL、タイトル、日本語、選択テキストが正しく保存されることを確認する。
-- [ ] macOS の既存 AppleScript handler が引き続き動くことを確認する。
+1. WSL停止、Emacs停止
+2. WSL起動、Emacs停止
+3. WSL起動、`default` daemon起動済み
 
-想定する呼び出し経路:
+`&`、`%`、引用符、空白、日本語、選択テキストを含むcaptureが`~/org/links.org`へ1件だけ保存されることを完了条件とする。
 
-```text
-Browser
-  -> org-protocol://capture?template=w&url=...&title=...
-  -> HKCU URL handler
-  -> PowerShell wrapper
-  -> wsl.exe -d Ubuntu -u ningen
-  -> /home/ningen/.local/bin/org-protocol-client
-  -> emacsclient
-  -> Doom Emacs org-capture
-```
+## Phase 6: macOS回帰と7日間の日常利用を確認する
 
-完了条件:
-
-- Windows browser から WSL の Org ファイルへ capture できる。
-- WSL と Emacs が停止していても、初回 capture が失敗せず処理される。
-- URL handler の削除手順がある。
-
-### Phase 9: macOS の回帰確認
-
-- [ ] WSL 分離後も `aarch64-darwin` の Home Manager 出力が評価できる。
-- [ ] nix-darwin の system build が成功する。
-- [ ] Homebrew casks と macOS 固有設定が WSL/Windows変更の影響を受けていない。
-- [ ] macOS の `org-protocol` AppleScript app を再生成できる。
-- [ ] 共通設定から移動した zsh、Doom Emacs、Git、Neovim 設定が macOS に残っている。
-- [ ] `setup-dotfiles.sh` が macOS に WSL/Windows 固有設定をリンクしない。
-
-検証:
+macOS実機で次を実行する。
 
 ```bash
 nix build '.#homeConfigurations."ningen@ningen-mba.local".activationPackage'
 nix build .#darwinConfigurations.ningen.system
 bash -n setup-dotfiles.sh
+./setup-dotfiles.sh --dry-run
 ```
 
-実際の switch や `sudo darwin-rebuild` は macOS 実機で明示的に実行する。
+- [ ] macOSのzsh、Doom Emacs、Git、Neovim、WezTerm、VS Code設定が残っている。
+- [ ] macOSのorg-protocol AppleScript appを再生成し、captureできる。
+- [ ] `~/org`が`ningen/org`を参照し、push/pullできる。
+- [ ] macOS setupがWSL/Windows固有設定を配布しない。
 
-完了条件:
+その後、Windows + WSLを7日間連続で日常利用する。期間中に次をすべて実施する。
 
-- Windows/WSL 対応を追加しても macOS の既存環境が変わらない。
+- [ ] Windows再起動と`wsl --update`後の再確認
+- [ ] VS Code Remote WSLでWSL filesystem上のprojectを編集
+- [ ] WezTerm、Windows Terminal、tmux、Neovim、WSLg Doom Emacsを利用
+- [ ] Node.js、Python、Go projectを各1件build/test
+- [ ] direnvとnix-direnvを利用
+- [ ] Docker Composeとfile watchを利用
+- [ ] VPN、localhost、IPv6、DNSを利用する実環境で確認
+- [ ] org-protocol、clipboard、Yazi openerを日常操作で利用
+- [ ] Windows/macOSの両方からOrg repositoryを更新し、競合時は通常のGit手順で解消
+- [ ] WSLのdisk使用量、起動時間、memory reclaimを確認
 
-### Phase 10: ドキュメントと日常運用を整える
+7日間の途中で致命的な問題が発生した場合は日数をリセットし、修正後に1日目から再確認する。
 
-- [ ] README の対応環境を Windows host + Ubuntu WSL + macOS に更新する。
-- [ ] `docs/windows-wsl.md` に初回セットアップ手順を書く。
-- [ ] Windows clone と WSL clone の配置方針を書く。
-- [ ] Windows の setup、WSL の Home Manager switch、macOS の switch を別コマンドとして記載する。
-- [ ] `.wslconfig` 変更後の `wsl.exe --shutdown` を記載する。
-- [ ] Docker Desktop の手動設定項目を書く。
-- [ ] GitHub、SSH、GPG の認証方針を書く。
-- [ ] org-protocol の登録、確認、解除方法を書く。
-- [ ] トラブルシューティングとして hostname、clipboard、DNS、Docker context、Emacs server を扱う。
-- [ ] `nix flake update` と通常の設定適用を分離した運用を書く。
+## Phase 7: NixOS固有構成を削除する
 
-完了条件:
-
-- クリーンな Windows + Ubuntu WSL から README と docs だけで環境を復元できる。
-
-### Phase 11: 日常利用テスト
-
-- [ ] Windows + WSL を最低数日間、実際の開発に使う。
-- [ ] VS Code Remote WSL で WSL filesystem 上のプロジェクトを開く。
-- [ ] WezTerm、tmux、Neovim、Doom Emacs の起動を確認する。
-- [ ] Node.js、Python、Go プロジェクトをそれぞれ build/test する。
-- [ ] direnv と nix-direnv を確認する。
-- [ ] Docker Compose とファイル監視を確認する。
-- [ ] VPN、社内ネットワーク、localhost、IPv6 が必要な場合の通信を確認する。
-- [ ] WSL のメモリ回収、ディスク使用量、起動時間を確認する。
-- [ ] Windows Update、WSL update、再起動後も設定が維持されることを確認する。
-- [ ] org-protocol、clipboard、opener を日常操作で確認する。
-
-完了条件:
-
-- NixOS に戻らず、日常の開発と Org capture を完了できる。
-- 致命的な性能、ネットワーク、認証、GUI連携の問題がない。
-
-### Phase 12: NixOS 固有構成を整理する
-
-この Phase は Windows + WSL の日常利用テスト完了後に実施する。
-
-- [ ] `nixosConfigurations.myNixOS` と `nixosConfigurations.nixos` を削除するか archive 方針を決める。
-- [ ] `mkNixos` を削除する。
-- [ ] 不要になった `nixos-hardware` と `xremap` input を削除する。
-- [ ] `nix/hosts/nixos` を削除するか archive branch のみに残す。
-- [ ] `nix/packages/gui.nix` の Hyprland/end-4 package 群を削除する。
-- [ ] `.config/hypr`、wallpaper、illogical-impulse を削除するか archive する。
-- [ ] `docs/hyprland` と `docs/nix/nixos.md` を削除、または過去構成として明記する。
-- [ ] README と AGENTS.md の NixOS コマンド、ホスト一覧、アーキテクチャ説明を更新する。
-- [ ] flake.lock から不要 input が消えたことを確認する。
-- [ ] NixOS 用 symlink section と setup 処理を整理する。
-
-完了条件:
-
-- flake とドキュメントが実際に使う Windows + WSL + macOS のみを表している。
-- NixOS 固有 input の更新失敗が日常の flake check に影響しない。
-- 必要なら Git tag/branch から旧 NixOS 構成を参照できる。
-
-## 全体検証
-
-実装中は変更範囲に応じて狭い check から実行する。
+Phase 6を完了した後だけ実行する。
 
 ```bash
-# Nix syntax / outputs
-nix flake check
-
-# WSL Home Manager
-nix build '.#homeConfigurations."ningen@wsl".activationPackage'
-
-# macOS Home Manager
-nix build '.#homeConfigurations."ningen@ningen-mba.local".activationPackage'
-
-# nix-darwin
-nix build .#darwinConfigurations.ningen.system
-
-# shell script
-bash -n setup-dotfiles.sh
+git tag -a pre-windows-wsl-migration -m "Preserve the final NixOS configuration"
+git push origin pre-windows-wsl-migration
 ```
 
-Windows PowerShell は Windows 実機で次を確認する。
+tagをremoteで確認してから次を削除する。
 
-```powershell
-$ErrorActionPreference = 'Stop'
-.\setup-dotfiles.ps1
-wsl.exe -l -v
-wsl.exe -d Ubuntu -u ningen -- echo ok
-```
+- [ ] `nixosConfigurations.myNixOS`と`nixosConfigurations.nixos`
+- [ ] `mkNixos`
+- [ ] `nixos-hardware`と`xremap` input
+- [ ] `ningen@DESKTOP-3TRFQRS`
+- [ ] `nix/hosts/nixos`
+- [ ] NixOS専用GUI package
+- [ ] Hyprland、wallpaper、illogical-impulse設定
+- [ ] NixOS専用link sectionとsetup処理
 
-適用を伴う `home-manager switch`、`nix run .#update`、`darwin-rebuild`、レジストリ変更、winget install は、対応する実機で内容を確認してから実行する。
+README、AGENTS.md、NixOS/Hyprland docsを実際の対応環境へ更新し、`flake.lock`から不要inputが消えたことを確認する。archive branchは作らず、annotated tagを旧構成の参照点とする。
+
+完了条件:
+
+- flakeとdocsがWindows 11 + Ubuntu WSL 2 + macOSだけを表す。
+- WSLとmacOSのbuildが成功する。
+- tagから最終NixOS構成を参照できる。
+
+## 全体検証matrix
+
+| 実行環境 | 検証 |
+| --- | --- |
+| x86_64 Linux / WSL | WSL Home Manager build、flake check、shell syntax、setup dry-run |
+| macOS実機 | macOS Home Manager、nix-darwin build、AppleScript handler |
+| Windows 11実機 | winget再実行、PowerShell parser、setup dry-run、symlink、registry |
+| Windows + WSL | Docker、clipboard、opener、VS Code Remote WSL、org-protocol |
+
+Darwin derivationのbuildをLinuxへ要求しない。registry変更、winget install、Home Manager switch、nix-darwin switchは対象実機でdry-runまたは差分確認後に実行する。
 
 ## ロールバック
 
-### WSL Home Manager
+### WSL / Home Manager
 
-- Home Manager generation を切り替える。
-- `ningen@wsl` の追加前コミットへ戻す。
-- WSL distro 自体に問題がある場合は export/import または再作成する。
+- Home Manager generationを前の世代へ切り替える。
+- `ningen@wsl`追加前のcommitへ戻す。
+- distroを破棄するときはOrgと開発repositoryのpushを確認してから`wsl --unregister Ubuntu-24.04`を実行する。
 
-### Windows dotfiles
+### Windows
 
-- `setup-dotfiles.ps1` が作成した symlink だけを削除する。
-- 既存の非 symlink ファイルは setup 時に上書きしない。
-- org-protocol は登録解除スクリプトで `HKCU\Software\Classes\org-protocol` の対象キーだけを削除する。
-- `.wslconfig` を退避して `wsl.exe --shutdown` する。
-
-### Docker
-
-- Docker Desktop の Ubuntu WSL Integration を無効にする。
-- WSL 内で独立 daemon を導入していないことを確認する。
+- `windows/rollback.ps1`はsetup stateを読み、setupが作成したsymlinkだけを削除する。
+- Terminal fragmentに変更前backupがあれば復元し、なければ`%LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\ningen\wsl.json`だけを削除する。Windows Terminalの`settings.json`は変更しない。
+- org-protocolは`unregister.ps1`で対象HKCU keyだけを削除する。
+- `DOTFILES_WSL_DISTRO`、`DOTFILES_WSL_USER`、`core.autocrlf`をsetup stateの変更前値へ戻す。変更前が`null`なら削除する。
+- `.wslconfig`は`createdBySetup = true`の場合だけ削除する。既存fileには触れず、最後に`wsl.exe --shutdown`を実行する。
+- Docker Desktopの`Ubuntu-24.04` WSL Integrationを無効にする。
+- winget packageは自動uninstallしない。rollback scriptがPhase 3の管理対象package IDを全件表示し、`winget list --exact --id`の結果を見て利用者が個別に削除する。bootstrapで導入したGitとPowerShell 7もこの一覧に含める。
 
 ### NixOS
 
-- 移行完了までは現行 NixOS の commit/tag とバックアップを保持する。
-- NixOS 固有ファイルを削除する Phase 12 は、Windows + WSL の受け入れ条件を満たした後に行う。
+- Phase 7までは現在のNixOS commitとbackupを保持する。
+- Phase 7後は`pre-windows-wsl-migration` tagから旧構成を参照または復元する。
 
 ## 最終受け入れ条件
 
-- Windows の再セットアップに必要なアプリ一覧と設定がリポジトリにある。
-- Ubuntu WSL を `ningen@wsl` から再現できる。
-- Windows と WSL の設定が互いの不要な config を配布しない。
-- macOS の Home Manager と nix-darwin が引き続き build できる。
-- WezTerm から必ず Ubuntu/ningen を起動できる。
-- VS Code Remote WSL で WSL filesystem 上の開発ができる。
-- Docker Desktop を Ubuntu WSL から利用できる。
-- Neovim と Windows 間で clipboard が使える。
-- Yazi/CLI から Windows のブラウザと Explorer を開ける。
-- Windows browser の org-protocol から WSL Doom Emacsへ capture できる。
-- secret、秘密鍵、認証情報が Git に含まれていない。
-- NixOS を撤去した後も旧構成を Git 履歴または archive tag から参照できる。
-
-## 最初に着手する項目
-
-1. `ningen@wsl` と `nix/hosts/wsl/home.nix` を追加する。
-2. `common`、`wsl`、`windows`、`desktop Linux` の境界を整理する。
-3. `dotfiles-links.yaml` と setup script に WSL 判定を追加する。
-4. Windows package/setup と `.wslconfig` の管理方法を追加する。
-5. clipboard、opener、org-protocol bridge を実装する。
-6. Ubuntu WSL 実機で適用し、macOS を回帰確認する。
-7. 数日間の運用後に NixOS 固有構成を整理する。
+- Windowsの必要アプリと設定をWindows checkoutから再適用できる。
+- Ubuntu 24.04 WSLを`ningen@wsl`とWSL checkoutから再現できる。
+- switchはhostname非依存で、`flake.lock`を自動更新しない。
+- Windows、WSL、macOSへ対象外configを配布しない。
+- macOS Home Managerとnix-darwinが引き続きbuildできる。
+- WezTermとWindows Terminalが`Ubuntu-24.04`の`ningen`を起動する。
+- VS Code Remote WSLでWSL filesystem上の開発ができる。
+- WSLからDocker DesktopのdaemonとCLIだけを利用できる。
+- Neovim、WSLg Emacs、Windows間で日本語clipboardが使える。
+- YaziからWindows browser、既定アプリ、Explorerを開ける。
+- Chrome bookmarkletからWSL Doom Emacsへcaptureできる。
+- `ningen/org`をWSLとmacOSの両方から復元できる。
+- SSH/GPG秘密鍵と認証情報がGitに含まれていない。
+- 7日間の受け入れ運用を完了している。
+- NixOS撤去後もannotated tagから旧構成を参照できる。
