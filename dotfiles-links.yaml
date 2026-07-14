@@ -13,8 +13,8 @@ unix_only:
   - source: .config/tmux
     target: $CONFIG_DIR/tmux
     type: directory
-  - source: .config/doom
-    target: $CONFIG_DIR/doom
+  - source: .config/emacs
+    target: $CONFIG_DIR/emacs
     type: directory
   - source: .config/helix
     target: $CONFIG_DIR/helix

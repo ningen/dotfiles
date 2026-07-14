@@ -1,19 +1,12 @@
 {
   config,
   pkgs,
-  lib,
   ...
 }:
 {
   home.stateVersion = "25.05";
   home.username = "ningen";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
-
-  home.packages = [
-    (pkgs.writeShellScriptBin "doom" ''
-      exec "$HOME/.config/emacs/bin/doom" "$@"
-    '')
-  ];
 
   programs.starship = {
     enable = true;
@@ -50,71 +43,6 @@
   #
   #  /etc/profiles/per-user/ningen/etc/profile.d/hm-session-vars.sh
   #
-  home.sessionVariables = {
-    # EDITOR = "emacs";
-    DOOMPROFILE = "default";
-  };
-  home.sessionPath = [
-    "$HOME/.config/emacs/bin"
-  ];
-
-  home.activation.installDoomEmacs = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    doom_target="$HOME/.config/emacs"
-    doom_repo="https://github.com/doomemacs/doomemacs.git"
-
-    if [ -e "$doom_target" ] && [ ! -L "$doom_target" ] && [ ! -x "$doom_target/bin/doom" ]; then
-      echo "Refusing to replace non-Doom Emacs config at $doom_target"
-      exit 1
-    fi
-
-    mkdir -p "$HOME/.config"
-
-    if [ -L "$doom_target" ]; then
-      rm "$doom_target"
-    fi
-
-    if [ ! -d "$doom_target" ]; then
-      ${pkgs.git}/bin/git clone --depth 1 --recurse-submodules "$doom_repo" "$doom_target"
-    elif [ -d "$doom_target/.git" ]; then
-      echo "Doom Emacs already installed at $doom_target"
-      ${pkgs.git}/bin/git -C "$doom_target" submodule update --init --recursive
-    else
-      echo "Replacing non-git Doom Emacs copy at $doom_target with a git clone"
-      doom_tmp="$(${pkgs.coreutils}/bin/mktemp -d)"
-      ${pkgs.git}/bin/git clone --depth 1 --recurse-submodules "$doom_repo" "$doom_tmp/emacs"
-
-      if [ -d "$doom_target/.local" ]; then
-        mv "$doom_target/.local" "$doom_tmp/local"
-      fi
-
-      chmod -R u+w "$doom_target"
-      rm -rf "$doom_target"
-      mv "$doom_tmp/emacs" "$doom_target"
-
-      if [ -d "$doom_tmp/local" ]; then
-        mv "$doom_tmp/local" "$doom_target/.local"
-      fi
-
-      rm -rf "$doom_tmp"
-    fi
-  '';
-
-  home.activation.configureDoomEmacs = lib.hm.dag.entryAfter [ "installDoomEmacs" ] ''
-    doom_target="$HOME/.config/emacs"
-    doom_bin="$doom_target/bin/doom"
-    doom_profile_loader="$HOME/.local/share/doom/profiles.el"
-
-    if [ -x "$doom_bin" ] && [ -d "$HOME/.config/doom" ]; then
-      ${lib.optionalString pkgs.stdenv.isDarwin ''
-        /bin/launchctl setenv DOOMPROFILE default
-      ''}
-
-      if [ ! -f "$doom_profile_loader" ] || ${pkgs.findutils}/bin/find "$HOME/.config/doom" -type f -newer "$doom_profile_loader" | ${pkgs.gnugrep}/bin/grep -q .; then
-        "$doom_bin" sync --profile default
-      fi
-    fi
-  '';
-
   programs.zsh = {
     enable = true;
     dotDir = config.home.homeDirectory;
