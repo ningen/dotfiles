@@ -112,4 +112,6 @@ elseif ($null -eq $state.wslconfig.createdBySetup) {
     else { Copy-Item $wslTemplate $wslTarget; $state.wslconfig.createdBySetup = $true }
 }
 if (-not $DryRun) { $state | ConvertTo-Json -Depth 8 | Set-Content $StatePath -Encoding utf8NoBOM }
+if ($DryRun) { & (Join-Path $DotfilesDir 'windows\emacs\register-launcher.ps1') -DryRun }
+else { & (Join-Path $DotfilesDir 'windows\emacs\register-launcher.ps1') }
 Write-Host ($(if ($DryRun) { 'Dry run complete; no changes made.' } else { 'Windows dotfiles setup complete.' }))

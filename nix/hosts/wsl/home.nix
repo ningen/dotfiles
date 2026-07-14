@@ -1,5 +1,14 @@
 { pkgs, ... }:
 let
+  emacsClientWsl = pkgs.writeShellScriptBin "emacsclient-wsl" ''
+    set -eu
+    if [ "$#" -ne 0 ]; then
+      echo "usage: emacsclient-wsl" >&2
+      exit 64
+    fi
+    ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
+    exec ${pkgs.emacs}/bin/emacsclient --socket-name=default --create-frame --no-wait
+  '';
   orgProtocolClient = pkgs.writeShellScriptBin "org-protocol-client" ''
     set -eu
     if [ "$#" -ne 1 ]; then
@@ -7,10 +16,9 @@ let
       exit 64
     fi
     url="$1"
-    export DOOMPROFILE=default
     client="${pkgs.emacs}/bin/emacsclient"
     if ! "$client" --socket-name=default --eval t >/dev/null 2>&1; then
-      ${pkgs.emacs}/bin/emacs --daemon=default >/dev/null 2>&1 &
+      ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
     fi
     attempts=0
     until "$client" --socket-name=default --eval t >/dev/null 2>&1; do
@@ -27,8 +35,22 @@ in
 {
   home.packages = [
     pkgs.emacs
+    emacsClientWsl
     orgProtocolClient
   ];
+  systemd.user.services.emacs-default = {
+    Unit = {
+      Description = "Emacs daemon (default)";
+      After = [ "graphical-session-pre.target" ];
+    };
+    Service = {
+      Type = "notify";
+      ExecStart = "${pkgs.emacs}/bin/emacs --fg-daemon=default";
+      ExecStop = "${pkgs.emacs}/bin/emacsclient --socket-name=default --eval (kill-emacs)";
+      Restart = "on-failure";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
   home.sessionVariables.BROWSER = "wsl-open";
   home.file.".local/bin/win-copy" = {
     executable = true;

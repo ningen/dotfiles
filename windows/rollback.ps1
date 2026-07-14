@@ -12,4 +12,5 @@ elseif (Test-Path $fragment) { Remove-Item $fragment -Force }
 $wslconfig = Join-Path $env:USERPROFILE '.wslconfig'
 if ($state.wslconfig.createdBySetup -eq $true -and (Test-Path $wslconfig)) { Remove-Item $wslconfig -Force }
 & (Join-Path $PSScriptRoot 'org-protocol\unregister.ps1')
+& (Join-Path $PSScriptRoot 'emacs\unregister-launcher.ps1')
 Write-Host 'Managed Windows settings rolled back. Existing non-managed files were preserved.'
