@@ -1,0 +1,10 @@
+{
+  "profiles": [
+    {
+      "guid": "{8167f452-c74a-4c6f-b6bd-47d0e00640a8}",
+      "name": "__DISTRO__ (__USER__)",
+      "commandline": "wsl.exe -d __DISTRO__ -u __USER__ --cd ~",
+      "startingDirectory": "~"
+    }
+  ]
+}

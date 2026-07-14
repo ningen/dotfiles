@@ -1,229 +1,115 @@
-# PowerShell script for Windows dotfiles setup
-# Requires Administrator privileges for creating symlinks
+[CmdletBinding()]
+param(
+    [switch]$DryRun,
+    [string]$ConfigPath = (Join-Path $PSScriptRoot 'dotfiles-links.yaml')
+)
+$ErrorActionPreference = 'Stop'
+$DotfilesDir = $PSScriptRoot
+$ConfigDir = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { $env:APPDATA }
+$VSCodeConfigDir = Join-Path $env:APPDATA 'Code\User'
+$StateDir = Join-Path $env:LOCALAPPDATA 'ningen-dotfiles'
+$StatePath = Join-Path $StateDir 'setup-state.json'
 
-# Check if running as Administrator
-$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-if (-not $isAdmin) {
-    Write-Host "=================================================" -ForegroundColor Yellow
-    Write-Host "WARNING: Not running as Administrator" -ForegroundColor Yellow
-    Write-Host "Symlink creation may fail without admin privileges" -ForegroundColor Yellow
-    Write-Host "=================================================" -ForegroundColor Yellow
-    Write-Host ""
+function Expand-Target([string]$Value) {
+    $Value = $Value.Replace('$CONFIG_DIR', $ConfigDir).Replace('$VSCODE_CONFIG_DIR', $VSCodeConfigDir)
+    $Value = $Value.Replace('$HOME', $env:USERPROFILE)
+    if ($Value.StartsWith('~')) { $Value = $env:USERPROFILE + $Value.Substring(1) }
+    return $Value
 }
-
-# Get script directory
-$DotfilesDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ConfigFile = Join-Path $DotfilesDir "dotfiles-links.yaml"
-
-# Set CONFIG_DIR based on XDG_CONFIG_HOME or default
-if ($env:XDG_CONFIG_HOME) {
-    $ConfigDir = $env:XDG_CONFIG_HOME
-} elseif ($env:APPDATA) {
-    $ConfigDir = $env:APPDATA
-} else {
-    $ConfigDir = Join-Path $env:USERPROFILE "AppData\Roaming"
-}
-
-# Set VSCode config directory
-if ($env:APPDATA) {
-    $VSCodeConfigDir = Join-Path $env:APPDATA "Code\User"
-} else {
-    $VSCodeConfigDir = Join-Path $env:USERPROFILE "AppData\Roaming\Code\User"
-}
-
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Dotfiles Setup (Windows)" -ForegroundColor Cyan
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "Config directory: $ConfigDir"
-Write-Host "VSCode directory: $VSCodeConfigDir"
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host ""
-
-# Create config directories
-New-Item -ItemType Directory -Force -Path $ConfigDir | Out-Null
-New-Item -ItemType Directory -Force -Path $VSCodeConfigDir | Out-Null
-
-# Function to expand variables in string
-function Expand-Variables {
-    param([string]$String)
-
-    $result = $String -replace '\$CONFIG_DIR', $ConfigDir
-    $result = $result -replace '\$VSCODE_CONFIG_DIR', $VSCodeConfigDir
-    $result = $result -replace '\$HOME', $env:USERPROFILE
-    # Handle tilde expansion at the start of the path
-    if ($result -match '^~') {
-        $result = $result -replace '^~', $env:USERPROFILE
+function Read-Section([string]$Name) {
+    $items = @(); $active = $false; $item = $null
+    foreach ($line in Get-Content -LiteralPath $ConfigPath) {
+        if ($line -match '^([a-z_]+):(?:\s*\[\])?\s*$') {
+            if ($active -and $item -and $item.source -and $item.target -and $item.type) { $items += $item }
+            $active = $Matches[1] -eq $Name; $item = $null; continue
+        }
+        if (-not $active -or $line.Trim() -eq '' -or $line.TrimStart().StartsWith('#')) { continue }
+        if ($line -match '^\s*-\s+source:\s*(.+?)\s*$') {
+            if ($item -and $item.source -and $item.target -and $item.type) { $items += $item }
+            $item = [ordered]@{ source = $Matches[1]; target = $null; type = $null }
+        } elseif ($line -match '^\s+target:\s*(.+?)\s*$') { $item.target = $Matches[1] }
+        elseif ($line -match '^\s+type:\s*(.+?)\s*$') { $item.type = $Matches[1] }
     }
-
-    return $result
-}
-
-# Function to create symlink
-function New-DotfileLink {
-    param(
-        [string]$Source,
-        [string]$Target,
-        [string]$Type
-    )
-
-    # Expand source path (relative to dotfiles directory)
-    $sourcePath = Join-Path $DotfilesDir $Source
-
-    # Expand variables in target path
-    $targetPath = Expand-Variables $Target
-
-    # Create parent directory if it doesn't exist
-    $parentDir = Split-Path -Parent $targetPath
-    if (-not (Test-Path $parentDir)) {
-        New-Item -ItemType Directory -Force -Path $parentDir | Out-Null
-    }
-
-    # Check if target already exists
-    if (Test-Path $targetPath) {
-        $item = Get-Item $targetPath -Force
-        if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
-            # It's a symlink, remove it
-            Remove-Item $targetPath -Force
-        } else {
-            # It's a real file/directory
-            Write-Host "⚠ Warning: $targetPath already exists and is not a symlink. Skipping." -ForegroundColor Yellow
-            return $false
-        }
-    }
-
-    # Create symlink
-    try {
-        if ($Type -eq "directory") {
-            New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force | Out-Null
-        } else {
-            New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force | Out-Null
-        }
-        Write-Host "✓ Linked: $targetPath -> $sourcePath" -ForegroundColor Green
-        return $true
-    } catch {
-        Write-Host "✗ Failed to link: $targetPath" -ForegroundColor Red
-        Write-Host "  Error: $_" -ForegroundColor Red
-        return $false
-    }
-}
-
-# Simple YAML parser
-function Parse-YamlSection {
-    param(
-        [string]$Section
-    )
-
-    $content = Get-Content $ConfigFile -Raw
-    # Handle both Unix (LF) and Windows (CRLF) line endings
-    $lines = $content -split "\r?\n"
-
-    $currentSection = ""
-    $inTargetSection = $false
-    $items = @()
-    $currentItem = @{}
-
-    foreach ($line in $lines) {
-        # Trim the line to handle whitespace
-        $trimmedLine = $line.Trim()
-
-        # Skip comments and empty lines
-        if ($trimmedLine -match '^#' -or $trimmedLine -eq '') {
-            continue
-        }
-
-        # Check for section header (no leading spaces in original line)
-        if ($line -match '^([a-z_]+):\s*$') {
-            # Save current item from previous section if exists
-            if ($inTargetSection -and $currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
-                $items += $currentItem
-            }
-
-            $currentSection = $matches[1]
-            $currentItem = @{}
-
-            if ($currentSection -eq $Section) {
-                $inTargetSection = $true
-            } else {
-                $inTargetSection = $false
-            }
-            continue
-        }
-
-        if (-not $inTargetSection) {
-            continue
-        }
-
-        # Parse list items
-        if ($line -match '^\s+-\s+source:\s*(.+?)\s*$') {
-            # New item, save previous if exists
-            if ($currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
-                $items += $currentItem
-            }
-            $currentItem = @{
-                source = $matches[1].Trim()
-            }
-        }
-        elseif ($line -match '^\s+target:\s*(.+?)\s*$') {
-            $currentItem.target = $matches[1].Trim()
-        }
-        elseif ($line -match '^\s+type:\s*(.+?)\s*$') {
-            $currentItem.type = $matches[1].Trim()
-        }
-    }
-
-    # Add last item if exists
-    if ($inTargetSection -and $currentItem.Count -gt 0 -and $currentItem.source -and $currentItem.target -and $currentItem.type) {
-        $items += $currentItem
-    }
-
+    if ($active -and $item -and $item.source -and $item.target -and $item.type) { $items += $item }
     return $items
 }
-
-# Process common links
-Write-Host "Creating common links..." -ForegroundColor Cyan
-$commonLinks = Parse-YamlSection "common"
-Write-Host "Found $($commonLinks.Count) common links" -ForegroundColor Gray
-
-if ($commonLinks.Count -eq 0) {
-    Write-Host "⚠ No common links found. Check YAML file format." -ForegroundColor Yellow
-} else {
-    foreach ($link in $commonLinks) {
-        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
-    }
-}
-Write-Host ""
-
-# Skip unix_only links on Windows
-
-# Process Windows-specific links
-Write-Host "Creating Windows-specific links..." -ForegroundColor Cyan
-$windowsLinks = Parse-YamlSection "windows_only"
-Write-Host "Found $($windowsLinks.Count) Windows-specific links" -ForegroundColor Gray
-
-if ($windowsLinks.Count -eq 0) {
-    Write-Host "⚠ No Windows-specific links found." -ForegroundColor Yellow
-} else {
-    foreach ($link in $windowsLinks) {
-        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
-    }
-}
-Write-Host ""
-
-# Process VSCode links
-Write-Host "Creating VSCode links..." -ForegroundColor Cyan
-$vscodeLinks = Parse-YamlSection "vscode"
-Write-Host "Found $($vscodeLinks.Count) VSCode links" -ForegroundColor Gray
-
-if ($vscodeLinks.Count -eq 0) {
-    Write-Host "⚠ No VSCode links found. Check YAML file format." -ForegroundColor Yellow
-} else {
-    foreach ($link in $vscodeLinks) {
-        New-DotfileLink -Source $link.source -Target $link.target -Type $link.type
+function Get-BaselineState {
+    if (Test-Path -LiteralPath $StatePath) { return Get-Content $StatePath -Raw | ConvertFrom-Json }
+    $gitValue = git config --global --get core.autocrlf 2>$null
+    return [ordered]@{
+        version = 1
+        environment = [ordered]@{
+            DOTFILES_WSL_DISTRO = [Environment]::GetEnvironmentVariable('DOTFILES_WSL_DISTRO', 'User')
+            DOTFILES_WSL_USER = [Environment]::GetEnvironmentVariable('DOTFILES_WSL_USER', 'User')
+        }
+        git = [ordered]@{ coreAutocrlf = if ($LASTEXITCODE -eq 0) { "$gitValue" } else { $null } }
+        terminal = [ordered]@{ originalBackup = $null }
+        wslconfig = [ordered]@{ createdBySetup = $null }
     }
 }
 
-Write-Host ""
-Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "✓ Dotfiles setup completed!" -ForegroundColor Green
-Write-Host "=========================================" -ForegroundColor Cyan
+if (-not (Test-Path -LiteralPath $ConfigPath)) { throw "Config not found: $ConfigPath" }
+$links = @((Read-Section 'windows_only') + (Read-Section 'vscode'))
+$missing = @()
+foreach ($link in $links) {
+    $source = Join-Path $DotfilesDir $link.source
+    if (-not (Test-Path -LiteralPath $source)) { $missing += $source }
+    if ($link.type -notin @('file', 'directory')) { $missing += "invalid type $($link.type): $source" }
+}
+if ($missing.Count) { $missing | ForEach-Object { Write-Error "Missing/invalid source: $_" }; throw 'Preflight failed; no changes made.' }
+
+$distro = 'Ubuntu-24.04'; $user = 'ningen'
+$terminalTemplate = Join-Path $DotfilesDir 'windows\terminal\profile.template.json'
+$wslTemplate = Join-Path $DotfilesDir 'windows\wsl\.wslconfig.example'
+foreach ($required in @($terminalTemplate, $wslTemplate)) { if (-not (Test-Path $required)) { throw "Missing source: $required" } }
+
+if ($DryRun) {
+    Write-Host "SET user environment DOTFILES_WSL_DISTRO=$distro"
+    Write-Host "SET user environment DOTFILES_WSL_USER=$user"
+} else {
+    $state = Get-BaselineState
+    New-Item -ItemType Directory -Force -Path $StateDir | Out-Null
+    # Persist the first baseline before any managed mutation so an interrupted
+    # setup remains rollback-capable. Existing state is never overwritten here.
+    if (-not (Test-Path -LiteralPath $StatePath)) {
+        $state | ConvertTo-Json -Depth 8 | Set-Content $StatePath -Encoding utf8NoBOM
+    }
+    [Environment]::SetEnvironmentVariable('DOTFILES_WSL_DISTRO', $distro, 'User')
+    [Environment]::SetEnvironmentVariable('DOTFILES_WSL_USER', $user, 'User')
+    $env:DOTFILES_WSL_DISTRO = $distro; $env:DOTFILES_WSL_USER = $user
+    git config --global core.autocrlf false
+}
+
+foreach ($link in $links) {
+    $source = Join-Path $DotfilesDir $link.source; $target = Expand-Target $link.target
+    if (Test-Path -LiteralPath $target) {
+        $existing = Get-Item -LiteralPath $target -Force
+        if (-not ($existing.Attributes -band [IO.FileAttributes]::ReparsePoint)) { Write-Warning "SKIP existing non-symlink: $target"; continue }
+    }
+    if ($DryRun) { Write-Host "LINK $target -> $source"; continue }
+    $parent = Split-Path -Parent $target; New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    if (Test-Path -LiteralPath $target) { Remove-Item -LiteralPath $target -Force }
+    New-Item -ItemType SymbolicLink -Path $target -Target $source | Out-Null
+    Write-Host "LINKED $target -> $source"
+}
+
+$fragment = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\Fragments\ningen\wsl.json'
+$rendered = (Get-Content $terminalTemplate -Raw).Replace('__DISTRO__', $distro).Replace('__USER__', $user)
+if ($DryRun) { Write-Host "WRITE Windows Terminal fragment $fragment" }
+else {
+    if ((Test-Path $fragment) -and -not $state.terminal.originalBackup) {
+        $backup = Join-Path $StateDir 'terminal-wsl.original.json'; Copy-Item $fragment $backup
+        $state.terminal.originalBackup = $backup
+    }
+    New-Item -ItemType Directory -Force -Path (Split-Path -Parent $fragment) | Out-Null
+    Set-Content -LiteralPath $fragment -Value $rendered -Encoding utf8NoBOM
+}
+
+$wslTarget = Join-Path $env:USERPROFILE '.wslconfig'
+if ($DryRun) { if (Test-Path $wslTarget) { Write-Host "SKIP existing $wslTarget" } else { Write-Host "COPY $wslTemplate -> $wslTarget" } }
+elseif ($null -eq $state.wslconfig.createdBySetup) {
+    if (Test-Path $wslTarget) { $state.wslconfig.createdBySetup = $false }
+    else { Copy-Item $wslTemplate $wslTarget; $state.wslconfig.createdBySetup = $true }
+}
+if (-not $DryRun) { $state | ConvertTo-Json -Depth 8 | Set-Content $StatePath -Encoding utf8NoBOM }
+Write-Host ($(if ($DryRun) { 'Dry run complete; no changes made.' } else { 'Windows dotfiles setup complete.' }))

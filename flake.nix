@@ -56,32 +56,42 @@
         system:
         let
           hm = "${inputs.home-manager.packages.${system}.home-manager}/bin/home-manager";
-          applyScript = nixpkgs.legacyPackages.${system}.writeShellScript "apply-script" ''
-            set -e
-            echo "Applying home-manager..."
-            ${hm} switch --flake .#ningen@$HOSTNAME
-            if [[ "$(uname)" == "Darwin" ]]; then
-              echo "Applying nix-darwin..."
-              sudo darwin-rebuild switch --flake .#ningen
-            fi
-            echo "Done!"
-          '';
         in
         {
-          update = {
+          update-lock = {
             type = "app";
             program = toString (
-              nixpkgs.legacyPackages.${system}.writeShellScript "update-script" ''
-                set -e
-                echo "Updating flake..."
-                nix flake update
-                ${applyScript}
+              nixpkgs.legacyPackages.${system}.writeShellScript "update-lock" ''
+                exec nix flake update
               ''
             );
           };
-          switch = {
+          switch-wsl = {
             type = "app";
-            program = toString applyScript;
+            program = toString (
+              nixpkgs.legacyPackages.${system}.writeShellScript "switch-wsl" ''
+                set -eu
+                if [ "$(uname -s)" != Linux ] || { ! grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null && [ -z "''${WSL_INTEROP:-}" ]; }; then
+                  echo "switch-wsl must run inside WSL" >&2
+                  exit 1
+                fi
+                exec ${hm} switch --flake '.#ningen@wsl'
+              ''
+            );
+          };
+          switch-macos = {
+            type = "app";
+            program = toString (
+              nixpkgs.legacyPackages.${system}.writeShellScript "switch-macos" ''
+                set -eu
+                if [ "$(uname -s)" != Darwin ]; then
+                  echo "switch-macos must run on macOS" >&2
+                  exit 1
+                fi
+                ${hm} switch --flake '.#ningen@ningen-mba.local'
+                exec sudo darwin-rebuild switch --flake .#ningen
+              ''
+            );
           };
         }
       );
@@ -93,6 +103,7 @@
             ./nix/hosts/common/home.nix
             ./nix/hosts/ningen-mba/home.nix
             ./nix/packages/dev-tools.nix
+            ./nix/packages/docker-cli.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
             ./nix/packages/linters.nix
@@ -104,6 +115,7 @@
           modules = [
             ./nix/hosts/common/home.nix
             ./nix/packages/dev-tools.nix
+            ./nix/packages/docker-cli.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix
             ./nix/packages/linters.nix
@@ -116,6 +128,19 @@
             ./nix/hosts/common/home.nix
             ./nix/hosts/nixos/home.nix
             ./nix/packages/gui.nix
+            ./nix/packages/dev-tools.nix
+            ./nix/packages/docker-cli.nix
+            ./nix/packages/language-servers.nix
+            ./nix/packages/formatters.nix
+            ./nix/packages/linters.nix
+            ./nix/packages/node-packages.nix
+          ];
+        };
+        "ningen@wsl" = mkHome {
+          system = "x86_64-linux";
+          modules = [
+            ./nix/hosts/common/home.nix
+            ./nix/hosts/wsl/home.nix
             ./nix/packages/dev-tools.nix
             ./nix/packages/language-servers.nix
             ./nix/packages/formatters.nix

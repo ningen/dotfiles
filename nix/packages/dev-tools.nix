@@ -17,8 +17,6 @@ in
       volta
       uv
       python3
-      docker
-      docker-compose
       direnv
       go
       gcc

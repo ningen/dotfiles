@@ -1,0 +1,2 @@
+# Machine-local Git settings belong here. This file is copied to
+# .gitconfig.local on first Unix setup and is never overwritten.

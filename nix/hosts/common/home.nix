@@ -9,22 +9,11 @@
   home.username = "ningen";
   home.homeDirectory = if pkgs.stdenv.isDarwin then "/Users/ningen" else "/home/ningen";
 
-  # Fonts (Linux/WSL用)
   home.packages = [
     (pkgs.writeShellScriptBin "doom" ''
       exec "$HOME/.config/emacs/bin/doom" "$@"
     '')
-  ]
-  ++ pkgs.lib.optionals pkgs.stdenv.isLinux [
-    pkgs.noto-fonts-cjk-sans
-    pkgs.noto-fonts-cjk-serif
-    pkgs.material-symbols
-    pkgs.nerd-fonts.jetbrains-mono
-    pkgs.nerd-fonts.symbols-only
-    pkgs.symbola
   ];
-
-  fonts.fontconfig.enable = pkgs.stdenv.isLinux;
 
   programs.starship = {
     enable = true;
@@ -125,20 +114,6 @@
       fi
     fi
   '';
-
-  dconf.settings = {
-    "org/gnome/desktop/interface" = {
-      font-name = "JetBrainsMono Nerd Font 11";
-      document-font-name = "JetBrainsMono Nerd Font 11";
-      monospace-font-name = "JetBrainsMono Nerd Font 11";
-    };
-
-    "org/gnome/desktop/wm/keybindings" = {
-      switch-input-source = "@as []";
-      switch-input-source-backward = "@as []";
-    };
-
-  };
 
   programs.zsh = {
     enable = true;

@@ -1,3 +1,4 @@
 nix-local.conf
 .envrc
 .envrc.local
+.gitconfig.local

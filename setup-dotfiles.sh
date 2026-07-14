@@ -1,185 +1,99 @@
 #!/usr/bin/env bash
-
-set -e
+set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$DOTFILES_DIR/dotfiles-links.yaml"
+DRY_RUN=false
 
-# Detect OS
-detect_os() {
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "macos"
-    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        echo "linux"
-    else
-        echo "unknown"
-    fi
+usage() { echo "usage: $0 [--dry-run] [--config PATH]"; }
+while (($#)); do
+  case "$1" in
+    --dry-run) DRY_RUN=true; shift ;;
+    --config) [[ $# -ge 2 ]] || { usage >&2; exit 64; }; CONFIG_FILE="$2"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage >&2; exit 64 ;;
+  esac
+done
+[[ -f "$CONFIG_FILE" ]] || { echo "config not found: $CONFIG_FILE" >&2; exit 1; }
+
+detect_platform() {
+  if [[ "${OSTYPE:-}" == darwin* ]]; then echo macos; return; fi
+  if [[ -r /proc/sys/kernel/osrelease ]] && grep -qi microsoft /proc/sys/kernel/osrelease; then echo wsl; return; fi
+  if [[ -n "${WSL_INTEROP:-}" ]]; then echo wsl; return; fi
+  if [[ "${OSTYPE:-}" == linux* ]]; then echo desktop_linux; return; fi
+  echo unknown
 }
 
-OS_TYPE=$(detect_os)
-
-# Set XDG_CONFIG_HOME based on OS
-if [[ -n "$XDG_CONFIG_HOME" ]]; then
-    CONFIG_DIR="$XDG_CONFIG_HOME"
-else
-    CONFIG_DIR="$HOME/.config"
-fi
-
-# Set VSCode config path
-case "$OS_TYPE" in
-    macos)
-        VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User"
-        ;;
-    *)
-        VSCODE_CONFIG_DIR="$HOME/.config/Code/User"
-        ;;
+PLATFORM="$(detect_platform)"
+case "$PLATFORM" in
+  macos) SECTIONS=(unix_only macos_only vscode); VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User" ;;
+  wsl) SECTIONS=(unix_only wsl_only); VSCODE_CONFIG_DIR="$HOME/.config/Code/User" ;;
+  desktop_linux) SECTIONS=(unix_only desktop_linux_only); VSCODE_CONFIG_DIR="$HOME/.config/Code/User" ;;
+  *) echo "unsupported platform: $PLATFORM" >&2; exit 1 ;;
 esac
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"
 
-echo "========================================="
-echo "Dotfiles Setup"
-echo "========================================="
-echo "OS detected: $OS_TYPE"
-echo "Config directory: $CONFIG_DIR"
-echo "VSCode directory: $VSCODE_CONFIG_DIR"
-echo "========================================="
-echo ""
-
-# Create local file (only for non-Windows as nix is not available on Windows)
-if [[ "$OS_TYPE" != "windows" ]]; then
-    mkdir -p "$DOTFILES_DIR/.config/nix"
-    touch "$DOTFILES_DIR/.config/nix/nix-local.conf"
-fi
-
-# Create config directories
-mkdir -p "$CONFIG_DIR"
-mkdir -p "$VSCODE_CONFIG_DIR"
-
-# Function to expand variables in string
-expand_vars() {
-    local str="$1"
-    str="${str//\$CONFIG_DIR/$CONFIG_DIR}"
-    str="${str//\$VSCODE_CONFIG_DIR/$VSCODE_CONFIG_DIR}"
-    str="${str//\$HOME/$HOME}"
-    str="${str/#\~/$HOME}"
-    echo "$str"
+expand_target() {
+  local value="$1"
+  value="${value//\$CONFIG_DIR/$CONFIG_DIR}"
+  value="${value//\$VSCODE_CONFIG_DIR/$VSCODE_CONFIG_DIR}"
+  value="${value//\$HOME/$HOME}"
+  value="${value/#\~/$HOME}"
+  printf '%s\n' "$value"
 }
 
-# Function to create symlink
-create_link() {
-    local src="$1"
-    local dest="$2"
-    local type="$3"
-
-    # Expand source path (relative to DOTFILES_DIR)
-    src="$DOTFILES_DIR/$src"
-
-    # Expand variables in destination path
-    dest=$(expand_vars "$dest")
-
-    # Create parent directory if it doesn't exist
-    mkdir -p "$(dirname "$dest")"
-
-    # Remove existing symlink or file/directory if it exists
-    if [[ -L "$dest" ]]; then
-        rm "$dest"
-    elif [[ -e "$dest" ]]; then
-        echo "⚠ Warning: $dest already exists and is not a symlink. Skipping."
-        return 0
+parse_section() {
+  local wanted="$1" section= source= target= type= active=false line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" =~ ^[[:space:]]*(#.*)?$ ]] && continue
+    if [[ "$line" =~ ^([a-z_]+):([[:space:]]*\[\])?[[:space:]]*$ ]]; then
+      if $active && [[ -n "$source" && -n "$target" && -n "$type" ]]; then printf '%s|%s|%s\n' "$source" "$target" "$type"; fi
+      section="${BASH_REMATCH[1]}"; [[ "$section" == "$wanted" ]] && active=true || active=false
+      source= target= type=
+    elif $active && [[ "$line" =~ ^[[:space:]]*-[[:space:]]+source:[[:space:]]*(.+)$ ]]; then
+      if [[ -n "$source" && -n "$target" && -n "$type" ]]; then printf '%s|%s|%s\n' "$source" "$target" "$type"; fi
+      source="${BASH_REMATCH[1]}"; target= type=
+    elif $active && [[ "$line" =~ ^[[:space:]]+target:[[:space:]]*(.+)$ ]]; then target="${BASH_REMATCH[1]}"
+    elif $active && [[ "$line" =~ ^[[:space:]]+type:[[:space:]]*(.+)$ ]]; then type="${BASH_REMATCH[1]}"
     fi
-
-    # Create symlink
-    if ln -sfn "$src" "$dest"; then
-        echo "✓ Linked: $dest -> $src"
-        return 0
-    else
-        echo "✗ Failed to link: $dest"
-        return 1
-    fi
+  done < "$CONFIG_FILE"
+  if $active && [[ -n "$source" && -n "$target" && -n "$type" ]]; then printf '%s|%s|%s\n' "$source" "$target" "$type"; fi
 }
 
-# Simple YAML parser for our specific format
-parse_yaml_section() {
-    local section="$1"
-    local current_section=""
-    local in_target_section=false
-    local source=""
-    local target=""
-    local type=""
+LOCAL_SOURCE="$DOTFILES_DIR/.gitconfig.local"
+LOCAL_EXAMPLE="$DOTFILES_DIR/.gitconfig.local.example"
+if [[ ! -e "$LOCAL_SOURCE" ]]; then
+  [[ -f "$LOCAL_EXAMPLE" ]] || { echo "missing source: $LOCAL_EXAMPLE" >&2; exit 1; }
+  if $DRY_RUN; then echo "COPY $LOCAL_EXAMPLE -> $LOCAL_SOURCE"
+  else cp "$LOCAL_EXAMPLE" "$LOCAL_SOURCE"
+  fi
+fi
 
-    while IFS= read -r line; do
-        # Skip comments and empty lines
-        [[ "$line" =~ ^#.*$ ]] && continue
-        [[ -z "$line" ]] && continue
-
-        # Check if this is a section header (no leading spaces)
-        if [[ "$line" =~ ^([a-z_]+):$ ]]; then
-            current_section="${BASH_REMATCH[1]}"
-            if [[ "$current_section" == "$section" ]]; then
-                in_target_section=true
-            else
-                in_target_section=false
-            fi
-            continue
-        fi
-
-        # Skip if not in target section
-        [[ "$in_target_section" == false ]] && continue
-
-        # Parse list items
-        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]+source:[[:space:]]*(.+)$ ]]; then
-            # New item, process previous if exists
-            if [[ -n "$source" && -n "$target" && -n "$type" ]]; then
-                echo "$source|$target|$type"
-            fi
-            source="${BASH_REMATCH[1]}"
-            target=""
-            type=""
-        elif [[ "$line" =~ ^[[:space:]]+target:[[:space:]]*(.+)$ ]]; then
-            target="${BASH_REMATCH[1]}"
-        elif [[ "$line" =~ ^[[:space:]]+type:[[:space:]]*(.+)$ ]]; then
-            type="${BASH_REMATCH[1]}"
-        fi
-    done < "$CONFIG_FILE"
-
-    # Output last item if exists
-    if [[ -n "$source" && -n "$target" && -n "$type" ]]; then
-        echo "$source|$target|$type"
+records=()
+missing=0
+for section in "${SECTIONS[@]}"; do
+  while IFS='|' read -r source target type; do
+    [[ -n "$source" ]] || continue
+    src="$DOTFILES_DIR/$source"; dest="$(expand_target "$target")"
+    if [[ "$src" == "$LOCAL_SOURCE" && $DRY_RUN == true && ! -e "$src" ]]; then :
+    elif [[ ! -e "$src" ]]; then echo "missing source: $src" >&2; missing=1
     fi
-}
+    [[ "$type" == file || "$type" == directory ]] || { echo "invalid type '$type' for $source" >&2; missing=1; }
+    records+=("$src|$dest|$type")
+  done < <(parse_section "$section")
+done
+((missing == 0)) || { echo "preflight failed; no links changed" >&2; exit 1; }
 
-# Process common links
-echo "Creating common links..."
-while IFS='|' read -r source target type; do
-    create_link "$source" "$target" "$type"
-done < <(parse_yaml_section "common")
-
-echo ""
-
-# Process unix_only links
-if [[ "$OS_TYPE" == "macos" || "$OS_TYPE" == "linux" ]]; then
-    echo "Creating Unix-specific links..."
-    while IFS='|' read -r source target type; do
-        create_link "$source" "$target" "$type"
-    done < <(parse_yaml_section "unix_only")
-    echo ""
-fi
-
-# Process macOS-specific links
-if [[ "$OS_TYPE" == "macos" ]]; then
-    echo "Creating macOS-specific links..."
-    while IFS='|' read -r source target type; do
-        create_link "$source" "$target" "$type"
-    done < <(parse_yaml_section "macos_only")
-    echo ""
-fi
-
-# Process VSCode links
-echo "Creating VSCode links..."
-while IFS='|' read -r source target type; do
-    create_link "$source" "$target" "$type"
-done < <(parse_yaml_section "vscode")
-
-echo ""
-echo "========================================="
-echo "✓ Dotfiles setup completed!"
-echo "========================================="
+echo "platform=$PLATFORM sections=${SECTIONS[*]}"
+for record in "${records[@]}"; do
+  IFS='|' read -r src dest type <<< "$record"
+  if [[ -L "$dest" ]]; then action=RELINK
+  elif [[ -e "$dest" ]]; then echo "SKIP existing non-symlink: $dest"; continue
+  else action=LINK
+  fi
+  if $DRY_RUN; then echo "$action $dest -> $src"; continue; fi
+  mkdir -p "$(dirname "$dest")"
+  [[ -L "$dest" ]] && rm "$dest"
+  ln -s "$src" "$dest"
+  echo "LINKED $dest -> $src"
+done

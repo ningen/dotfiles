@@ -5,6 +5,28 @@ let
   '';
 in
 {
+  home.packages = with pkgs; [
+    noto-fonts-cjk-sans
+    noto-fonts-cjk-serif
+    material-symbols
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.symbols-only
+    symbola
+  ];
+  fonts.fontconfig.enable = true;
+
+  dconf.settings = {
+    "org/gnome/desktop/interface" = {
+      font-name = "JetBrainsMono Nerd Font 11";
+      document-font-name = "JetBrainsMono Nerd Font 11";
+      monospace-font-name = "JetBrainsMono Nerd Font 11";
+    };
+    "org/gnome/desktop/wm/keybindings" = {
+      switch-input-source = "@as []";
+      switch-input-source-backward = "@as []";
+    };
+  };
+
   xdg.enable = true;
   xdg.dataFile."applications/org-protocol.desktop".text = ''
     [Desktop Entry]

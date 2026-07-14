@@ -37,6 +37,14 @@ vim.opt.updatetime = 50 -- 更新時間短縮
 
 -- クリップボード連携
 vim.opt.clipboard = "unnamedplus"
+if vim.fn.has("wsl") == 1 then
+  vim.g.clipboard = {
+    name = "Windows clipboard",
+    copy = { ["+"] = "win-copy", ["*"] = "win-copy" },
+    paste = { ["+"] = "win-paste", ["*"] = "win-paste" },
+    cache_enabled = 0,
+  }
+end
 
 -- マウス有効化
 vim.opt.mouse = "a"

@@ -25,11 +25,11 @@ edit = [
   { run = '$EDITOR "$@"', block = true, for = "unix" },
 ]
 open = [
-  { run = 'xdg-open "$@"', for = "linux" },
+  { run = 'if grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then for item in "$@"; do wsl-open "$item"; done; else xdg-open "$@"; fi', for = "linux" },
   { run = 'open "$@"', for = "macos" },
 ]
 reveal = [
-  { run = 'xdg-open "$(dirname "$1")"', for = "linux" },
+  { run = 'if grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then wsl-open "$(dirname "$1")"; else xdg-open "$(dirname "$1")"; fi', for = "linux" },
   { run = 'open -R "$1"', for = "macos" },
 ]
 extract = [

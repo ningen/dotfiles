@@ -2,6 +2,14 @@
 
 更新日: 2026-07-14
 
+## 実装進捗（2026-07-14）
+
+Phase 1〜5のrepository側実装とPhase 0/4/6のrunbookを追加した。Linux上で
+WSL Home Manager出力の評価・build、flake check、Unix setupのdry-runと
+missing-source原子性を確認済み。Windows/WSL/macOS実機で行う項目、および
+7日間の経過を必要とする項目は未完了のままとし、`docs/windows-wsl.md`へ
+実行順と受け入れログを用意した。
+
 ## 目的
 
 現在の NixOS デスクトップを Windows 11 ホストと Ubuntu WSL 2 に置き換える。移行後の役割は次のとおり。
@@ -162,7 +170,7 @@ docs/windows-wsl.md
 - [ ] BitLocker回復キーとWindows 11インストールメディアを確認する。
 - [ ] 対象CPUがx86_64であることを確認する。異なる場合はこの計画を停止する。
 - [ ] Windows Developer Modeを有効にする。
-- [ ] NixOSへ戻す手順とバックアップ場所を`docs/windows-wsl.md`へ記録する。
+- [x] NixOSへ戻す手順とバックアップ場所を`docs/windows-wsl.md`へ記録する。
 
 完了条件:
 
@@ -172,16 +180,16 @@ docs/windows-wsl.md
 
 ## Phase 1: WSL出力とモジュール境界を作る
 
-- [ ] `nix/hosts/wsl/home.nix` を追加する。
-- [ ] `homeConfigurations."ningen@wsl"` をx86_64-linuxとして追加する。
-- [ ] `switch-wsl`、`switch-macos`、`update-lock`を追加し、既存の`switch`と`update`を削除する。
-- [ ] `common/home.nix` をmacOS/WSL共通CLI設定に絞る。
-- [ ] GNOME dconfとdesktop Linux用font設定をNixOS moduleへ移す。
-- [ ] Doom Emacsのclone/sync activationはmacOSとWSLの両方で有効にする。
-- [ ] `home.username = "ningen"` と、Darwin/Linuxで分岐する`home.homeDirectory`は維持する。
-- [ ] Docker CLIとComposeを共有`dev-tools.nix`から分離し、macOS/NixOSだけに導入する。
-- [ ] WSL出力へNixOS home moduleとGUI package moduleをimportしない。
-- [ ] `ningen@DESKTOP-3TRFQRS` はrollback用としてPhase 7まで残す。
+- [x] `nix/hosts/wsl/home.nix` を追加する。
+- [x] `homeConfigurations."ningen@wsl"` をx86_64-linuxとして追加する。
+- [x] `switch-wsl`、`switch-macos`、`update-lock`を追加し、既存の`switch`と`update`を削除する。
+- [x] `common/home.nix` をmacOS/WSL共通CLI設定に絞る。
+- [x] GNOME dconfとdesktop Linux用font設定をNixOS moduleへ移す。
+- [x] Doom Emacsのclone/sync activationはmacOSとWSLの両方で有効にする。
+- [x] `home.username = "ningen"` と、Darwin/Linuxで分岐する`home.homeDirectory`は維持する。
+- [x] Docker CLIとComposeを共有`dev-tools.nix`から分離し、macOS/NixOSだけに導入する。
+- [x] WSL出力へNixOS home moduleとGUI package moduleをimportしない。
+- [x] `ningen@DESKTOP-3TRFQRS` はrollback用としてPhase 7まで残す。
 
 検証:
 
@@ -212,17 +220,17 @@ closureまたは設定評価を調べ、WSL出力にHyprland、NVIDIA、Steam、
 | `windows_only` | Windowsのみ | PowerShell、WezTerm、org-protocol |
 | `vscode` | Windows、macOS | VS Code User settingsとkeybindings |
 
-- [ ] 旧`common` sectionは削除し、すべてのlinkを上表の最も狭いsectionへ移す。
-- [ ] `setup-dotfiles.sh` は `/proc/sys/kernel/osrelease` の`microsoft`を優先し、次に`WSL_INTEROP`を調べてWSLを識別する。
-- [ ] WSLでは`unix_only`と`wsl_only`を処理し、`desktop_linux_only`と`vscode`を処理しない。
-- [ ] macOSでは`unix_only`、`macos_only`、`vscode`を処理する。
-- [ ] PowerShell setupは`windows_only`と`vscode`だけを処理し、`common`をWindowsへ配布しない。
-- [ ] sourceファイルを追加してからYAMLへ登録する。
-- [ ] 両setupへdry-runと全sourceの事前検証を追加する。
-- [ ] `.gitattributes` は`* text=auto eol=lf`を基本とし、PNG、JPEG、GIF、ICO、PDF、TTF、OTFを`binary`として列挙する。
-- [ ] 追跡中の空`.gitconfig.local`を`.gitconfig.local.example`へ変更し、実際の`.gitconfig.local`を`.gitignore`へ追加する。
-- [ ] Unix実適用はpreflightより前に、repository内の`.gitconfig.local`がなければexampleからcopyする。既存local fileは変更しない。
-- [ ] dry-runはlocal fileを作らず、copy予定として表示し、生成後のsourceが存在するものとしてpreflightを続ける。
+- [x] 旧`common` sectionは削除し、すべてのlinkを上表の最も狭いsectionへ移す。
+- [x] `setup-dotfiles.sh` は `/proc/sys/kernel/osrelease` の`microsoft`を優先し、次に`WSL_INTEROP`を調べてWSLを識別する。
+- [x] WSLでは`unix_only`と`wsl_only`を処理し、`desktop_linux_only`と`vscode`を処理しない。
+- [x] macOSでは`unix_only`、`macos_only`、`vscode`を処理する。
+- [x] PowerShell setupは`windows_only`と`vscode`だけを処理し、`common`をWindowsへ配布しない。
+- [x] sourceファイルを追加してからYAMLへ登録する。
+- [x] 両setupへdry-runと全sourceの事前検証を追加する。
+- [x] `.gitattributes` は`* text=auto eol=lf`を基本とし、PNG、JPEG、GIF、ICO、PDF、TTF、OTFを`binary`として列挙する。
+- [x] 追跡中の空`.gitconfig.local`を`.gitconfig.local.example`へ変更し、実際の`.gitconfig.local`を`.gitignore`へ追加する。
+- [x] Unix実適用はpreflightより前に、repository内の`.gitconfig.local`がなければexampleからcopyする。既存local fileは変更しない。
+- [x] dry-runはlocal fileを作らず、copy予定として表示し、生成後のsourceが存在するものとしてpreflightを続ける。
 
 検証:
 
