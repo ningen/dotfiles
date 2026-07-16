@@ -5,8 +5,30 @@
 ;; 行番号を表示する
 (global-display-line-numbers-mode 1)
 
-;; nerd font
-(set-face-font 'default "JetBrains Mono-14")
+;; Use separate fonts for Latin text, Japanese text, and emoji.  WSLg uses the
+;; Linux fontconfig database, so these fonts are installed by Home Manager.
+(set-face-attribute 'default nil
+                    :family "JetBrainsMono Nerd Font"
+                    :height 130)
+(set-fontset-font t 'japanese-jisx0208
+                  (font-spec :family "Noto Sans CJK JP"))
+(set-fontset-font t 'katakana-jisx0201
+                  (font-spec :family "Noto Sans CJK JP"))
+(set-fontset-font t 'han
+                  (font-spec :family "Noto Sans CJK JP"))
+(set-fontset-font t 'emoji
+                  (font-spec :family "Noto Color Emoji"))
+
+;; Keep WSLg frames compact and let the theme provide the visual hierarchy.
+(menu-bar-mode -1)
+(when (fboundp 'tool-bar-mode)
+  (tool-bar-mode -1))
+(when (fboundp 'scroll-bar-mode)
+  (scroll-bar-mode -1))
+(setq-default line-spacing 0.1)
+(add-to-list 'default-frame-alist '(internal-border-width . 12))
+(add-to-list 'default-frame-alist '(width . 120))
+(add-to-list 'default-frame-alist '(height . 40))
 
 ;; モダンなpackage-manager の leaf を 入れる
 ;; ref: https://github.com/conao3/leaf.el
@@ -28,6 +50,13 @@
 (leaf leaf-convert
   :doc "Convert many format to leaf format"
   :ensure t)
+
+;; WSLg does not reliably forward Windows IME composition to Emacs.  Mozc runs
+;; as an Emacs input method, so it works independently of the GUI backend.
+(require 'mozc)
+(setq default-input-method "japanese-mozc")
+(global-set-key (kbd "C-SPC") #'toggle-input-method)
+(global-set-key (kbd "C-c SPC") #'set-mark-command)
 
 (leaf doom-themes
   :ensure t

@@ -1,4 +1,9 @@
-{ pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 let
   emacsGoTreesitGrammars = pkgs.runCommand "emacs-go-treesit-grammars" { } ''
     mkdir -p "$out/lib"
@@ -8,7 +13,13 @@ let
   '';
 in
 {
-  home.packages =
+  options.dotfiles.emacs.package = lib.mkOption {
+    type = lib.types.package;
+    default = pkgs.emacs;
+    description = "Emacs package used by this Home Manager configuration.";
+  };
+
+  config.home.packages =
     with pkgs;
     [
       git
@@ -26,7 +37,7 @@ in
       tmux
       awscli2
       bitwarden-cli
-      emacs
+      config.dotfiles.emacs.package
       emacsGoTreesitGrammars
       # emacs vterm dependencies (cross-platform)
       cmake

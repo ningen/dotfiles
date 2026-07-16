@@ -1,8 +1,9 @@
-{ pkgs, ... }:
+{ config, pkgs, ... }:
 let
+  emacsPackage = config.dotfiles.emacs.package;
   emacsClientWsl = pkgs.writeShellScriptBin "emacsclient-wsl" ''
     set -eu
-    client="${pkgs.emacs}/bin/emacsclient"
+    client="${emacsPackage}/bin/emacsclient"
     if ! "$client" --socket-name=default --eval t >/dev/null 2>&1; then
       ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
     fi
@@ -24,7 +25,7 @@ let
       exit 64
     fi
     url="$1"
-    client="${pkgs.emacs}/bin/emacsclient"
+    client="${emacsPackage}/bin/emacsclient"
     if ! "$client" --socket-name=default --eval t >/dev/null 2>&1; then
       ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
     fi
@@ -41,11 +42,21 @@ let
   '';
 in
 {
+  # Use Emacs's own Mozc input method so Japanese conversion does not depend on
+  # WSLg forwarding composition events from the Windows IME.
+  dotfiles.emacs.package = (pkgs.emacsPackagesFor pkgs.emacs-pgtk).emacsWithPackages (epkgs: [
+    epkgs.mozc
+  ]);
+
   home.packages = [
-    pkgs.emacs
     emacsClientWsl
     orgProtocolClient
+    pkgs.nerd-fonts.jetbrains-mono
+    pkgs.noto-fonts-cjk-sans
+    pkgs.noto-fonts-cjk-serif
+    pkgs.noto-fonts-color-emoji
   ];
+  fonts.fontconfig.enable = true;
   # Use the same daemon from both the WSL shell and the Windows launcher so
   # buffers and loaded configuration cannot diverge between launch paths.
   programs.zsh.shellAliases.emacs = "emacsclient-wsl";
@@ -56,8 +67,8 @@ in
     };
     Service = {
       Type = "notify";
-      ExecStart = "${pkgs.emacs}/bin/emacs --fg-daemon=default";
-      ExecStop = "${pkgs.emacs}/bin/emacsclient --socket-name=default --eval (kill-emacs)";
+      ExecStart = "${emacsPackage}/bin/emacs --fg-daemon=default";
+      ExecStop = "${emacsPackage}/bin/emacsclient --socket-name=default --eval (kill-emacs)";
       Restart = "on-failure";
     };
     Install.WantedBy = [ "default.target" ];
