@@ -94,7 +94,7 @@ dotfiles/
 
 - **aarch64-darwin**: Apple Silicon Mac
 - **x86_64-linux**: Intel/AMD Linux
-- **Windows**: dotfilesのみ対応（Nixは非対応）
+- **Windows 11 + WSL 2**: Windowsネイティブアプリと設定はPowerShell/winget、CLI環境はWSL内のNix/Home Managerで管理
 
 ## 構成管理の特徴
 
@@ -114,12 +114,43 @@ dotfilesの設定ファイル（`.gitconfig.local`含む）をシステムにリ
 ./setup-dotfiles.sh
 ```
 
-**Windows (PowerShell - 管理者権限推奨):**
+**Windows (PowerShell 7):**
+
+前提はWindows 11、winget、Git、PowerShell 7、および初期ユーザー設定済みのWSL distributionです。Windows側とWSL側の両方にこのリポジトリをcloneしてから、Windows cloneで実行します。WSLをまだ導入していない場合は先に[`docs/windows-wsl.md`](docs/windows-wsl.md)のmanual WSL bootstrapを実施してください。
+
 ```powershell
-.\setup-dotfiles.ps1
+pwsh -NoProfile -File .\windows\bootstrap.ps1 -DryRun
+pwsh -NoProfile -File .\windows\bootstrap.ps1
 ```
 
-このスクリプトは以下をセットアップします：
+スクリプトは自身の場所からリポジトリルートを解決するため、clone先は任意です。`-DryRun` はパッケージ、バックアップ、リンク、レジストリ操作の予定を表示し、設定ファイルを変更しません。未指定のWSLユーザーを検出する際はdistributionが起動する場合があります。通常実行は不足パッケージだけを導入し、導入済みバージョンを保持します。明示的に更新する場合は `-Upgrade` を付けます。
+
+```powershell
+pwsh -NoProfile -File .\windows\bootstrap.ps1 -Upgrade
+```
+
+Windows側の管理対象は次のとおりです。
+
+- winget: WezTerm、VS Code、Docker Desktop、Chrome、PowerShell 7、Git、Windows Terminal、Obsidian、Discord、PowerToys、JetBrains Mono Nerd Font、GlazeWM、YASB Reborn
+- シンボリックリンク: WezTerm、GlazeWM、PowerShell profile、VS Code settings/keybindings
+- その他: Windows TerminalのWSL profile fragment、WSL Emacsショートカット、current-userの`org-protocol`登録
+
+Oh My PoshはWSL側のStarshipと役割が重複するため導入しません。YASBの設定はv2のfirst-run wizardが生成するため、秘密情報やマシン固有値を含み得る設定をこのリポジトリから上書きしません。
+
+リンク先が既に正しければ`NOOP`になります。通常ファイル、ディレクトリ、別のリンクがある場合は削除せず、`%LOCALAPPDATA%\ningen-dotfiles\backups\<UTC timestamp>`へ移動してからリンクを作成します。WindowsのDeveloper Modeが有効なら通常ユーザーで作成できます。Developer Modeを有効にしない場合だけ管理者PowerShellが必要です。スクリプト自身はDeveloper Modeの変更、再起動、ログアウトを行いません。
+
+リンク作成が途中で失敗しても元データは表示されたbackup先に残ります。必要なら作成途中のリンクを確認して手動で退避し、backupを元のパスへ戻してから再実行してください。スクリプトは未知の既存ファイルを自動削除しません。
+
+再実行は同じコマンドで安全です。パッケージとリンクの個別実行もできます。
+
+```powershell
+pwsh -NoProfile -File .\windows\packages\install.ps1 -DryRun
+pwsh -NoProfile -File .\setup-dotfiles.ps1 -DryRun
+```
+
+SSH/GPG鍵、トークン、ブラウザprofile、Orgデータ、API key、ユーザー名や絶対パスなどのマシン固有情報はコミットしません。詳しいWindows/WSLの責務分離と検証手順は[`docs/windows-wsl.md`](docs/windows-wsl.md)を参照してください。
+
+macOS/Linux用の`setup-dotfiles.sh`は以下をセットアップします：
 - 各種設定ファイルのシンボリックリンク（Neovim、Tmux、Wezterm等）
 - Git設定（`.gitconfig.local` - ghq root設定を含む）
 - VSCode設定

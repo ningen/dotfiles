@@ -17,7 +17,7 @@ Record locations without recording secrets:
 - [ ] BitLocker recovery key location verified: `________________`
 - [ ] Windows 11 installation media verified
 - [ ] Target CPU reports x86_64
-- [ ] Windows Developer Mode enabled
+- [ ] Windows Developer Mode enabled, or an elevated PowerShell is available for link creation
 
 Rollback: reinstall NixOS from the verified media, check out the recorded commit,
 run `sudo nixos-rebuild switch --flake .#myNixOS`, apply the `ningen@nixos` Home
@@ -26,24 +26,50 @@ above. Test this documentation before deleting any NixOS output.
 
 ## Windows bootstrap
 
-Open **Windows PowerShell as Administrator** and run the following command. It is
-safe to rerun: after a restart or Ubuntu first-launch prompt, execute the same
-command again and it continues from the completed state.
-
-This command downloads code from this repository's `main` branch and runs it as
-Administrator. Before reinstalling Windows, commit and push the reviewed migration
-changes; otherwise the URL will not contain the bootstrap script.
+Clone the repository anywhere on Windows, open PowerShell 7 in that clone, and run
+the bootstrap below. The script resolves the repository from its own location;
+neither the drive nor clone directory is fixed. Inspect the dry-run before applying.
 
 ```powershell
-$script = "$env:TEMP\ningen-dotfiles-bootstrap.ps1"
-Invoke-WebRequest https://raw.githubusercontent.com/ningen/dotfiles/main/windows/bootstrap.ps1 -OutFile $script
-powershell -ExecutionPolicy Bypass -File $script
+pwsh -NoProfile -File .\windows\bootstrap.ps1 -DryRun
+pwsh -NoProfile -File .\windows\bootstrap.ps1
 ```
 
-The script enables Developer Mode, installs applications, clones both checkouts,
-configures Windows/WSL, installs Nix and Home Manager, applies dotfiles, and
-registers org-protocol. Windows restart and Ubuntu's username/password prompt
-remain interactive. Use username `ningen`; the password is never stored.
+Normal runs install missing winget packages and preserve installed versions. To
+ask winget and VS Code to update managed packages/extensions, run:
+
+```powershell
+pwsh -NoProfile -File .\windows\bootstrap.ps1 -Upgrade
+```
+
+The bootstrap does not clone, pull, change Developer Mode, restart Windows, shut
+down WSL, or create Linux users. Developer Mode allows current-user symlinks; when
+it is disabled, only link creation needs an elevated PowerShell. The package
+installer and current-user registry integration do not require elevation.
+
+The Windows layer manages GUI applications and integrations. WSL's Nix/Home
+Manager output remains responsible for shells, editors, language runtimes, and
+CLI tools. Oh My Posh is intentionally omitted because Starship already provides
+the prompt in WSL. GlazeWM and YASB provide the Windows-native equivalents of the
+NixOS tiling-window/status-bar layer. YASB v2 generates its initial configuration
+with its first-run wizard; do not commit API keys or machine-specific values from
+that generated file.
+
+`setup-dotfiles.ps1` links these repository files:
+
+| Source | Windows target |
+| --- | --- |
+| `.config/wezterm` | `%APPDATA%\wezterm` |
+| `windows/glazewm/config.yaml` | `%USERPROFILE%\.glzr\glazewm\config.yaml` |
+| `windows/powershell/Microsoft.PowerShell_profile.ps1` | `%USERPROFILE%\Documents\PowerShell\Microsoft.PowerShell_profile.ps1` |
+| `.config/vscode/settings.json` | `%APPDATA%\Code\User\settings.json` |
+| `.config/vscode/keybindings.json` | `%APPDATA%\Code\User\keybindings.json` |
+
+Correct links are logged as `NOOP`. Any regular file, directory, or different
+link is moved intact to
+`%LOCALAPPDATA%\ningen-dotfiles\backups\<UTC timestamp>` before replacement.
+Rerun the same dry-run and apply commands after updates; a second apply should
+show only `NOOP` for links and installed/current packages.
 
 ## Manual WSL bootstrap (fallback)
 

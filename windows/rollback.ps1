@@ -2,6 +2,9 @@ $ErrorActionPreference = 'Stop'
 $statePath = Join-Path $env:LOCALAPPDATA 'ningen-dotfiles\setup-state.json'
 if (-not (Test-Path $statePath)) { throw "Setup state not found: $statePath" }
 $state = Get-Content $statePath -Raw | ConvertFrom-Json
+if ($state.environment.PSObject.Properties.Name -contains 'DOTFILES_WINDOWS_REPO') {
+    [Environment]::SetEnvironmentVariable('DOTFILES_WINDOWS_REPO', $state.environment.DOTFILES_WINDOWS_REPO, 'User')
+}
 [Environment]::SetEnvironmentVariable('DOTFILES_WSL_DISTRO', $state.environment.DOTFILES_WSL_DISTRO, 'User')
 [Environment]::SetEnvironmentVariable('DOTFILES_WSL_USER', $state.environment.DOTFILES_WSL_USER, 'User')
 if ($null -eq $state.git.coreAutocrlf) { git config --global --unset core.autocrlf 2>$null }

@@ -111,6 +111,9 @@ windows_only:
   - source: .config/wezterm
     target: $CONFIG_DIR/wezterm
     type: directory
+  - source: windows/glazewm/config.yaml
+    target: $HOME/.glzr/glazewm/config.yaml
+    type: file
   - source: windows/powershell/Microsoft.PowerShell_profile.ps1
     target: $HOME/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
     type: file
