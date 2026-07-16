@@ -2,12 +2,20 @@
 let
   emacsClientWsl = pkgs.writeShellScriptBin "emacsclient-wsl" ''
     set -eu
-    if [ "$#" -ne 0 ]; then
-      echo "usage: emacsclient-wsl" >&2
-      exit 64
+    client="${pkgs.emacs}/bin/emacsclient"
+    if ! "$client" --socket-name=default --eval t >/dev/null 2>&1; then
+      ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
     fi
-    ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
-    exec ${pkgs.emacs}/bin/emacsclient --socket-name=default --create-frame --no-wait
+    attempts=0
+    until "$client" --socket-name=default --eval t >/dev/null 2>&1; do
+      attempts=$((attempts + 1))
+      if [ "$attempts" -ge 60 ]; then
+        echo "timed out waiting for Emacs daemon default" >&2
+        exit 1
+      fi
+      ${pkgs.coreutils}/bin/sleep 0.5
+    done
+    exec "$client" --socket-name=default --create-frame --no-wait "$@"
   '';
   orgProtocolClient = pkgs.writeShellScriptBin "org-protocol-client" ''
     set -eu
@@ -38,6 +46,9 @@ in
     emacsClientWsl
     orgProtocolClient
   ];
+  # Use the same daemon from both the WSL shell and the Windows launcher so
+  # buffers and loaded configuration cannot diverge between launch paths.
+  programs.zsh.shellAliases.emacs = "emacsclient-wsl";
   systemd.user.services.emacs-default = {
     Unit = {
       Description = "Emacs daemon (default)";

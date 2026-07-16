@@ -98,6 +98,10 @@ cd ~/ghq/github.com/ningen/dotfiles
 nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
 ./setup-dotfiles.sh --dry-run
 ./setup-dotfiles.sh
+zsh_path="$HOME/.nix-profile/bin/zsh"
+grep -Fxq "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
+sudo chsh -s "$zsh_path" ningen
+systemctl --user restart emacs-default.service
 ```
 
 Restore SSH/GPG keys into WSL with strict permissions, authenticate `gh`, verify
@@ -116,8 +120,18 @@ docker compose version
 printf '日本語\nmultiple lines\n' | win-copy
 win-paste
 nvim '+checkhealth clipboard'
-DOOMPROFILE=default emacsclient --socket-name=default --create-frame
+getent passwd ningen | cut -d: -f7
+emacs
+emacsclient-wsl
 ```
+
+The reported login shell must be `/home/ningen/.nix-profile/bin/zsh`. Both
+`emacs` in zsh and the Windows Emacs launcher use the `default` daemon, so they
+show the same buffers and loaded configuration. After changing the Emacs init
+files outside the bootstrap flow, restart that daemon with
+`systemctl --user restart emacs-default.service` to load the changes.
+The automated bootstrap and `Update-DotfilesWsl` skip that restart when the
+daemon has modified buffers, and print the same command to run after saving.
 
 Generate the Chrome bookmarklet with
 `pwsh -File windows/org-protocol/get-bookmarklet.ps1`. Test capture with WSL and
