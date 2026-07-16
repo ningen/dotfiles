@@ -1,0 +1,32 @@
+# Emacs package managers and native compilation
+/elpa/
+/straight/
+/eln-cache/
+/tree-sitter/
+
+# Cache and persistent runtime state
+/auto-save-list/
+/transient/
+/url/
+/var/
+/.cache/
+/server/
+/request/
+/eshell/history
+/history
+/recentf
+/bookmarks
+/places
+/tramp
+/network-security.data
+/package-quickstart.el
+/projectile-bookmarks.eld
+/.org-id-locations
+
+# Keep machine-local Customize output out of init.el
+/custom.el
+
+# Lock, auto-save, and backup files
+/#*#
+/.#*
+*~
