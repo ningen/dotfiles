@@ -8,7 +8,7 @@
 ;; Use separate fonts for Latin text, Japanese text, and emoji.  WSLg uses the
 ;; Linux fontconfig database, so these fonts are installed by Home Manager.
 (set-face-attribute 'default nil
-                    :family "JetBrainsMono Nerd Font"
+                    :family "JetBrainsMono Nerd Font Mono"
                     :height 130)
 (set-fontset-font t 'japanese-jisx0208
                   (font-spec :family "Noto Sans CJK JP"))
@@ -91,11 +91,16 @@
   (unless (file-exists-p org-default-notes-file)
     (write-region "* Inbox\n" nil org-default-notes-file)))
 
+(leaf org-preview-html
+  :doc ".org file preview plugin"
+  :ensure t)
+
 (leaf org-modern
   :doc "modern .org file visualize"
   :ensure t
   :custom
-  ((org-auto-align-tags . nil)
+  ((org-modern-star . nil)
+   (org-auto-align-tags . nil)
    (org-tags-column . 0)
    (org-catch-invisible-edits . 'show-and-error)
    (org-special-ctrl-a/e . t)
@@ -105,7 +110,7 @@
    (org-pretty-entities . t)
    (org-agenda-tags-column . 0)
    (org-ellipsis . "…")
-   (org-modern-hide-stars . t))
+   (org-modern-hide-stars . nil))
   :config
   ;; 見出しのサイズを大きくする
   (custom-set-faces
@@ -121,6 +126,13 @@
 (leaf eglot
   :doc "LSP client"
   :ensure t
+  :bind-keymap
+  ("M-." . 'xref-find-definitions)
+  ("M-?" . 'xref-find-references)
+  ("C-c l r" . 'eglot-rename)
+  ("C-c l f" . 'eglot-format-buffer)
+  ("C-c l a" . 'eglot-code-actions)
+  ("C-c l d" . 'eldoc)
   :custom
   ((eglot-autoshutdown . t)
    (eglot-sync-connect . 0)
@@ -159,16 +171,3 @@
    (company-tooltip-align-annotations . t))
   :hook
   (eglot-managed-mode-hook . company-mode))
-
-(leaf eglot-keybinds
-  :config
-  (defun my-eglot-keybinds ()
-    "eglot 用キーバインド"
-    (local-set-key (kbd "M-.") 'xref-find-definitions)
-    (local-set-key (kbd "M-?") 'xref-find-references)
-    (local-set-key (kbd "C-c l r") 'eglot-rename)
-    (local-set-key (kbd "C-c l f") 'eglot-format-buffer)
-    (local-set-key (kbd "C-c l a") 'eglot-code-actions)
-    (local-set-key (kbd "C-c l d") 'eldoc))
-  :hook
-  (eglot-managed-mode-hook . my-eglot-keybinds))
