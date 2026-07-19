@@ -51,12 +51,22 @@
   :doc "Convert many format to leaf format"
   :ensure t)
 
+(defun dotfiles-wsl-p ()
+  (and (eq system-type 'gnu/linux)
+       (or (getenv "WSL_INTEROP")
+           (and (file-readable-p "/proc/sys/kernel/osrelease")
+                (with-temp-buffer
+                  (insert-file-contents "/proc/sys/kernel/osrelease")
+                  (let ((case-fold-search t))
+                    (re-search-forward "microsoft\\|wsl" nil t)))))))
+
 ;; WSLg does not reliably forward Windows IME composition to Emacs.  Mozc runs
 ;; as an Emacs input method, so it works independently of the GUI backend.
-(require 'mozc)
-(setq default-input-method "japanese-mozc")
-(global-set-key (kbd "C-SPC") #'toggle-input-method)
-(global-set-key (kbd "C-c SPC") #'set-mark-command)
+(when (dotfiles-wsl-p)
+  (require 'mozc)
+  (setq default-input-method "japanese-mozc")
+  (global-set-key (kbd "C-SPC") #'toggle-input-method)
+  (global-set-key (kbd "C-c SPC") #'set-mark-command))
 
 (leaf doom-themes
   :ensure t
