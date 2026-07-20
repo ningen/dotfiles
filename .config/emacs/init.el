@@ -68,6 +68,15 @@
   (global-set-key (kbd "C-SPC") #'toggle-input-method)
   (global-set-key (kbd "C-c SPC") #'set-mark-command))
 
+(leaf which-key
+  :doc "which emacs keybinds"
+  :ensure t
+  :global-minor-mode t)
+
+(leaf magit
+  :doc "emacs git handler"
+  :ensure t)
+
 (leaf doom-themes
   :ensure t
   :custom ((doom-themes-enable-bold . t)
