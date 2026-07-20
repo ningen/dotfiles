@@ -62,6 +62,7 @@ in
       codex
       tree-sitter
       pandoc
+      sbcl
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies
