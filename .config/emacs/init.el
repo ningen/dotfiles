@@ -123,9 +123,25 @@
   :doc "drag and drop image .org support"
   :ensure t
   :after org
+  :preface
+  (defun dotfiles/org-download-wsl-clipboard (&optional basename)
+    "Insert a Windows clipboard image into the current Org buffer."
+    (interactive)
+    (unless (executable-find "win-paste-image")
+      (user-error "win-paste-image is not available; apply the WSL Home Manager configuration"))
+    (let ((org-download-screenshot-method "win-paste-image %s"))
+      (org-id-get-create)
+      (org-download-screenshot basename)))
+
+  (defun dotfiles/org-download-clipboard (&optional basename)
+    "Insert a clipboard image using the platform-appropriate backend."
+    (interactive)
+    (if (dotfiles-wsl-p)
+        (dotfiles/org-download-wsl-clipboard basename)
+      (org-download-clipboard basename)))
   :bind
   (:org-mode-map
-   ("C-M-y" . org-download-clipboard))
+   ("C-M-y" . dotfiles/org-download-clipboard))
   :custom
   ((org-download-screenshot-method . "screencapture -i %s")
    (org-download-timestamp . "%Y%m%d_%H%M%S_"))
