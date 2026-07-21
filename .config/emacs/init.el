@@ -60,6 +60,15 @@
                   (let ((case-fold-search t))
                     (re-search-forward "microsoft\\|wsl" nil t)))))))
 
+(leaf exec-path-from-shell
+  :doc "Import shell environment variables into Emacs"
+  :ensure t
+  :custom
+  ((exec-path-from-shell-arguments . '("-l" "-i")))
+  :config
+  (when (or (daemonp) (dotfiles-wsl-p))
+    (exec-path-from-shell-initialize)))
+
 ;; WSLg does not reliably forward Windows IME composition to Emacs.  Mozc runs
 ;; as an Emacs input method, so it works independently of the GUI backend.
 (when (dotfiles-wsl-p)
