@@ -22,21 +22,24 @@
 ;; 行番号を表示する
 (global-display-line-numbers-mode 1)
 
-;; Use separate fonts for Latin text, Japanese text, and emoji.  WSLg uses the
-;; Linux fontconfig database, so these fonts are installed by Home Manager.
+;; Use the same Nerd Font on every supported platform.
 (set-face-attribute 'default nil
                     :family "JetBrainsMono Nerd Font Mono"
                     :height 130)
-(set-fontset-font t 'japanese-jisx0208
-                  (font-spec :family "Noto Sans CJK JP"))
-(set-fontset-font t 'katakana-jisx0201
-                  (font-spec :family "Noto Sans CJK JP"))
-(set-fontset-font t 'han
-                  (font-spec :family "Noto Sans CJK JP"))
-(set-fontset-font t 'emoji
-                  (font-spec :family "Noto Color Emoji"))
 
-;; Keep WSLg frames compact and let the theme provide the visual hierarchy.
+;; JetBrains Mono is shared, while Linux uses the declaratively installed Noto
+;; fonts for glyphs that the default font does not provide.
+(when (memq (my/os) '(wsl linux))
+  (set-fontset-font t 'japanese-jisx0208
+                    (font-spec :family "Noto Sans CJK JP"))
+  (set-fontset-font t 'katakana-jisx0201
+                    (font-spec :family "Noto Sans CJK JP"))
+  (set-fontset-font t 'han
+                    (font-spec :family "Noto Sans CJK JP"))
+  (set-fontset-font t 'emoji
+                    (font-spec :family "Noto Color Emoji")))
+
+;; Keep graphical frames compact and let the theme provide the visual hierarchy.
 (menu-bar-mode -1)
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
@@ -68,27 +71,18 @@
   :doc "Convert many format to leaf format"
   :ensure t)
 
-(defun dotfiles-wsl-p ()
-  (and (eq system-type 'gnu/linux)
-       (or (getenv "WSL_INTEROP")
-           (and (file-readable-p "/proc/sys/kernel/osrelease")
-                (with-temp-buffer
-                  (insert-file-contents "/proc/sys/kernel/osrelease")
-                  (let ((case-fold-search t))
-                    (re-search-forward "microsoft\\|wsl" nil t)))))))
-
 (leaf exec-path-from-shell
   :doc "Import shell environment variables into Emacs"
   :ensure t
   :custom
   ((exec-path-from-shell-arguments . '("-l" "-i")))
   :config
-  (when (or (daemonp) (dotfiles-wsl-p))
+  (when (or (daemonp) (memq (my/os) '(wsl macos)))
     (exec-path-from-shell-initialize)))
 
 ;; WSLg does not reliably forward Windows IME composition to Emacs.  Mozc runs
 ;; as an Emacs input method, so it works independently of the GUI backend.
-(when (dotfiles-wsl-p)
+(when (eq (my/os) 'wsl)
   (require 'mozc)
   (setq default-input-method "japanese-mozc")
   (global-set-key (kbd "C-SPC") #'toggle-input-method)
@@ -150,7 +144,7 @@
   :ensure t
   :after org
   :preface
-  (defun dotfiles/org-download-save-wsl-clipboard (output-file)
+  (defun my/org-download-save-wsl-clipboard (output-file)
     "Save the Windows clipboard image to OUTPUT-FILE."
     (let ((helper (expand-file-name "~/.local/bin/win-paste-image"))
           (output-buffer (get-buffer-create "*win-paste-image*")))
@@ -164,27 +158,43 @@
                      (with-current-buffer output-buffer
                        (buffer-string)))))))
 
-  (defun dotfiles/org-download-wsl-clipboard (&optional basename)
+  (defun my/org-download-wsl-clipboard (&optional basename)
     "Insert a Windows clipboard image into the current Org buffer."
     (interactive)
     (require 'org-download)
     (require 'org-id)
-    (let ((org-download-screenshot-method #'dotfiles/org-download-save-wsl-clipboard))
+    (let ((org-download-screenshot-method #'my/org-download-save-wsl-clipboard))
       (org-id-get-create)
       (org-download-screenshot basename)))
 
-  (defun dotfiles/org-download-clipboard (&optional basename)
+  (defun my/org-download-clipboard (&optional basename)
     "Insert a clipboard image using the platform-appropriate backend."
     (interactive)
-    (if (dotfiles-wsl-p)
-        (dotfiles/org-download-wsl-clipboard basename)
+    (if (eq (my/os) 'wsl)
+        (my/org-download-wsl-clipboard basename)
       (org-download-clipboard basename)))
+
+  (defun my/org-download-screenshot-backend ()
+    "Return the screenshot backend available on the current platform."
+    (pcase (my/os)
+      ('wsl #'my/org-download-save-wsl-clipboard)
+      ('macos "screencapture -i %s")
+      ('linux
+       (cond
+        ((and (executable-find "grim") (executable-find "slurp"))
+         "grim -g \"$(slurp)\" %s")
+        ((executable-find "spectacle") "spectacle -br -o %s")
+        ((executable-find "gnome-screenshot") "gnome-screenshot -a -f %s")))
+      (_ nil)))
   :bind
   (:org-mode-map
-   ("C-M-y" . dotfiles/org-download-clipboard))
+   ("C-M-y" . my/org-download-clipboard))
   :custom
-  ((org-download-screenshot-method . "screencapture -i %s")
-   (org-download-timestamp . "%Y%m%d_%H%M%S_"))
+  ((org-download-timestamp . "%Y%m%d_%H%M%S_"))
+  :config
+  (let ((backend (my/org-download-screenshot-backend)))
+    (when backend
+      (setq org-download-screenshot-method backend)))
   :hook
   (org-mode-hook
    . (lambda ()
