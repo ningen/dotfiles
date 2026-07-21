@@ -83,7 +83,7 @@
            (doom-themes-enable-italic . t)
            (doom-themes-treemacs-theme . "doom-atom"))
   :config
-  (load-theme 'doom-one t)
+  (load-theme 'doom-solarized-light t)
   ;; 各種設定
   (doom-themes-visual-bell-config)
   (doom-themes-neotree-config)
@@ -100,7 +100,14 @@
   :custom
   ((org-directory . "~/org")
    (org-default-notes-file . "~/org/capture.org")
-   (org-log-done . 'time))
+   (org-agenda-files . '("~/org/"))
+   (org-startup-with-inline-images . t)
+   (org-todo-keywords . '((sequence "TODO(t)" "IN-PROGRESS(i)" "|" "DONE(d)" "CANCELLED(c)")))
+   (org-log-done . 'time)
+   (org-startup-indented . t)
+   (org-fontify-todo-headline . t)
+   (org-fontify-done-headline . t)
+   (org-hide-leading-stars . t))
   :config
   ;; ディレクトリ作成
   (unless (file-exists-p org-directory)
@@ -108,7 +115,27 @@
 
   ;; ファイル作成（初回時）
   (unless (file-exists-p org-default-notes-file)
-    (write-region "* Inbox\n" nil org-default-notes-file)))
+    (write-region "* Inbox\n" nil org-default-notes-file))
+  :hook
+  (org-mode-hook . org-indent-mode))
+
+(leaf org-download
+  :doc "drag and drop image .org support"
+  :ensure t
+  :after org
+  :bind
+  (:org-mode-map
+   ("C-M-y" . org-download-clipboard))
+  :custom
+  ((org-download-screenshot-method . "screencapture -i %s")
+   (org-download-timestamp . "%Y%m%d_%H%M%S_"))
+  :hook
+  (org-mode-hook
+   . (lambda ()
+       (when buffer-file-name
+         (setq-local org-download-image-dir
+                     (expand-file-name "images/"
+                                       (file-name-directory buffer-file-name)))))))
 
 (leaf org-preview-html
   :doc ".org file preview plugin"
@@ -118,7 +145,10 @@
   :doc "modern .org file visualize"
   :ensure t
   :custom
-  ((org-modern-star . nil)
+  ((org-modern-star . '("◉" "○" "✦" "✧" "◆" "◇"))
+   (org-modern-list . '((?- . "•") (?+ . "◦")))
+   (org-modern-table . t)
+   (org-modern-tag . t)
    (org-auto-align-tags . nil)
    (org-tags-column . 0)
    (org-catch-invisible-edits . 'show-and-error)
@@ -130,28 +160,46 @@
    (org-agenda-tags-column . 0)
    (org-ellipsis . "…")
    (org-modern-hide-stars . nil))
-  :config
-  ;; 見出しのサイズを大きくする
-  (custom-set-faces
-   '(org-level-1 ((t (:height 1.4))))
-   '(org-level-2 ((t (:height 1.3))))
-   '(org-level-3 ((t (:height 1.2))))
-   '(org-level-4 ((t (:height 1.1))))
-   '(org-level-5 ((t (:height 1.0)))))
+  :custom-face
+  (org-level-1 . '((t (:height 1.35 :weight bold))))
+  (org-level-2 . '((t (:height 1.20 :weight bold))))
+  (org-level-3 . '((t (:height 1.10 :weight bold))))
+  (org-level-4 . '((t (:height 1.05 :weight bold))))
+  (org-level-5 . '((t (:height 1.00 :weight bold))))
   :hook
   (org-mode-hook . org-modern-mode))
+
+;; Tree-sitter grammars used for syntax highlighting and language tooling.
+(setq treesit-language-source-alist
+      '((org "https://github.com/milisims/tree-sitter-org")
+        (python "https://github.com/tree-sitter/tree-sitter-python")
+        (nix "https://github.com/nix-community/tree-sitter-nix")
+        (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+        (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+        (markdown "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown/src")
+        (markdown-inline "https://github.com/tree-sitter-grammars/tree-sitter-markdown" "split_parser" "tree-sitter-markdown-inline/src")
+        (yaml "https://github.com/tree-sitter-grammars/tree-sitter-yaml")
+        (json "https://github.com/tree-sitter/tree-sitter-json")))
+
+(defun my/treesit-install-all-grammars ()
+  "Install every Tree-sitter grammar in `treesit-language-source-alist'."
+  (interactive)
+  (dolist (source treesit-language-source-alist)
+    (let ((lang (car source)))
+      (unless (treesit-language-available-p lang)
+        (treesit-install-language-grammar lang)))))
 
 ;; lsp client である eglot の設定
 (leaf eglot
   :doc "LSP client"
   :ensure t
-  :bind-keymap
-  ("M-." . 'xref-find-definitions)
-  ("M-?" . 'xref-find-references)
-  ("C-c l r" . 'eglot-rename)
-  ("C-c l f" . 'eglot-format-buffer)
-  ("C-c l a" . 'eglot-code-actions)
-  ("C-c l d" . 'eldoc)
+  :bind
+  (("M-." . xref-find-definitions)
+   ("M-?" . xref-find-references)
+   ("C-c l r" . eglot-rename)
+   ("C-c l f" . eglot-format-buffer)
+   ("C-c l a" . eglot-code-actions)
+   ("C-c l d" . eldoc))
   :custom
   ((eglot-autoshutdown . t)
    (eglot-sync-connect . 0)
