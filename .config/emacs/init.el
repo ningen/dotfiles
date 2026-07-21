@@ -1,3 +1,20 @@
+(defun my/wsl-kernel-p ()
+  "Return non-nil when the Linux kernel appears to be running under WSL."
+  (and (file-readable-p "/proc/sys/kernel/osrelease")
+       (with-temp-buffer
+         (insert-file-contents "/proc/sys/kernel/osrelease")
+         (let ((case-fold-search t))
+           (not (null (re-search-forward "microsoft\\|wsl" nil t)))))))
+
+(defun my/os ()
+  "Return the current operating environment as a symbol."
+  (cond
+   ((and (eq system-type 'gnu/linux) (my/wsl-kernel-p)) 'wsl)
+   ((eq system-type 'darwin) 'macos)
+   ((eq system-type 'windows-nt) 'windows)
+   ((eq system-type 'gnu/linux) 'linux)
+   (t 'unknown)))
+
 ;; バックアップファイルの自動作成などを無効化
 (setq make-backup-files nil)
 (setq auto-save-default nil)
