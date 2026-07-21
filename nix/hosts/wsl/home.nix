@@ -95,9 +95,10 @@ in
       set -eu
       [ "$#" -eq 1 ] || { echo "usage: win-paste-image OUTPUT.png" >&2; exit 64; }
 
-      windows_path="$(wslpath -w -- "$1")"
-      script_path="$(wslpath -w -- "$HOME/.local/share/dotfiles/win-paste-image.ps1")"
-      exec powershell.exe -NoLogo -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass \
+      windows_path="$(/usr/bin/wslpath -w -- "$1")"
+      script_path="$(/usr/bin/wslpath -w -- "$HOME/.local/share/dotfiles/win-paste-image.ps1")"
+      exec /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe \
+        -NoLogo -NoProfile -NonInteractive -STA -ExecutionPolicy Bypass \
         -File "$script_path" "$windows_path"
     '';
   };

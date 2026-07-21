@@ -124,12 +124,26 @@
   :ensure t
   :after org
   :preface
+  (defun dotfiles/org-download-save-wsl-clipboard (output-file)
+    "Save the Windows clipboard image to OUTPUT-FILE."
+    (let ((helper (expand-file-name "~/.local/bin/win-paste-image"))
+          (output-buffer (get-buffer-create "*win-paste-image*")))
+      (unless (file-executable-p helper)
+        (user-error "%s is not available; apply the WSL Home Manager configuration" helper))
+      (with-current-buffer output-buffer
+        (erase-buffer))
+      (unless (zerop (call-process helper nil output-buffer nil output-file))
+        (user-error "Failed to read the Windows clipboard: %s"
+                    (string-trim
+                     (with-current-buffer output-buffer
+                       (buffer-string)))))))
+
   (defun dotfiles/org-download-wsl-clipboard (&optional basename)
     "Insert a Windows clipboard image into the current Org buffer."
     (interactive)
-    (unless (executable-find "win-paste-image")
-      (user-error "win-paste-image is not available; apply the WSL Home Manager configuration"))
-    (let ((org-download-screenshot-method "win-paste-image %s"))
+    (require 'org-download)
+    (require 'org-id)
+    (let ((org-download-screenshot-method #'dotfiles/org-download-save-wsl-clipboard))
       (org-id-get-create)
       (org-download-screenshot basename)))
 
