@@ -63,6 +63,7 @@ in
       tree-sitter
       pandoc
       sbcl
+      emacs-lsp-booster
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies
