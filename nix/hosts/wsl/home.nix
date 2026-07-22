@@ -1,8 +1,14 @@
 { config, pkgs, ... }:
 let
   emacsPackage = config.dotfiles.emacs.package;
+  importWslInteropEnvironment = ''
+    if [ -n "''${WSL_INTEROP:-}" ]; then
+      ${pkgs.systemd}/bin/systemctl --user import-environment WSL_INTEROP WSL_DISTRO_NAME
+    fi
+  '';
   emacsClientWsl = pkgs.writeShellScriptBin "emacsclient-wsl" ''
     set -eu
+    ${importWslInteropEnvironment}
     client="${emacsPackage}/bin/emacsclient"
     if ! "$client" --socket-name=default --eval t >/dev/null 2>&1; then
       ${pkgs.systemd}/bin/systemctl --user start emacs-default.service
@@ -20,6 +26,7 @@ let
   '';
   orgProtocolClient = pkgs.writeShellScriptBin "org-protocol-client" ''
     set -eu
+    ${importWslInteropEnvironment}
     if [ "$#" -ne 1 ]; then
       echo "usage: org-protocol-client org-protocol://..." >&2
       exit 64
@@ -71,21 +78,24 @@ in
       ExecStop = "${emacsPackage}/bin/emacsclient --socket-name=default --eval (kill-emacs)";
       Restart = "on-failure";
     };
-    Install.WantedBy = [ "default.target" ];
   };
   home.sessionVariables.BROWSER = "wsl-open";
   home.file.".local/bin/win-copy" = {
     executable = true;
     text = ''
       #!${pkgs.bash}/bin/bash
-      exec clip.exe
+      set -o pipefail
+      ${pkgs.glibc.bin}/bin/iconv -f UTF-8 -t UTF-16LE | \
+        /mnt/c/Windows/System32/clip.exe
     '';
   };
   home.file.".local/bin/win-paste" = {
     executable = true;
     text = ''
       #!${pkgs.bash}/bin/bash
-      exec powershell.exe -NoProfile -Command Get-Clipboard -Raw
+      exec /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe \
+        -NoLogo -NoProfile -NonInteractive \
+        -Command '[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false); [Console]::Out.Write((Get-Clipboard -Raw))'
     '';
   };
   home.file.".local/bin/win-paste-image" = {
