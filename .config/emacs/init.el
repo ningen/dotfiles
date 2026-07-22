@@ -142,7 +142,6 @@
 (leaf org-download
   :doc "drag and drop image .org support"
   :ensure t
-  :after org
   :preface
   (defun my/org-download-save-wsl-clipboard (output-file)
     "Save the Windows clipboard image to OUTPUT-FILE."
@@ -191,6 +190,8 @@
    ("C-M-y" . my/org-download-clipboard))
   :custom
   ((org-download-timestamp . "%Y%m%d_%H%M%S_"))
+  :commands ;; TODO: leaf 確認して理解する、一旦の理解としては、コマンドが実行されたときにload する
+  (org-download-screenshot my/org-download-clipboard my/org-download-wsl-clipboard)
   :config
   (let ((backend (my/org-download-screenshot-backend)))
     (when backend
