@@ -385,3 +385,20 @@
     ("d" text-scale-decrease "decrease (-)")
     ("0" (text-scale-set 0) "reset to default")
     ("q" nil "quit")))
+
+(leaf projectile
+  :doc "project management for emacs"
+  :ensure t
+  :init
+  (projectile-mode 1)
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :config
+  (defun my/projectile-add-ghq-projects ()
+    "Synchonize ghq repositories with Projectile."
+    (interactive)
+    (dolist (project (process-lines "ghq" "list" "--full-path"))
+      (projectile-add-known-project
+       (file-name-as-directory project))))
+  
+  (my/projectile-add-ghq-projects))
