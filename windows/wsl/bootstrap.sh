@@ -62,17 +62,7 @@ if [[ "$(getent passwd "$DISTRO_USER" | cut -d: -f7)" != "$zsh_path" ]]; then
 fi
 
 echo '==> Refreshing the shared Emacs daemon configuration'
-if systemctl --user is-active --quiet emacs-default.service; then
-  modified_buffers="$(emacsclient --socket-name=default --eval "(seq-some #'buffer-modified-p (buffer-list))" 2>/dev/null || true)"
-  if [[ "$modified_buffers" == "nil" ]]; then
-    systemctl --user restart emacs-default.service
-  else
-    echo 'Emacs daemon restart skipped because it has modified buffers.' >&2
-    echo 'Save them, then run: systemctl --user restart emacs-default.service' >&2
-  fi
-else
-  systemctl --user start emacs-default.service
-fi
+refresh-emacs-wsl
 
 echo '==> Verifying required CLI tools'
 for command in zsh starship direnv tmux git gh ghq nvim emacs node python go; do

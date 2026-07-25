@@ -65,13 +65,6 @@ if (-not $SkipDotfiles) {
     if ($WslDistro) { $dotfileArguments.WslDistro = $WslDistro }
     if ($WslUser) { $dotfileArguments.WslUser = $WslUser }
     Invoke-ChildScript -Path (Join-Path $RepositoryRoot 'setup-dotfiles.ps1') -Arguments $dotfileArguments
-
-    Write-Step 'Register org-protocol for the current user'
-    if ($DryRun) {
-        Write-Host 'REGISTER HKCU:\Software\Classes\org-protocol'
-    } else {
-        Invoke-ChildScript -Path (Join-Path $RepositoryRoot 'windows\org-protocol\register.ps1') -Arguments @{}
-    }
 }
 
 Write-Host @"

@@ -169,7 +169,7 @@ if wezterm.target_triple == "x86_64-pc-windows-msvc" or wezterm.target_triple ==
 		},
 		{
 			label = "PowerShell",
-			args = { "powershell.exe", "-NoLogo" },
+			args = { "pwsh.exe", "-NoLogo" },
 		},
 		{
 			label = "Command Prompt",

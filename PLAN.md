@@ -36,7 +36,7 @@ missing-source原子性を確認済み。Windows/WSL/macOS実機で行う項目�
 | Org データ | private repository `git@github.com:ningen/org.git` |
 | Docker daemon / CLI | Docker Desktop WSL Integration |
 | SSH / GPG agent | WSL 内で管理 |
-| Emacs | WSLg GUI + `default` daemon |
+| Emacs | WSLg GUI + Home Manager socket activation |
 | Chrome capture | リポジトリ管理の bookmarklet |
 
 Windows checkout と WSL checkout は分離する。Windows アプリから `\\wsl$` 上の dotfiles へ恒常的にリンクしない。秘密鍵、トークン、ブラウザプロファイル、Windows Credential Manager、Docker 認証ファイル、Org データは dotfiles repository に含めない。
@@ -109,7 +109,7 @@ WezTerm、Windows Terminal profile generator、org-protocol handlerはこの2値
 
 - WSL側の固定パスは `/home/ningen/.local/bin/org-protocol-client` とする。
 - clientは `org-protocol://...` URLをちょうど1引数で受け取る。引数が0件または2件以上なら失敗する。
-- `DOOMPROFILE=default` と daemon名 `default` を明示し、URLを `emacsclient` へ1引数のまま渡す。
+- Home Manager標準のEmacs socketへ接続し、URLを`emacsclient`へ1引数のまま渡す。
 
 ## 管理対象
 
@@ -400,11 +400,10 @@ Docker daemon、socket、contextが一系統だけであることを完了条件
 
 - [ ] Home Managerで`~/.local/bin/org-protocol-client`を配置する。
 - [ ] WSLではGUI対応の`pkgs.emacs`を導入し、WSLgからGUI frameを開けることを確認する。
-- [ ] GUI起動commandを`DOOMPROFILE=default emacsclient --socket-name=default --create-frame`に固定し、独立した別Emacs serverを起動しない。
-- [ ] clientは`DOOMPROFILE=default`を設定し、`emacsclient --socket-name=default --eval t`で接続を調べる。
-- [ ] 接続できなければ`emacs --daemon=default`を起動する。
-- [ ] daemon接続を500ms間隔、最大30秒でpollする。
-- [ ] 接続後、`emacsclient --socket-name=default --no-wait "$url"`でURLを単一引数として渡す。
+- [ ] Home Managerの`services.emacs.socketActivation`で標準socketを管理する。
+- [ ] GUI clientは`emacsclient --alternate-editor=false --create-frame --no-wait`で標準socketへ接続する。
+- [ ] org-protocol clientは`emacsclient --alternate-editor=false --no-wait "$url"`でURLを単一引数として渡す。
+- [ ] daemonの独自起動、named socket、接続pollingを追加しない。
 - [ ] Windows handlerもURLを単一引数として`wsl.exe`へ渡す。
 - [ ] handlerは環境変数のdistro/userを使い、未設定時は停止する。
 - [ ] `HKCU\Software\Classes\org-protocol`へ登録する`register.ps1`と、対象キーだけを消す`unregister.ps1`を追加する。
@@ -418,7 +417,7 @@ Docker daemon、socket、contextが一系統だけであることを完了条件
 
 1. WSL停止、Emacs停止
 2. WSL起動、Emacs停止
-3. WSL起動、`default` daemon起動済み
+3. WSL起動、socket-activated daemon起動済み
 
 `&`、`%`、引用符、空白、日本語、選択テキストを含むcaptureが`~/org/links.org`へ1件だけ保存されることを完了条件とする。
 
@@ -506,7 +505,7 @@ Darwin derivationのbuildをLinuxへ要求しない。registry変更、winget in
 - Terminal fragmentに変更前backupがあれば復元し、なければ`%LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\ningen\wsl.json`だけを削除する。Windows Terminalの`settings.json`は変更しない。
 - org-protocolは`unregister.ps1`で対象HKCU keyだけを削除する。
 - `DOTFILES_WSL_DISTRO`、`DOTFILES_WSL_USER`、`core.autocrlf`をsetup stateの変更前値へ戻す。変更前が`null`なら削除する。
-- `.wslconfig`は`createdBySetup = true`の場合だけ削除する。既存fileには触れず、最後に`wsl.exe --shutdown`を実行する。
+- `.wslconfig`は`createdBySetup = true`かつ作成時のhashから未変更の場合だけ削除する。既存・変更済みfileには触れず、最後に`wsl.exe --shutdown`を実行する。
 - Docker Desktopの`Ubuntu-24.04` WSL Integrationを無効にする。
 - winget packageは自動uninstallしない。rollback scriptがPhase 3の管理対象package IDを全件表示し、`winget list --exact --id`の結果を見て利用者が個別に削除する。bootstrapで導入したGitとPowerShell 7もこの一覧に含める。
 

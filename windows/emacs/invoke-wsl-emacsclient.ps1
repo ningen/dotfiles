@@ -15,5 +15,8 @@ foreach ($argument in @('-d', $env:DOTFILES_WSL_DISTRO, '-u', $env:DOTFILES_WSL_
     [void]$start.ArgumentList.Add($argument)
 }
 $process = [System.Diagnostics.Process]::Start($start)
-$process.WaitForExit()
+if (-not $process.WaitForExit(45000)) {
+    $process.Kill()
+    throw 'WSL Emacs client timed out.'
+}
 exit $process.ExitCode

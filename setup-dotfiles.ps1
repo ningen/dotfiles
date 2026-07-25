@@ -114,7 +114,7 @@ function Get-BaselineState {
     if (Test-Path -LiteralPath $StatePath) { return Get-Content $StatePath -Raw | ConvertFrom-Json }
     $gitValue = git config --global --get core.autocrlf 2>$null
     return [ordered]@{
-        version = 2
+        version = 3
         environment = [ordered]@{
             DOTFILES_WINDOWS_REPO = [Environment]::GetEnvironmentVariable('DOTFILES_WINDOWS_REPO', 'User')
             DOTFILES_WSL_DISTRO = [Environment]::GetEnvironmentVariable('DOTFILES_WSL_DISTRO', 'User')
@@ -122,7 +122,10 @@ function Get-BaselineState {
         }
         git = [ordered]@{ coreAutocrlf = if ($LASTEXITCODE -eq 0) { "$gitValue" } else { $null } }
         terminal = [ordered]@{ originalBackup = $null }
-        wslconfig = [ordered]@{ createdBySetup = $null }
+        wslconfig = [ordered]@{
+            createdBySetup = $null
+            createdContentHash = $null
+        }
     }
 }
 
@@ -169,13 +172,15 @@ foreach ($link in $links) {
 $terminalTemplate = Join-Path $DotfilesDir 'windows\terminal\profile.template.json'
 $wslTemplate = Join-Path $DotfilesDir 'windows\wsl\.wslconfig.example'
 $emacsRegistrar = Join-Path $DotfilesDir 'windows\emacs\register-launcher.ps1'
-foreach ($required in @($terminalTemplate, $wslTemplate, $emacsRegistrar)) {
+$orgProtocolRegistrar = Join-Path $DotfilesDir 'windows\org-protocol\register.ps1'
+foreach ($required in @($terminalTemplate, $wslTemplate, $emacsRegistrar, $orgProtocolRegistrar)) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) { $missing += "missing required file: $required" }
 }
 if ($missing.Count) {
     $missing | ForEach-Object { Write-Error "Missing/invalid source: $_" }
     throw 'Preflight failed; no changes made.'
 }
+& $orgProtocolRegistrar -DryRun
 
 $linksNeedingChanges = @($links | Where-Object {
     -not (Test-CorrectLink -Target (Expand-Target $_.target) -Source (Join-Path $DotfilesDir $_.source))
@@ -198,7 +203,20 @@ if ($DryRun) {
             -NotePropertyValue ([Environment]::GetEnvironmentVariable('DOTFILES_WINDOWS_REPO', 'User'))
         $stateChanged = $true
     }
-    if ($state.version -lt 2) { $state.version = 2; $stateChanged = $true }
+    $hasWslconfigHash = if ($state.wslconfig -is [Collections.IDictionary]) {
+        $state.wslconfig.Contains('createdContentHash')
+    } else {
+        $state.wslconfig.PSObject.Properties.Name -contains 'createdContentHash'
+    }
+    if (-not $hasWslconfigHash) {
+        if ($state.wslconfig -is [Collections.IDictionary]) {
+            $state.wslconfig['createdContentHash'] = $null
+        } else {
+            $state.wslconfig | Add-Member -NotePropertyName createdContentHash -NotePropertyValue $null
+        }
+        $stateChanged = $true
+    }
+    if ($state.version -lt 3) { $state.version = 3; $stateChanged = $true }
     if ($stateChanged) {
         $state | ConvertTo-Json -Depth 8 | Set-Content $StatePath -Encoding utf8NoBOM
     }
@@ -255,14 +273,16 @@ if (Test-Path -LiteralPath $wslTarget) {
 } elseif ($null -eq $state.wslconfig.createdBySetup) {
     Copy-Item -LiteralPath $wslTemplate -Destination $wslTarget
     $state.wslconfig.createdBySetup = $true
+    $state.wslconfig.createdContentHash = (Get-FileHash -LiteralPath $wslTarget -Algorithm SHA256).Hash
     Write-Action 'COPY' "$wslTemplate -> $wslTarget"
 }
 
 if ($DryRun) {
-    & (Join-Path $DotfilesDir 'windows\emacs\register-launcher.ps1') -DryRun
+    & $emacsRegistrar -DryRun
 } else {
     $state | ConvertTo-Json -Depth 8 | Set-Content $StatePath -Encoding utf8NoBOM
-    & (Join-Path $DotfilesDir 'windows\emacs\register-launcher.ps1')
+    & $emacsRegistrar
+    & $orgProtocolRegistrar
 }
 
 Write-Host ($(if ($DryRun) { 'Dry run complete; no changes made.' } else { 'Windows dotfiles setup complete.' }))

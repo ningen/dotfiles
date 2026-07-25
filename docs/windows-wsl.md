@@ -101,7 +101,7 @@ nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
 zsh_path="$HOME/.nix-profile/bin/zsh"
 grep -Fxq "$zsh_path" /etc/shells || printf '%s\n' "$zsh_path" | sudo tee -a /etc/shells
 sudo chsh -s "$zsh_path" ningen
-systemctl --user restart emacs-default.service
+refresh-emacs-wsl
 ```
 
 Restore SSH/GPG keys into WSL with strict permissions, authenticate `gh`, verify
@@ -123,22 +123,33 @@ nvim '+checkhealth clipboard'
 getent passwd ningen | cut -d: -f7
 emacs
 emacsclient-wsl
+systemctl --user status emacs.socket
 ```
 
 The reported login shell must be `/home/ningen/.nix-profile/bin/zsh`. Both
-`emacs` in zsh and the Windows Emacs launcher use the `default` daemon, so they
-show the same buffers and loaded configuration. After changing the Emacs init
-files outside the bootstrap flow, restart that daemon with
-`systemctl --user restart emacs-default.service` to load the changes.
+`emacs` in zsh and the Windows Emacs launcher use Home Manager's standard
+socket-activated daemon, so they show the same buffers and loaded configuration.
+After changing the Emacs init files outside the bootstrap flow, restart that
+daemon with `systemctl --user restart emacs.service` to load the changes.
 The automated bootstrap and `Update-DotfilesWsl` skip that restart when the
 daemon has modified buffers, and print the same command to run after saving.
+PGTK Emacs uses WSLg's native text clipboard. `win-copy` and `win-paste` remain
+available for terminal applications such as Neovim, while `win-paste-image`
+handles Windows clipboard images for Org.
 
 Generate the Chrome bookmarklet with
 `pwsh -File windows/org-protocol/get-bookmarklet.ps1`. Test capture with WSL and
-Emacs both stopped, WSL only running, and the `default` daemon running. Include
+Emacs both stopped, WSL only running, and the socket-activated daemon running. Include
 `&`, `%`, quotes, spaces, Japanese, and selection text. Confirm exactly one entry
 in `~/org/links.org`. The diagnostic log contains only timestamp, stage, and exit
 code at `%LOCALAPPDATA%\ningen-dotfiles\org-protocol.log`.
+
+Docker Desktop integration is intentionally enabled from Docker Desktop Settings,
+not by these scripts. Enable the WSL 2 backend and `Ubuntu-24.04` integration
+before running the Docker checks above. If `%USERPROFILE%\.wslconfig` contains a
+low memory cap such as `memory=2GB`, raise or remove it before running Docker,
+language servers, and Emacs together; the repository template intentionally does
+not impose a machine-specific memory limit.
 
 ## macOS regression
 
@@ -180,3 +191,5 @@ Final gate:
 Only after every item is checked should Phase 7 begin. Windows rollback is
 `pwsh -File .\windows\rollback.ps1`; it restores captured environment/Git/Terminal
 baselines and removes `.wslconfig` only when setup created it.
+If that setup-created file has changed since creation, rollback preserves it and
+prints a warning instead.

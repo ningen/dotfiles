@@ -80,33 +80,6 @@
   (when (or (daemonp) (memq (my/os) '(wsl macos)))
     (exec-path-from-shell-initialize)))
 
-(defun my/wsl-copy-to-windows-clipboard (text &optional _push)
-  "Copy TEXT to the Windows clipboard from WSL."
-  (let ((helper (expand-file-name "~/.local/bin/win-copy")))
-    (unless (file-executable-p helper)
-      (user-error "%s is not available; apply the WSL Home Manager configuration" helper))
-    (with-temp-buffer
-      (insert text)
-      (let ((coding-system-for-write 'utf-8-unix))
-        (unless (zerop (call-process-region (point-min) (point-max)
-                                            helper nil nil nil))
-          (user-error "Failed to copy text to the Windows clipboard"))))))
-
-(defun my/wsl-paste-from-windows-clipboard ()
-  "Return text from the Windows clipboard to Emacs in WSL."
-  (let ((helper (expand-file-name "~/.local/bin/win-paste")))
-    (unless (file-executable-p helper)
-      (user-error "%s is not available; apply the WSL Home Manager configuration" helper))
-    (with-temp-buffer
-      (let ((coding-system-for-read 'utf-8-dos))
-        (unless (zerop (call-process helper nil t nil))
-          (user-error "Failed to read text from the Windows clipboard")))
-      (buffer-string))))
-
-(when (eq (my/os) 'wsl)
-  (setq interprogram-cut-function #'my/wsl-copy-to-windows-clipboard
-        interprogram-paste-function #'my/wsl-paste-from-windows-clipboard))
-
 ;; WSLg does not reliably forward Windows IME composition to Emacs.  Mozc runs
 ;; as an Emacs input method, so it works independently of the GUI backend.
 (when (eq (my/os) 'wsl)
@@ -140,7 +113,10 @@
 (setq org-capture-templates
       '(("m" "Memo" entry
          (file+headline "~/org/capture.org" "Inbox")
-         "* Memo %? \n")))
+         "* Memo %? \n")
+        ("w" "Web link" entry
+         (file+headline "~/org/links.org" "Links")
+         "* %:description\n%:link\n%:initial\n")))
 
 (leaf org
   :ensure t
@@ -156,6 +132,7 @@
    (org-fontify-done-headline . t)
    (org-hide-leading-stars . t))
   :config
+  (require 'org-protocol)
   ;; ディレクトリ作成
   (unless (file-exists-p org-directory)
     (make-directory org-directory t))

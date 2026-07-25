@@ -13,7 +13,19 @@ $fragment = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows Terminal\Fragments\ni
 if ($state.terminal.originalBackup -and (Test-Path $state.terminal.originalBackup)) { Copy-Item $state.terminal.originalBackup $fragment -Force }
 elseif (Test-Path $fragment) { Remove-Item $fragment -Force }
 $wslconfig = Join-Path $env:USERPROFILE '.wslconfig'
-if ($state.wslconfig.createdBySetup -eq $true -and (Test-Path $wslconfig)) { Remove-Item $wslconfig -Force }
+if ($state.wslconfig.createdBySetup -eq $true -and (Test-Path $wslconfig)) {
+    $recordedHash = if ($state.wslconfig.PSObject.Properties.Name -contains 'createdContentHash') {
+        $state.wslconfig.createdContentHash
+    } else {
+        $null
+    }
+    $currentHash = (Get-FileHash -LiteralPath $wslconfig -Algorithm SHA256).Hash
+    if ($recordedHash -and $currentHash -eq $recordedHash) {
+        Remove-Item -LiteralPath $wslconfig -Force
+    } else {
+        Write-Warning "Preserved modified or legacy-managed .wslconfig: $wslconfig"
+    }
+}
 & (Join-Path $PSScriptRoot 'org-protocol\unregister.ps1')
 & (Join-Path $PSScriptRoot 'emacs\unregister-launcher.ps1')
 Write-Host 'Managed Windows settings rolled back. Existing non-managed files were preserved.'

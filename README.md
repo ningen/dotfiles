@@ -133,7 +133,7 @@ Windows側の管理対象は次のとおりです。
 
 - winget: WezTerm、VS Code、Docker Desktop、Chrome、PowerShell 7、Git、Windows Terminal、Obsidian、Discord、PowerToys、JetBrains Mono Nerd Font、GlazeWM、YASB Reborn
 - シンボリックリンク: WezTerm、GlazeWM、PowerShell profile、VS Code settings/keybindings
-- その他: Windows TerminalのWSL profile fragment、WSL Emacsショートカット、current-userの`org-protocol`登録
+- その他: Windows TerminalのWSL profile fragment、socket-activated WSL Emacsショートカット、current-userの`org-protocol`登録
 
 Oh My PoshはWSL側のStarshipと役割が重複するため導入しません。YASBの設定はv2のfirst-run wizardが生成するため、秘密情報やマシン固有値を含み得る設定をこのリポジトリから上書きしません。
 
@@ -141,7 +141,9 @@ Oh My PoshはWSL側のStarshipと役割が重複するため導入しません�
 
 リンク作成が途中で失敗しても元データは表示されたbackup先に残ります。必要なら作成途中のリンクを確認して手動で退避し、backupを元のパスへ戻してから再実行してください。スクリプトは未知の既存ファイルを自動削除しません。
 
-再実行は同じコマンドで安全です。パッケージとリンクの個別実行もできます。
+再実行は同じコマンドで安全です。`setup-dotfiles.ps1`単体の再実行でも
+Emacsショートカットと`org-protocol` handlerを現在のPowerShell 7へ再登録します。
+パッケージとリンクの個別実行もできます。
 
 ```powershell
 pwsh -NoProfile -File .\windows\packages\install.ps1 -DryRun
