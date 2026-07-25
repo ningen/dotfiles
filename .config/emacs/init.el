@@ -370,6 +370,9 @@
   (visual-fill-column-center-text . t)
   (visual-fill-column-width . 120))
 
+(leaf vterm
+  :doc "modern emacs terminal tool"
+  :ensure t)
 
 
 (leaf hydra
