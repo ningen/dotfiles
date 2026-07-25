@@ -283,6 +283,14 @@
       (unless (treesit-language-available-p lang)
         (treesit-install-language-grammar lang)))))
 
+(leaf markdown-mode
+  :ensure t)
+
+(leaf typescript-ts-mode
+  :mode
+  (("\\.ts\\'" . typescript-ts-mode)
+   ("\\.tsx\\'" . tsx-ts/mode)))
+
 ;; lsp client である eglot の設定
 (leaf eglot
   :doc "LSP client"
@@ -301,11 +309,24 @@
    (eglot-managed-mode-line-prefix . ""))
   :hook
   (emacs-lisp-mode-hook . eglot-ensure)
+  (typescript-ts-mode-hook . eglot-ensure)
+  (tsx-ts-mode-hook . eglot-ensure)
   :config
   (add-to-list
    'eglot-server-programs
    '(emacs-lisp-mode
      . ("emacs-lsp-booster" "--json-rpc" "emacs-lisp-language-server" "--stdio"))))
+
+(leaf eldoc-box
+  :doc "eldoc floating display"
+  :ensure t
+  :hook
+  ;; カーソルを置くと自動で floating 表示
+  (eglot-managed-mode-hook . eldoc-box-hover-at-point-mode)
+  :custom
+  (eldoc-box-max-pixel-width  . 600)
+  (eldoc-box-max-pixel-height . 400)
+  (eldoc-box-clear-with-C-g   . t))
 
 ;; vertico（候補選択UI）
 (leaf vertico
@@ -339,3 +360,25 @@
   :commands slime
   :custom
   ((inferior-lisp-program . "sbcl")))
+
+
+(leaf visual-fill-column
+  :doc "center document view"
+  :ensure t
+  :hook (org-mode-hook . visual-fill-column-mode)
+  :custom
+  (visual-fill-column-center-text . t)
+  (visual-fill-column-width . 120))
+
+
+
+(leaf hydra
+  :doc "Make Emacs bindings that stick around"
+  :ensure t
+  :config
+  (defhydra hydra-zoom (global-map "<f2>")
+    "Font size adjustment"
+    ("i" text-scale-increase "increase (+)")
+    ("d" text-scale-decrease "decrease (-)")
+    ("0" (text-scale-set 0) "reset to default")
+    ("q" nil "quit")))
