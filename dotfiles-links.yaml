@@ -58,6 +58,12 @@ unix_only:
   - source: .config/agents/skills/skills-cli-installer
     target: ~/.agents/skills/skills-cli-installer
     type: directory
+  - source: .config/agents/vendor/mattpocock-skills/skills/productivity/grill-me
+    target: ~/.agents/skills/grill-me
+    type: directory
+  - source: .config/agents/vendor/mattpocock-skills/skills/productivity/grilling
+    target: ~/.agents/skills/grilling
+    type: directory
   - source: .config/agents/vendor/cloudflare-skills/skills/agents-sdk
     target: ~/.agents/skills/agents-sdk
     type: directory
