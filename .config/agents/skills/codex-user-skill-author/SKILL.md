@@ -23,25 +23,25 @@ Use this workflow to maintain user-level Codex skills as dotfiles-managed artifa
 
 ## External Skills
 
-- Store third-party skill collections as Git submodules under `/Users/ningen/ghq/github.com/ningen/dotfiles/.config/agents/vendor/<owner-or-project>-<repo>`, preserving the upstream layout, license, and metadata.
-- Add submodules with a stable path, for example:
+- Public third-party skills are installed with the Skills CLI, not vendored into this repository.
+- Track public install intent in `/Users/ningen/ghq/github.com/ningen/dotfiles/.config/agents/public-skills.tsv`.
+- Apply public installs with:
 
 ```bash
-git submodule add https://github.com/cloudflare/skills.git .config/agents/vendor/cloudflare-skills
+.config/agents/install-public-skills.sh
 ```
 
-- Deliver submodule-backed skills with individual `dotfiles-links.yaml` entries that point at the upstream skill directory, for example:
+- Use `*` in the manifest only when the whole public skill collection should be installed:
 
-```yaml
-  - source: .config/agents/vendor/cloudflare-skills/skills/<skill-name>
-    target: ~/.agents/skills/<skill-name>
-    type: directory
+```text
+cloudflare/skills	*
+mattpocock/skills	grill-me
 ```
 
-- Do not link the whole vendor collection or the whole `~/.agents/skills` directory.
-- Keep upstream files unmodified. If local behavior needs to differ, prefer a wrapper skill in `.config/agents/skills/<skill-name>` instead of committing edits inside the submodule.
-- Use `.gitmodules` and the submodule gitlink as the source of truth for upstream URL and pinned commit. Update with `git submodule update --remote .config/agents/vendor/<owner-or-project>-<repo>`, then inspect and commit the changed gitlink.
-- The `quick_validate.py` check is required for authored or wrapper skills. Submodule-backed third-party skills may use upstream frontmatter that the local validator does not recognize, so validate their delivery by checking that each linked directory contains `SKILL.md` and that `dotfiles-links.yaml` points to the intended skill directory.
+- Do not add public third-party skill collections as Git submodules under `.config/agents/vendor`.
+- If local behavior needs to differ from a public skill, create a wrapper skill in `.config/agents/skills/<skill-name>` instead of editing copied upstream files.
+- Private skills may live under `.config/agents/private-skills/<skill-name>`, which is gitignored. Link them from `dotfiles-links.local.yaml` so private names and contents do not need to appear in Git.
+- The `quick_validate.py` check is required for authored or wrapper skills. Public third-party skills are validated by `npx skills ls -g -a codex --json` after install.
 
 ## Authoring
 
@@ -69,4 +69,4 @@ nix shell --impure --expr 'let pkgs = import <nixpkgs> {}; in pkgs.python3.withP
 
 Do not rely on `nix shell nixpkgs#python3Packages.pyyaml -c python3 ...` for this check; it can still pick up the system Python instead of a Python environment with PyYAML installed.
 
-When the symlink delivery changes, also inspect `dotfiles-links.yaml` and run `./setup-dotfiles.sh` only when the user wants to apply links on this machine.
+When the symlink delivery changes, also inspect `dotfiles-links.yaml` and any local `dotfiles-links.local.yaml`. Run `./setup-dotfiles.sh` only when the user wants to apply links on this machine.

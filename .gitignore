@@ -2,3 +2,5 @@ nix-local.conf
 .envrc
 .envrc.local
 .gitconfig.local
+dotfiles-links.local.yaml
+.config/agents/private-skills/

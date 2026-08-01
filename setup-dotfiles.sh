@@ -3,18 +3,24 @@ set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$DOTFILES_DIR/dotfiles-links.yaml"
+CONFIG_FILE_ARG=false
 DRY_RUN=false
 
 usage() { echo "usage: $0 [--dry-run] [--config PATH]"; }
 while (($#)); do
   case "$1" in
     --dry-run) DRY_RUN=true; shift ;;
-    --config) [[ $# -ge 2 ]] || { usage >&2; exit 64; }; CONFIG_FILE="$2"; shift 2 ;;
+    --config) [[ $# -ge 2 ]] || { usage >&2; exit 64; }; CONFIG_FILE="$2"; CONFIG_FILE_ARG=true; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; exit 64 ;;
   esac
 done
 [[ -f "$CONFIG_FILE" ]] || { echo "config not found: $CONFIG_FILE" >&2; exit 1; }
+CONFIG_FILES=("$CONFIG_FILE")
+LOCAL_CONFIG_FILE="$DOTFILES_DIR/dotfiles-links.local.yaml"
+if ! $CONFIG_FILE_ARG && [[ -f "$LOCAL_CONFIG_FILE" ]]; then
+  CONFIG_FILES+=("$LOCAL_CONFIG_FILE")
+fi
 
 detect_platform() {
   if [[ "${OSTYPE:-}" == darwin* ]]; then echo macos; return; fi
@@ -43,7 +49,7 @@ expand_target() {
 }
 
 parse_section() {
-  local wanted="$1" section= source= target= type= active=false line
+  local config_file="$1" wanted="$2" section= source= target= type= active=false line
   while IFS= read -r line || [[ -n "$line" ]]; do
     [[ "$line" =~ ^[[:space:]]*(#.*)?$ ]] && continue
     if [[ "$line" =~ ^([a-z_]+):([[:space:]]*\[\])?[[:space:]]*$ ]]; then
@@ -56,7 +62,7 @@ parse_section() {
     elif $active && [[ "$line" =~ ^[[:space:]]+target:[[:space:]]*(.+)$ ]]; then target="${BASH_REMATCH[1]}"
     elif $active && [[ "$line" =~ ^[[:space:]]+type:[[:space:]]*(.+)$ ]]; then type="${BASH_REMATCH[1]}"
     fi
-  done < "$CONFIG_FILE"
+  done < "$config_file"
   if $active && [[ -n "$source" && -n "$target" && -n "$type" ]]; then printf '%s|%s|%s\n' "$source" "$target" "$type"; fi
 }
 
@@ -71,20 +77,22 @@ fi
 
 records=()
 missing=0
-for section in "${SECTIONS[@]}"; do
-  while IFS='|' read -r source target type; do
-    [[ -n "$source" ]] || continue
-    src="$DOTFILES_DIR/$source"; dest="$(expand_target "$target")"
-    if [[ "$src" == "$LOCAL_SOURCE" && $DRY_RUN == true && ! -e "$src" ]]; then :
-    elif [[ ! -e "$src" ]]; then echo "missing source: $src" >&2; missing=1
-    fi
-    [[ "$type" == file || "$type" == directory ]] || { echo "invalid type '$type' for $source" >&2; missing=1; }
-    records+=("$src|$dest|$type")
-  done < <(parse_section "$section")
+for config_file in "${CONFIG_FILES[@]}"; do
+  for section in "${SECTIONS[@]}"; do
+    while IFS='|' read -r source target type; do
+      [[ -n "$source" ]] || continue
+      src="$DOTFILES_DIR/$source"; dest="$(expand_target "$target")"
+      if [[ "$src" == "$LOCAL_SOURCE" && $DRY_RUN == true && ! -e "$src" ]]; then :
+      elif [[ ! -e "$src" ]]; then echo "missing source: $src" >&2; missing=1
+      fi
+      [[ "$type" == file || "$type" == directory ]] || { echo "invalid type '$type' for $source" >&2; missing=1; }
+      records+=("$src|$dest|$type")
+    done < <(parse_section "$config_file" "$section")
+  done
 done
 ((missing == 0)) || { echo "preflight failed; no links changed" >&2; exit 1; }
 
-echo "platform=$PLATFORM sections=${SECTIONS[*]}"
+echo "platform=$PLATFORM sections=${SECTIONS[*]} configs=${CONFIG_FILES[*]}"
 for record in "${records[@]}"; do
   IFS='|' read -r src dest type <<< "$record"
   if [[ -L "$dest" ]]; then action=RELINK

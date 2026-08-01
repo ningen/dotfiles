@@ -13,6 +13,12 @@ if ($PSVersionTable.PSVersion.Major -lt 7) {
 }
 
 $DotfilesDir = [IO.Path]::GetFullPath($PSScriptRoot)
+$ConfigPathExplicit = $PSBoundParameters.ContainsKey('ConfigPath')
+$ConfigPaths = @($ConfigPath)
+$LocalConfigPath = Join-Path $DotfilesDir 'dotfiles-links.local.yaml'
+if (-not $ConfigPathExplicit -and (Test-Path -LiteralPath $LocalConfigPath -PathType Leaf)) {
+    $ConfigPaths += $LocalConfigPath
+}
 $ConfigDir = if ($env:XDG_CONFIG_HOME) { $env:XDG_CONFIG_HOME } else { $env:APPDATA }
 $VSCodeConfigDir = Join-Path $env:APPDATA 'Code\User'
 $StateDir = Join-Path $env:LOCALAPPDATA 'ningen-dotfiles'
@@ -47,11 +53,11 @@ function Expand-Target([string]$Value) {
     return Normalize-Path $Value
 }
 
-function Read-Section([string]$Name) {
+function Read-Section([string]$Path, [string]$Name) {
     $items = @()
     $active = $false
     $item = $null
-    foreach ($line in Get-Content -LiteralPath $ConfigPath) {
+    foreach ($line in Get-Content -LiteralPath $Path) {
         if ($line -match '^([a-z_]+):(?:\s*\[\])?\s*$') {
             if ($active -and $item -and $item.source -and $item.target -and $item.type) { $items += $item }
             $active = $Matches[1] -eq $Name
@@ -154,10 +160,16 @@ function Resolve-WslSettings {
     }
 }
 
-if (-not (Test-Path -LiteralPath $ConfigPath -PathType Leaf)) { throw "Config not found: $ConfigPath" }
+foreach ($Path in $ConfigPaths) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "Config not found: $Path" }
+}
 Resolve-WslSettings
 
-$links = @((Read-Section 'windows_only') + (Read-Section 'vscode'))
+$links = @()
+foreach ($Path in $ConfigPaths) {
+    $links += (Read-Section -Path $Path -Name 'windows_only')
+    $links += (Read-Section -Path $Path -Name 'vscode')
+}
 $missing = @()
 foreach ($link in $links) {
     $source = Normalize-Path (Join-Path $DotfilesDir $link.source)

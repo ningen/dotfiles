@@ -1,6 +1,0 @@
-[submodule ".config/agents/vendor/cloudflare-skills"]
-	path = .config/agents/vendor/cloudflare-skills
-	url = https://github.com/cloudflare/skills.git
-[submodule ".config/agents/vendor/mattpocock-skills"]
-	path = .config/agents/vendor/mattpocock-skills
-	url = https://github.com/mattpocock/skills.git
