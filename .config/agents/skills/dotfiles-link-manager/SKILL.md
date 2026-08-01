@@ -36,6 +36,7 @@ Use this workflow when changing the symlink delivery layer in `/Users/ningen/ghq
 Do not link the whole `~/.agents/skills` directory.
 6. Public third-party Codex skills should be installed with `.config/agents/install-public-skills.sh`, not linked from `.config/agents/vendor`.
 7. Private Codex skills should be stored under `.config/agents/private-skills/` and linked from `dotfiles-links.local.yaml`.
+8. Repository-specific skills should not be linked from `dotfiles-links.yaml` unless they are useful across most repositories.
 
 ## Validation
 

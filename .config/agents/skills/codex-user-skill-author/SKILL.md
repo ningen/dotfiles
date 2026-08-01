@@ -31,11 +31,13 @@ Use this workflow to maintain user-level Codex skills as dotfiles-managed artifa
 .config/agents/install-public-skills.sh
 ```
 
-- Use `*` in the manifest only when the whole public skill collection should be installed:
+- Avoid `*` in the manifest unless the whole public skill collection is intentionally user-level. Prefer listing only the public skills that are useful across repositories:
 
 ```text
-cloudflare/skills	*
 mattpocock/skills	grill-me
+mattpocock/skills	grilling
+herdrdev/herdr	herdr
+modem-dev/hunk	hunk-review
 ```
 
 - Do not add public third-party skill collections as Git submodules under `.config/agents/vendor`.

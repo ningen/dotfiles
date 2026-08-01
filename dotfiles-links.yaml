@@ -37,9 +37,6 @@ unix_only:
   - source: .config/agents/skills/dotfiles-link-manager
     target: ~/.agents/skills/dotfiles-link-manager
     type: directory
-  - source: .config/agents/skills/typescript-quality-reviewer
-    target: ~/.agents/skills/typescript-quality-reviewer
-    type: directory
   - source: .config/agents/skills/git-message-style
     target: ~/.agents/skills/git-message-style
     type: directory
