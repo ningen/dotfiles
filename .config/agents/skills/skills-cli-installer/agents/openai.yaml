@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skills CLI Installer"
+  short_description: "Install and verify skills with npx skills add"
+  default_prompt: "Use $skills-cli-installer to install an official Codex skill from a GitHub repository and verify it is available."

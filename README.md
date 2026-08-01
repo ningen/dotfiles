@@ -34,11 +34,6 @@ dotfiles/
 │   │   ├── formatters.nix      # コードフォーマッター
 │   │   ├── language-servers.nix # LSP サーバー
 │   │   └── node-packages.nix   # Node.js パッケージ
-│   └── node2nix/               # Node.js依存関係管理
-│       ├── default.nix         # node2nix設定
-│       ├── node-env.nix        # Node環境
-│       ├── node-packages.json  # NPMパッケージリスト
-│       └── node-packages.nix   # 生成されたNix設定
 ```
 
 ## 主要な依存関係
@@ -50,6 +45,7 @@ dotfiles/
 - **nix-darwin**: macOS向けNix設定管理
 - **nixos-hardware**: ハードウェア固有の最適化
 - **xremap**: キーマッピング設定
+- **hunk**: hunkdiff CLI
 - **flake-utils**: Flake開発ユーティリティ
 
 ### 開発環境スタック

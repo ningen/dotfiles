@@ -13,7 +13,7 @@ Use this workflow for the personal Nix Flake, Home Manager, nix-darwin, and NixO
 - For common user packages and shell behavior, inspect `nix/hosts/common/home.nix` and the relevant file under `nix/packages/`.
 - For macOS system changes, inspect `nix/hosts/ningen-mba/macos.nix`.
 - For NixOS desktop, NVIDIA, input, service, or system package changes, inspect `nix/hosts/nixos/configuration.nix`.
-- For npm CLI packages managed through Nix, use the node2nix workflow in `AGENTS.md`; never edit `nix/node2nix/node-packages.nix` by hand.
+- For npm CLI packages managed through Nix, use `nix/packages/node-packages.nix`; prefer `buildNpmPackage` for npm tarballs and Flake inputs when upstream exports packages.
 
 ## Editing Rules
 

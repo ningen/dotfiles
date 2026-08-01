@@ -76,15 +76,16 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 
 ## Node.js パッケージ管理
 
-このリポジトリはNode.js依存関係の管理にnode2nixを使用します：
-- **nix/node2nix/node-packages.json**: NPMパッケージ仕様
-- **nix/node2nix/node-packages.nix**: 自動生成されたNix式（編集禁止）
-- **nix/packages/node-packages.nix**: Nodeパッケージ統合モジュール
+このリポジトリはNode.js CLIパッケージを `nix/packages/node-packages.nix` で管理します：
+- npm tarballで配布されるCLIは `pkgs.buildNpmPackage` でpackage化する
+- upstreamがFlake packageを提供している場合は `flake.nix` のinputに追加して参照する
+- `node2nix` はnixpkgsから削除済みのため使わない
 
 Node.jsパッケージを更新するには：
-1. `nix/node2nix/node-packages.json` を編集
-2. `nix-shell -p node2nix --run "node2nix -i nix/node2nix/node-packages.json -o nix/node2nix/node-packages.nix"` を実行
-3. `nix run .#update` で設定を適用
+1. `npm view <package> version dist.integrity dist.tarball --json` でversionとhashを確認
+2. `nix/packages/node-packages.nix` のderivation、または `flake.nix` のinputを更新
+3. `nix build '.#homeConfigurations."ningen@ningen-mba.local".activationPackage' --no-link` で検証
+4. 必要なら `nix run .#update` で設定を適用
 
 ## 設定管理
 
@@ -126,7 +127,7 @@ Node.jsパッケージを更新するには：
 
 技術的な詳細情報やガイドは `docs/` ディレクトリに整理されています：
 
-- **docs/nix/node2nix.md**: node2nixの詳細ガイド（基本概念、使用方法、トラブルシューティング）
+- **docs/nix/node-packages.md**: Node.js CLIパッケージ管理のガイド
 - **docs/nix/nixos.md**: NixOSの詳細ガイド（基本概念、設定方法、実装詳細、トラブルシューティング）
 - **docs/nix/nix-darwin.md**: nix-darwinの詳細ガイド（macOS特有設定、Homebrew統合、システム管理）
 

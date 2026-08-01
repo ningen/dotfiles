@@ -12,6 +12,10 @@
     };
     nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     xremap.url = "github:xremap/nix-flake";
+    hunk = {
+      url = "github:modem-dev/hunk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -23,6 +27,7 @@
       nix-darwin,
       nixos-hardware,
       xremap,
+      hunk,
     }@inputs:
     let
       supportedSystems = [
