@@ -1,0 +1,6 @@
+---
+interface:
+  display_name: "HTML Report Builder"
+  short_description: "Tailwind CDN で綺麗な HTML レポートを作成してブラウザで開く"
+  default_prompt: "Use $html-report-builder to turn these findings into a clean single-file HTML report and open it in the browser."
+---

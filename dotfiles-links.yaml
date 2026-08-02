@@ -58,6 +58,9 @@ unix_only:
   - source: .config/agents/skills/typescript-quality-reviewer
     target: ~/.agents/skills/typescript-quality-reviewer
     type: directory
+  - source: .config/agents/skills/html-report-builder
+    target: ~/.agents/skills/html-report-builder
+    type: directory
   - source: .config/kitty
     target: $CONFIG_DIR/kitty
     type: directory
