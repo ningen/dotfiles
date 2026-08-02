@@ -65,6 +65,7 @@ in
       sbcl
       emacs-lsp-booster
       herdr
+      google-cloud-sdk
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies
