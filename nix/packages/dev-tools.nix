@@ -48,7 +48,6 @@ in
       pnpm
       nodejs_24
       bun
-      go
       gopls
       gotools
       gofumpt
@@ -66,6 +65,7 @@ in
       emacs-lsp-booster
       herdr
       google-cloud-sdk
+      opencode
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Linux only: emacs vterm dependencies

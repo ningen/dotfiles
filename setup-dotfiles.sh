@@ -26,7 +26,7 @@ detect_platform() {
   if [[ "${OSTYPE:-}" == darwin* ]]; then echo macos; return; fi
   if [[ -r /proc/sys/kernel/osrelease ]] && grep -qi microsoft /proc/sys/kernel/osrelease; then echo wsl; return; fi
   if [[ -n "${WSL_INTEROP:-}" ]]; then echo wsl; return; fi
-  if [[ "${OSTYPE:-}" == linux* ]]; then echo desktop_linux; return; fi
+  if [[ "${OSTYPE:-}" == linux* ]]; then echo linux; return; fi
   echo unknown
 }
 
@@ -34,7 +34,7 @@ PLATFORM="$(detect_platform)"
 case "$PLATFORM" in
   macos) SECTIONS=(unix_only macos_only vscode); VSCODE_CONFIG_DIR="$HOME/Library/Application Support/Code/User" ;;
   wsl) SECTIONS=(unix_only wsl_only); VSCODE_CONFIG_DIR="$HOME/.config/Code/User" ;;
-  desktop_linux) SECTIONS=(unix_only desktop_linux_only); VSCODE_CONFIG_DIR="$HOME/.config/Code/User" ;;
+  linux) SECTIONS=(unix_only); VSCODE_CONFIG_DIR="$HOME/.config/Code/User" ;;
   *) echo "unsupported platform: $PLATFORM" >&2; exit 1 ;;
 esac
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}"

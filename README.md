@@ -1,13 +1,13 @@
 # Dotfiles
 
-このリポジトリは、私の個人的な設定ファイル（dotfiles）を [Nix](https://nixos.org/) と [Home Manager](https://github.com/nix-community/home-manager) を使って宣言的に管理するものです。Nix Flakesを活用し、macOSとLinux (NixOS) 環境間で再現性のある環境構築を実現しています。
+このリポジトリは、私の個人的な設定ファイル（dotfiles）を [Nix](https://nixos.org/) と [Home Manager](https://github.com/nix-community/home-manager) を使って宣言的に管理するものです。Nix Flakesを活用し、macOS と Windows+WSL 間で再現性のある環境構築を実現しています。
 
 ## アーキテクチャ概要
 
 このdotfilesリポジトリは、Nix Flakesをベースとしたモジュラー構成で、以下の主要コンポーネントから構成されています：
 
 - **Flake-based管理**: 全体の依存関係とビルド定義
-- **マルチプラットフォーム対応**: macOS (nix-darwin) とLinux (NixOS) の両方をサポート
+- **マルチプラットフォーム対応**: macOS (nix-darwin)、Windows+WSL をサポート
 - **モジュラー設計**: ホスト固有とパッケージ群に分離された設定
 
 ## ディレクトリ構成
@@ -16,7 +16,6 @@
 dotfiles/
 ├── flake.nix                    # メインのFlake設定ファイル
 ├── flake.lock                   # Flakeの依存関係ロックファイル
-├── hardware-configuration.nix   # ハードウェア固有の設定
 ├── dotfiles-links.yaml         # シンボリックリンク設定
 ├── setup-dotfiles.sh           # セットアップスクリプト (macOS/Linux)
 ├── setup-dotfiles.ps1          # セットアップスクリプト (Windows)
@@ -25,26 +24,28 @@ dotfiles/
 │   │   ├── common/             # 全ホスト共通設定
 │   │   │   └── home.nix        # Home Manager基本設定
 │   │   ├── ningen-mba/         # MacBook Air設定
-│   │   │   └── macos.nix       # macOS固有設定
-│   │   └── nixos/              # NixOS設定
-│   │       ├── configuration.nix # システム設定
-│   │       └── gui.nix         # GUI アプリケーション
-│   ├── packages/               # パッケージ群定義
-│   │   ├── dev-tools.nix       # 開発ツール
-│   │   ├── formatters.nix      # コードフォーマッター
-│   │   ├── language-servers.nix # LSP サーバー
-│   │   └── node-packages.nix   # Node.js パッケージ
+│   │   │   ├── home.nix        # macOS用Home Manager設定
+│   │   │   └── macos.nix       # nix-darwinシステム設定
+│   │   ├── wsl/                # Windows+WSL設定
+│   │   │   └── home.nix        # WSL用Home Manager設定
+│   └── packages/               # パッケージ群定義
+│       ├── dev-tools.nix       # 開発ツール
+│       ├── docker-cli.nix      # Docker CLI
+│       ├── formatters.nix      # コードフォーマッター
+│       ├── language-servers.nix # LSP サーバー
+│       ├── linters.nix         # リンター
+│       └── node-packages.nix   # Node.js パッケージ
 ```
+
+Windows+WSL側の詳細は[`docs/windows-wsl.md`](docs/windows-wsl.md)を参照してください。
 
 ## 主要な依存関係
 
 ### Flake Inputs
 
-- **nixpkgs**: NixOSパッケージ集合（unstableブランチ）
+- **nixpkgs**: Nixパッケージ集合（unstableブランチ）
 - **home-manager**: ユーザー環境管理
 - **nix-darwin**: macOS向けNix設定管理
-- **nixos-hardware**: ハードウェア固有の最適化
-- **xremap**: キーマッピング設定
 - **hunk**: hunkdiff CLI
 - **flake-utils**: Flake開発ユーティリティ
 
@@ -80,16 +81,13 @@ dotfiles/
 - Homebrew連携 (Cask アプリケーション)
 - フォント管理 (JetBrains Mono Nerd Font)
 
-**NixOS:**
-- Hyprland (Wayland コンポジター)
-- NVIDIA ドライバー設定
-- 日本語入力 (Fcitx5 + Mozc)
-- ゲーミング環境 (Steam, GameMode)
+**Windows+WSL:**
+- Windows側: wingetパッケージ管理、symlink配布、Windows Terminal profile
+- WSL側: Home ManagerによるCLI環境、クリップボード連携、org-protocol bridge
 
 ## サポートシステム
 
 - **aarch64-darwin**: Apple Silicon Mac
-- **x86_64-linux**: Intel/AMD Linux
 - **Windows 11 + WSL 2**: Windowsネイティブアプリと設定はPowerShell/winget、CLI環境はWSL内のNix/Home Managerで管理
 
 ## 構成管理の特徴
@@ -149,7 +147,7 @@ pwsh -NoProfile -File .\setup-dotfiles.ps1 -DryRun
 SSH/GPG鍵、トークン、ブラウザprofile、Orgデータ、API key、ユーザー名や絶対パスなどのマシン固有情報はコミットしません。詳しいWindows/WSLの責務分離と検証手順は[`docs/windows-wsl.md`](docs/windows-wsl.md)を参照してください。
 
 macOS/Linux用の`setup-dotfiles.sh`は以下をセットアップします：
-- 各種設定ファイルのシンボリックリンク（Neovim、Tmux、Wezterm等）
+- 各種設定ファイルのシンボリックリンク（Neovim、Tmux、Kitty、Yazi等。WezTermはmacOS/Windowsのみ対象）
 - Git設定（`.gitconfig.local` - ghq root設定を含む）
 - VSCode設定
 
@@ -159,20 +157,20 @@ macOS/Linux用の`setup-dotfiles.sh`は以下をセットアップします：
   - macOS/Linux: `~/.config`
   - Windows: `$APPDATA` (通常 `C:\Users\<username>\AppData\Roaming`)
 
-### NixOSの場合
+### Home Manager（macOS / WSL）
 
-NixOSマシンでシステム全体の設定を適用するには、以下のコマンドを実行します。
-
-```bash
-sudo nixos-rebuild switch --flake .#myNixOS
-```
-
-### Home Manager（macOS / Linux）
-
-NixOS、macOS、またはその他のLinuxディストリビューションで、ユーザーレベルの設定（パッケージ、シェル設定など）を適用するには、以下のコマンドを実行します。
+macOSやWSLで、ユーザーレベルの設定（パッケージ、シェル設定など）を適用するには、以下のコマンドを実行します。
 
 ```bash
-nix run .#update
-```
+# Flakeの依存関係を更新（ロック更新のみ）
+nix run .#update-lock
 
-このコマンドは、flakeの依存関係を更新し、現在のホスト名に応じた適切なHome Managerプロファイルを適用します。
+# WSL環境に適用（WSL内でのみ実行可能）
+nix run .#switch-wsl
+
+# macOSに適用（Home Manager + nix-darwin、macOSでのみ実行可能）
+nix run .#switch-macos
+
+# その他のLinuxホストに適用
+nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
+```

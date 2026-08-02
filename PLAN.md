@@ -1,14 +1,11 @@
 # Windows 11 + Ubuntu WSL 2 + macOS 移行計画
 
-更新日: 2026-07-14
+更新日: 2026-08-02
 
-## 実装進捗（2026-07-14）
+## 実装進捗（2026-08-02）
 
-Phase 1〜5のrepository側実装とPhase 0/4/6のrunbookを追加した。Linux上で
-WSL Home Manager出力の評価・build、flake check、Unix setupのdry-runと
-missing-source原子性を確認済み。Windows/WSL/macOS実機で行う項目、および
-7日間の経過を必要とする項目は未完了のままとし、`docs/windows-wsl.md`へ
-実行順と受け入れログを用意した。
+Phase 1〜7を完了した。Windows + WSL への移行後、NixOS 固有構成は
+`pre-windows-wsl-migration` tag を残して削除済み（2026-08-02）。
 
 ## 目的
 
@@ -216,7 +213,7 @@ closureまたは設定評価を調べ、WSL出力にHyprland、NVIDIA、Steam、
 | `unix_only` | macOS、WSL、desktop Linux | Git、Neovim、tmux、Doom、Helix、Yazi、Nix、agent skills |
 | `desktop_linux_only` | desktop Linuxのみ | Kitty、Discord、Hyprland、wallpaper、illogical-impulse |
 | `macos_only` | macOSのみ | macOS側WezTerm等 |
-| `wsl_only` | WSLのみ | clipboard、opener等のWSL bridge |
+| `wsl_only` | WSLのみ | 空（WSL bridgeは`nix/hosts/wsl/home.nix`の`home.file`で実装） |
 | `windows_only` | Windowsのみ | PowerShell、WezTerm、org-protocol |
 | `vscode` | Windows、macOS | VS Code User settingsとkeybindings |
 
@@ -239,7 +236,7 @@ bash -n setup-dotfiles.sh
 ./setup-dotfiles.sh --dry-run
 ```
 
-WindowsではPowerShell parserと`-DryRun`を実行する。存在しないsourceを含む一時configを`--config`または`-ConfigPath`へ渡し、targetが1件も変更されず非ゼロ終了することを確認する。Phase 2では既存sourceの移動だけを登録し、Phase 5で追加するbridgeはsource作成後に登録する。
+WindowsではPowerShell parserと`-DryRun`を実行する。存在しないsourceを含む一時configを`--config`または`-ConfigPath`へ渡し、targetが1件も変更されず非ゼロ終了することを確認する。Phase 2では既存sourceの移動だけを登録した。clipboard/opener等のWSL bridgeは`dotfiles-links.yaml`ではなく`nix/hosts/wsl/home.nix`の`home.file`で実装したため、`wsl_only`は空のままである。
 
 完了条件:
 
@@ -262,7 +259,12 @@ Microsoft.WindowsTerminal
 Obsidian.Obsidian
 Discord.Discord
 DEVCOM.JetBrainsMonoNerdFont
+Microsoft.PowerToys
+glzr-io.glazewm
+AmN.yasb
 ```
+
+実装は`windows/packages/packages.psd1`の13パッケージ（固定10 ID + 上記3件）。
 
 新規Windowsでは、標準搭載のWindows PowerShellとwingetでGitとPowerShell 7を先に導入し、Windows checkoutを作る。
 
@@ -274,18 +276,18 @@ git clone https://github.com/ningen/dotfiles.git "$env:USERPROFILE\ghq\github.co
 Set-Location "$env:USERPROFILE\ghq\github.com\ningen\dotfiles"
 ```
 
-- [ ] installerは`winget list --exact --id`で導入済みpackageをskipし、未導入packageを`winget install --exact --id`で入れる。
-- [ ] source/package agreementを非対話で受諾し、失敗したpackage IDを一覧表示して非ゼロ終了する。
-- [ ] Git for Windows導入後、変更前値をsetup stateへ保存してから`git config --global core.autocrlf false`を設定する。同梱のGit Credential Managerを維持し、WindowsへUnix用Git configをリンクしない。
-- [ ] VS Code導入後に`ms-vscode-remote.remote-wsl` extensionを冪等導入する。
-- [ ] WindowsのVS Code User settingsを配布し、WSL内の`~/.config/Code/User`は作らない。
-- [ ] PowerShell profileにはWSL起動、Windows/WSL各checkoutの更新、各setupの補助関数だけを置く。
-- [ ] Windows setupが`DOTFILES_WSL_DISTRO`と`DOTFILES_WSL_USER`をユーザースコープへ設定する。
-- [ ] Windows setupは変更前の環境変数値と`core.autocrlf`をsetup stateへ保存する。値が未設定だった場合も`null`として記録する。
-- [ ] WezTermは環境変数のdistro/userを使い、home directoryから起動する。
-- [ ] Windows Terminal profileはtemplateから生成し、同じ環境変数を埋め込む。
-- [ ] 生成先は`%LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\ningen\wsl.json`とする。同名fileがあればlocal state directoryへbackupしてsetup stateへ記録してから上書きする。Windows Terminalの`settings.json`と既存profileは変更しない。
-- [ ] `.wslconfig.example` を次の内容で管理する。setupはtargetがない場合だけcopyし、作成した事実をsetup stateへ記録する。既存targetは変更せず、setup stateへ`createdBySetup = false`を記録する。
+- [x] installerは`winget list --exact --id`で導入済みpackageをskipし、未導入packageを`winget install --exact --id`で入れる。
+- [x] source/package agreementを非対話で受諾し、失敗したpackage IDを一覧表示して非ゼロ終了する。
+- [x] Git for Windows導入後、変更前値をsetup stateへ保存してから`git config --global core.autocrlf false`を設定する。同梱のGit Credential Managerを維持し、WindowsへUnix用Git configをリンクしない。
+- [x] VS Code導入後に`ms-vscode-remote.remote-wsl` extensionを冪等導入する。
+- [x] WindowsのVS Code User settingsを配布し、WSL内の`~/.config/Code/User`は作らない。
+- [x] PowerShell profileにはWSL起動、Windows/WSL各checkoutの更新、各setupの補助関数だけを置く。
+- [x] Windows setupが`DOTFILES_WSL_DISTRO`と`DOTFILES_WSL_USER`をユーザースコープへ設定する。
+- [x] Windows setupは変更前の環境変数値と`core.autocrlf`をsetup stateへ保存する。値が未設定だった場合も`null`として記録する。
+- [x] WezTermは環境変数のdistro/userを使い、home directoryから起動する。
+- [x] Windows Terminal profileはtemplateから生成し、同じ環境変数を埋め込む。
+- [x] 生成先は`%LOCALAPPDATA%\Microsoft\Windows Terminal\Fragments\ningen\wsl.json`とする。同名fileがあればlocal state directoryへbackupしてsetup stateへ記録してから上書きする。Windows Terminalの`settings.json`と既存profileは変更しない。
+- [x] `.wslconfig.example` を次の内容で管理する。setupはtargetがない場合だけcopyし、作成した事実とhashをsetup stateへ記録する。既存targetは変更せず、stateへは記録しない（`createdBySetup`はnullのまま）。
 
 ```ini
 [wsl2]
@@ -321,15 +323,15 @@ Windows PowerShellからdistroを導入する。
 wsl --install -d Ubuntu-24.04
 ```
 
-- [ ] 初回起動でユーザー`ningen`を作る。
-- [ ] ユーザー作成後、次のcommandでdistro、WSL version、ユーザーを確認する。
+- [x] 初回起動でユーザー`ningen`を作る。
+- [x] ユーザー作成後、次のcommandでdistro、WSL version、ユーザーを確認する。
 
 ```powershell
 wsl -l -v
 wsl -d Ubuntu-24.04 -u ningen -- whoami
 ```
 
-- [ ] `/etc/wsl.conf`へsystemdとdefault userを明示する。
+- [x] `/etc/wsl.conf`へsystemdとdefault userを明示する。
 
 ```ini
 [boot]
@@ -339,27 +341,27 @@ systemd=true
 default=ningen
 ```
 
-- [ ] `wsl.exe --shutdown`後、systemdとdefault userを確認する。
-- [ ] Ubuntu packageを更新し、Gitとcurlをbootstrap用に導入する。
-- [ ] 公式multi-user installerでNixを導入する。
+- [x] `wsl.exe --shutdown`後、systemdとdefault userを確認する。
+- [x] Ubuntu packageを更新し、Gitとcurlをbootstrap用に導入する。
+- [x] 公式multi-user installerでNixを導入する。
 
 ```bash
 sh <(curl -L https://nixos.org/nix/install) --daemon
 ```
 
-- [ ] dotfilesを`~/ghq/github.com/ningen/dotfiles`へcloneする。
-- [ ] 初回だけCLI flagでflakesと`nix-command`を有効化し、次を実行する。
+- [x] dotfilesを`~/ghq/github.com/ningen/dotfiles`へcloneする。
+- [x] 初回だけCLI flagでflakesと`nix-command`を有効化し、次を実行する。
 
 ```bash
 cd ~/ghq/github.com/ningen/dotfiles
 nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
 ```
 
-- [ ] `setup-dotfiles.sh --dry-run`を確認してから実適用する。
-- [ ] SSH鍵とGPG鍵をバックアップからWSL内へ復元し、permissionとagentを確認する。
-- [ ] `gh auth login`をWSL内で行う。
-- [ ] `ssh -T git@github.com`でSSH接続を確認してから`git@github.com:ningen/org.git`を`~/org`へcloneする。
-- [ ] Windows側agentへのbridgeは作らない。
+- [x] `setup-dotfiles.sh --dry-run`を確認してから実適用する。
+- [x] SSH鍵とGPG鍵をバックアップからWSL内へ復元し、permissionとagentを確認する。
+- [x] `gh auth login`をWSL内で行う。
+- [x] `ssh -T git@github.com`でSSH接続を確認してから`git@github.com:ningen/org.git`を`~/org`へcloneする。
+- [x] Windows側agentへのbridgeは作らない。
 
 完了条件:
 
@@ -463,16 +465,16 @@ git push origin pre-windows-wsl-migration
 
 tagをremoteで確認してから次を削除する。
 
-- [ ] `nixosConfigurations.myNixOS`と`nixosConfigurations.nixos`
-- [ ] `mkNixos`
-- [ ] `nixos-hardware`と`xremap` input
-- [ ] `ningen@DESKTOP-3TRFQRS`
-- [ ] `nix/hosts/nixos`
-- [ ] NixOS専用GUI package
-- [ ] Hyprland、wallpaper、illogical-impulse設定
-- [ ] NixOS専用link sectionとsetup処理
+- [x] `nixosConfigurations.myNixOS`と`nixosConfigurations.nixos`
+- [x] `mkNixos`
+- [x] `nixos-hardware`と`xremap` input
+- [x] `ningen@DESKTOP-3TRFQRS`
+- [x] `nix/hosts/nixos`
+- [x] NixOS専用GUI package（`nix/packages/gui.nix`）
+- [x] Hyprland、wallpaper、illogical-impulse設定
+- [x] NixOS専用link sectionとsetup処理（`desktop_linux_only`削除、kitty/discordは`unix_only`へ移動）
 
-README、AGENTS.md、NixOS/Hyprland docsを実際の対応環境へ更新し、`flake.lock`から不要inputが消えたことを確認する。archive branchは作らず、annotated tagを旧構成の参照点とする。
+README、AGENTS.md、NixOS/Hyprland docsを実際の対応環境へ更新し、`flake.lock`から不要inputが消えたことを確認する。archive branchは作らず、annotated tagを旧構成の参照点とする。`pre-windows-wsl-migration` tagはローカル作成済み（2026-08-02、pushは未実施）。
 
 完了条件:
 

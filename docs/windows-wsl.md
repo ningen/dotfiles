@@ -1,14 +1,15 @@
 # Windows 11 + Ubuntu WSL 2 migration runbook
 
-This runbook intentionally keeps the NixOS configuration until seven consecutive
-acceptance days have passed. Never store recovery keys, private keys, tokens, Org
-content, browser profiles, or Docker credentials in this repository.
+This runbook covers the completed migration off NixOS. The final NixOS
+configuration is preserved in the `pre-windows-wsl-migration` tag; refer to that
+tag to inspect or restore it. Never store recovery keys, private keys, tokens,
+Org content, browser profiles, or Docker credentials in this repository.
 
 ## Recovery gate (Phase 0)
 
 Record locations without recording secrets:
 
-- [ ] Pushed NixOS rollback commit: `________________`
+- [x] NixOS rollback point: `pre-windows-wsl-migration` tag (NixOS is retired)
 - [ ] `~/org` backup verified at: `________________`
 - [ ] `~/ghq` backup verified at: `________________`
 - [ ] SSH/GPG backup verified at: `________________`
@@ -16,13 +17,12 @@ Record locations without recording secrets:
 - [ ] `git@github.com:ningen/org.git` restored in a second clone
 - [ ] BitLocker recovery key location verified: `________________`
 - [ ] Windows 11 installation media verified
-- [ ] Target CPU reports x86_64
-- [ ] Windows Developer Mode enabled, or an elevated PowerShell is available for link creation
+- [x] Target CPU reports x86_64
+- [x] Windows Developer Mode enabled, or an elevated PowerShell is available for link creation
 
-Rollback: reinstall NixOS from the verified media, check out the recorded commit,
-run `sudo nixos-rebuild switch --flake .#myNixOS`, apply the `ningen@nixos` Home
-Manager output, then restore Org, source repositories, and keys from the locations
-above. Test this documentation before deleting any NixOS output.
+Rollback of user data: restore Org, source repositories, and keys from the
+locations above. NixOS rollback is possible only via the recorded tag and the
+tagged flake revision.
 
 ## Windows bootstrap
 
@@ -72,6 +72,16 @@ Rerun the same dry-run and apply commands after updates; a second apply should
 show only `NOOP` for links and installed/current packages.
 
 ## Manual WSL bootstrap (fallback)
+
+`windows/wsl/bootstrap.sh` はこの手順の自動版です。`/etc/wsl.conf` の作成と
+`wsl.exe --shutdown` だけが事前に必要で、以降の apt 更新、Nix導入、clone、
+`switch-wsl`、dotfiles適用、zsh切替までを冪等に実行します。
+
+```bash
+~/ghq/github.com/ningen/dotfiles/windows/wsl/bootstrap.sh
+```
+
+手動で進める場合は以下を実行します。
 
 ```powershell
 wsl --install -d Ubuntu-24.04

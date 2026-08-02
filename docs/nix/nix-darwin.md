@@ -127,23 +127,31 @@ homebrew = {
     cleanup = "uninstall";                # 管理外パッケージを削除
   };
   
-  # CLI アプリケーション（現在は空）
+  # CLI アプリケーション
   brews = [
-    # ここにHomebrewのformulaを記述
+    "ghcup"    # Haskell toolchain manager（nixpkgs未収録のためbrew管理）
+    "libvterm" # emacs vterm dependency
+    "libtool"  # emacs vterm build dependency (provides glibtool)
   ];
   
   # GUI アプリケーション
   casks = [
     "visual-studio-code"                   # VS Code
+    "wezterm"                              # ターミナル
     "discord"                              # Discord
     "google-chrome"                        # Google Chrome
     "aquaskk"                              # 日本語入力
-    "floorp"                               # Firefox系ブラウザ
     "notion"                               # Notion
     "ghostty"                              # ターミナル
     "cursor"                               # AI搭載エディタ
     "obsidian"                             # ノートアプリ
     "raycast"                              # ランチャー
+    "kitty"                                # ターミナル
+    "rectangle"                            # ウィンドウ管理
+    "tailscale-app"                        # Tailscale
+    "cmux"                                 # マウスユーティリティ
+    "docker-desktop"                       # Docker
+    "karabiner-elements"                   # キーリマップ
   ];
 };
 ```
@@ -152,11 +160,11 @@ homebrew = {
 
 ### darwin-rebuildコマンド
 
-このdotfilesでは、CLAUDE.mdに記載の通り以下のコマンドを使用：
+このdotfilesでは、flakeの`switch-macos` appでHome Managerとnix-darwinをまとめて適用します（CLAUDE.md参照）：
 
 ```bash
-# Darwin設定を適用（macOSのみ）
-sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch --flake .#ningen
+# Home Manager + Darwin設定を適用（macOSのみ）
+nix run .#switch-macos
 ```
 
 ### 一般的なdarwin-rebuildコマンド
@@ -184,7 +192,7 @@ darwin-rebuild check
 
 2. **変更の適用**
    ```bash
-   sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch --flake .#ningen
+   nix run .#switch-macos
    ```
 
 3. **設定の確認**
@@ -447,9 +455,9 @@ system.defaults = {
   # ファイアウォール有効化
   alf.globalstate = 1;
   
-  # スクリーンセーバー設定
-  screensaver.askForPassword = true;
-  screensaver.askForPasswordDelay = 5;
+  # スクリーンセーバー設定（パスワード要求なし）
+  screensaver.askForPassword = false;
+  screensaver.askForPasswordDelay = 0;
   
   # ソフトウェアアップデート
   SoftwareUpdate.AutomaticallyInstallMacOSUpdates = false;

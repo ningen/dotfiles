@@ -4,23 +4,23 @@
 
 ## リポジトリ概要
 
-このリポジトリは、Nix Flakes と Home Manager を使用してmacOSとLinux (NixOS) システム間で宣言的で再現可能な環境設定を管理する個人用dotfilesリポジトリです。
+このリポジトリは、Nix Flakes と Home Manager を使用して macOS と Windows+WSL 間で宣言的で再現可能な環境設定を管理する個人用dotfilesリポジトリです。
 
 ## 主要コマンド
 
 ### 設定の適用・更新
 ```bash
-# Flakeの依存関係を更新し、Home Manager設定を適用
-nix run .#update
+# Flakeの依存関係を更新（ロック更新のみ）
+nix run .#update-lock
 
-# NixOSシステム設定を適用（NixOSのみ）
-sudo nixos-rebuild switch --flake .#myNixOS
+# WSLのHome Manager設定を適用（WSL内でのみ実行可能）
+nix run .#switch-wsl
 
-# Home Manager設定を手動で適用
+# macOSのHome Managerとnix-darwin設定を適用（macOSでのみ実行可能）
+nix run .#switch-macos
+
+# Home Manager設定を手動で適用（Linux全般）
 nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
-
-# Darwin設定を適用（macOSのみ）
-sudo nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch --flake .#ningen
 ```
 
 ### 開発用コマンド
@@ -49,20 +49,18 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 
 ### Flake構造
 - **flake.nix**: 入力、出力、システム設定を定義するメイン設定ファイル
-- **マルチプラットフォーム対応**: aarch64-darwin (Apple Silicon) と x86_64-linux
+- **マルチプラットフォーム対応**: aarch64-darwin (Apple Silicon) と x86_64-linux (WSL)
 - **モジュラー設計**: 共通設定、ホスト固有設定、パッケージコレクションを分離
 
 ### 主要設定モジュール
 - **nix/hosts/common/home.nix**: starship、direnv、zshを含むHome Managerベース設定
 - **nix/packages/**: 機能別に整理されたパッケージコレクション（dev-tools、language-servers、formatters、node-packages）
-- **nix/hosts/nixos/**: Hyprland、NVIDIAドライバー、日本語入力を含むNixOS固有のシステム設定
+- **nix/hosts/wsl/**: クリップボード連携・WSL open bridgeを含むWSL固有設定
 - **nix/hosts/ningen-mba/**: nix-darwinを使用したmacOS固有設定
 
 ### ホスト設定
 - **ningen@ningen-mba.local**: macOS Apple Silicon開発環境
-- **ningen@DESKTOP-0DRJD1E**: Linux開発環境
-- **ningen@nixos**: GUIアプリケーション付き完全NixOSデスクトップ
-- **myNixOS**: NixOSシステム設定
+- **ningen@wsl**: Windows+WSL環境用Home Manager設定（switch-wslで適用）
 
 ### 開発スタック
 - **エディタ**: Neovim with 言語サーバー（TypeScript、Python/Pyright、Lua、Nix）
@@ -71,8 +69,8 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 - **フォーマッター**: Prettier、Black、Stylua、nixfmt
 
 ### プラットフォーム固有機能
-- **NixOS**: Hyprlandコンポジター、NVIDIAドライバー、日本語入力（Fcitx5+Mozc）、ゲーミング環境
 - **macOS**: システムデフォルト統合、Homebrewアプリ管理、nix-darwin設定
+- **Windows+WSL**: Windows側のsymlink配布は `setup-dotfiles.ps1`、WSL側は `nix/hosts/wsl/home.nix`（クリップボード連携・WSL open bridge含む）
 
 ## Node.js パッケージ管理
 
@@ -85,7 +83,7 @@ Node.jsパッケージを更新するには：
 1. `npm view <package> version dist.integrity dist.tarball --json` でversionとhashを確認
 2. `nix/packages/node-packages.nix` のderivation、または `flake.nix` のinputを更新
 3. `nix build '.#homeConfigurations."ningen@ningen-mba.local".activationPackage' --no-link` で検証
-4. 必要なら `nix run .#update` で設定を適用
+4. 必要なら `nix run .#switch-macos` で設定を適用
 
 ## 設定管理
 
@@ -96,15 +94,12 @@ Node.jsパッケージを更新するには：
 
 ## トラブルシューティング
 
-### NixOS更新エラーの調査手順
+### 更新エラーの調査手順
 
 1. **基本診断**
    ```bash
    # Flake設定の問題をチェック
    nix flake check
-   
-   # 最近のnixos-rebuildログを確認
-   journalctl -u nixos-rebuild --since "1 day ago" --no-pager
    ```
 
 2. **パッケージ名変更の確認**
@@ -128,8 +123,8 @@ Node.jsパッケージを更新するには：
 技術的な詳細情報やガイドは `docs/` ディレクトリに整理されています：
 
 - **docs/nix/node-packages.md**: Node.js CLIパッケージ管理のガイド
-- **docs/nix/nixos.md**: NixOSの詳細ガイド（基本概念、設定方法、実装詳細、トラブルシューティング）
 - **docs/nix/nix-darwin.md**: nix-darwinの詳細ガイド（macOS特有設定、Homebrew統合、システム管理）
+- **docs/windows-wsl.md**: Windows+WSL環境のセットアップガイド
 
 ## Web検索について
 

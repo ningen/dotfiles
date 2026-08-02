@@ -10,8 +10,6 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
-    xremap.url = "github:xremap/nix-flake";
     hunk = {
       url = "github:modem-dev/hunk";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -25,8 +23,6 @@
       home-manager,
       flake-utils,
       nix-darwin,
-      nixos-hardware,
-      xremap,
       hunk,
     }@inputs:
     let
@@ -46,15 +42,6 @@
           extraSpecialArgs = { inherit inputs; };
           inherit modules;
         };
-      mkNixos = inputs.nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          ./nix/hosts/nixos/configuration.nix
-        ];
-        specialArgs = {
-          inherit inputs;
-        };
-      };
     in
     {
       apps = forAllSystems (
@@ -115,32 +102,6 @@
             ./nix/packages/node-packages.nix
           ];
         };
-        "ningen@DESKTOP-3TRFQRS" = mkHome {
-          system = "x86_64-linux";
-          modules = [
-            ./nix/hosts/common/home.nix
-            ./nix/packages/dev-tools.nix
-            ./nix/packages/docker-cli.nix
-            ./nix/packages/language-servers.nix
-            ./nix/packages/formatters.nix
-            ./nix/packages/linters.nix
-            ./nix/packages/node-packages.nix
-          ];
-        };
-        "ningen@nixos" = mkHome {
-          system = "x86_64-linux";
-          modules = [
-            ./nix/hosts/common/home.nix
-            ./nix/hosts/nixos/home.nix
-            ./nix/packages/gui.nix
-            ./nix/packages/dev-tools.nix
-            ./nix/packages/docker-cli.nix
-            ./nix/packages/language-servers.nix
-            ./nix/packages/formatters.nix
-            ./nix/packages/linters.nix
-            ./nix/packages/node-packages.nix
-          ];
-        };
         "ningen@wsl" = mkHome {
           system = "x86_64-linux";
           modules = [
@@ -153,11 +114,6 @@
             ./nix/packages/node-packages.nix
           ];
         };
-      };
-
-      nixosConfigurations = {
-        myNixOS = mkNixos;
-        nixos = mkNixos;
       };
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {
