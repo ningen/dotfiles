@@ -1,0 +1,4 @@
+interface:
+  display_name: "Herdr Interactive Runner"
+  short_description: "Run interactive and long-lived commands in Herdr"
+  default_prompt: "Use $herdr-interactive-runner to run an interactive or long-running command in a sibling Herdr pane and monitor it safely."

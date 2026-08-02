@@ -49,8 +49,8 @@ unix_only:
   - source: .config/agents/skills/diff-command-worker
     target: ~/.agents/skills/diff-command-worker
     type: directory
-  - source: .config/agents/skills/tmux-interactive-runner
-    target: ~/.agents/skills/tmux-interactive-runner
+  - source: .config/agents/skills/herdr-interactive-runner
+    target: ~/.agents/skills/herdr-interactive-runner
     type: directory
   - source: .config/agents/skills/skills-cli-installer
     target: ~/.agents/skills/skills-cli-installer
