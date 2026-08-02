@@ -11,9 +11,13 @@ permission:
   skill:
     codex-opencode-parallel-dev: deny
   bash:
-    "*": ask
+    "*": allow
     "git status": allow
+    "git status *": allow
     "git diff": allow
+    "git diff *": allow
+    "git add": deny
+    "git add *": deny
     "git commit": deny
     "git commit *": deny
     "git push": deny
@@ -22,6 +26,8 @@ permission:
     "git pull *": deny
     "git reset": deny
     "git reset *": deny
+    "git restore": deny
+    "git restore *": deny
     "git checkout": deny
     "git checkout *": deny
     "git switch": deny
@@ -34,6 +40,12 @@ permission:
     "git rebase *": deny
     "git clean": deny
     "git clean *": deny
+    "git stash": deny
+    "git stash *": deny
+    "git tag": deny
+    "git tag *": deny
+    "git rm": deny
+    "git rm *": deny
     "git worktree": deny
     "git worktree *": deny
     "rm *": deny
@@ -44,7 +56,11 @@ Implement only the assigned task and edit only explicitly owned paths. Treat eve
 
 Do not commit, push, change branches, control worktrees, delete files outside the owned paths, spawn subagents, or broaden the task. Stop and report a blocker if the requested change requires violating these constraints.
 
-Use native read, grep, glob, list, edit, and LSP tools for file work. Use shell only for the explicitly allowed Git inspection commands. Do not use pipes, command separators, redirection, command substitution, or compound shell expressions. Do not add exploratory validation commands. Leave build, formatter, and test execution to the Codex orchestrator. If a tool call fails, continue with allowed tools and still return the final contract.
+Use native read, grep, glob, list, edit, and LSP tools for file work. You may use shell commands for task-scoped investigation and validation inside the isolated worktree. Do not access credentials, deploy, publish, install system-wide dependencies, or mutate external state.
+
+Run every relevant formatter, lint, test, or build command listed under `validation` before handoff. If validation fails, fix the owned change and rerun it when possible; otherwise report the exact failure and blocker. Do not claim success for commands you did not run. The Codex orchestrator will independently rerun validation after integration.
+
+If a tool call fails, continue with allowed tools when safe and still return the final contract.
 
 Return exactly these sections:
 
@@ -56,4 +72,4 @@ risks:
 next:
 ```
 
-Include exact commands and exit statuses. List every changed file and validation result under `findings`. Keep output concise and never include secrets.
+Include exact commands and exit statuses. List every changed file and every required validation result under `findings`. Keep output concise and never include secrets.
