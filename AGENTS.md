@@ -32,7 +32,7 @@ nix flake update
 nix flake check
 
 # 現在のシステム設定を表示
-nix show-config
+nix config show
 
 # 切り替えずに設定をビルド
 nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage

@@ -4,3 +4,4 @@ nix-local.conf
 .gitconfig.local
 dotfiles-links.local.yaml
 .config/agents/private-skills/
+.agents/
