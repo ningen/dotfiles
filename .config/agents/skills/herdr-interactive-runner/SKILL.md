@@ -7,6 +7,15 @@ description: Run interactive, password-gated, approval-gated, TUI, or long-runni
 
 Run interactive or long-lived commands in a sibling Herdr pane while keeping the current agent pane available for orchestration.
 
+## Layout Routing
+
+- Keep the orchestrating agent visible in its original tab.
+- For one standalone command, create one sibling pane as described below.
+- For two or more parallel commands, create one unfocused task-specific tab in the current workspace before launching them. Use the returned initial pane ID as the layout anchor and split only that tab by explicit pane ID.
+- Keep at most four panes in a 2x2 layout per task tab. Create separate tabs by phase or subsystem for additional workers.
+- Do not repeatedly split the orchestrator's tab. Do not mix unrelated orchestration runs in the same worker tab.
+- Keep a worker tab until its output is summarized and any useful shell state is no longer needed.
+
 ## Guardrail
 
 Before any Herdr control command, verify the current agent is already running in a Herdr-managed pane:
@@ -17,18 +26,20 @@ test "${HERDR_ENV:-}" = 1
 
 If this fails, do not run bare `herdr`, attach to a session, or control a focused pane from outside Herdr. Tell the user to start or resume Codex inside Herdr, then use normal command execution only when it is safe and non-interactive.
 
-Do not create a nested Herdr session when the check passes. Control the current session with `--current` and the pane ID returned by each creation command.
+Do not create a nested Herdr session when the check passes. Use `--current` only for one standalone sibling pane. For parallel work, use the workspace, tab, and pane IDs returned by Herdr.
 
 ## Workflow
 
 1. Use normal command execution for quick, non-interactive read-only checks.
-2. For interactive or long-running work, create a sibling pane without stealing focus:
+2. For one interactive or long-running command, create a sibling pane without stealing focus:
 
 ```bash
 created=$(herdr pane split --current --direction right --cwd "$PWD" --no-focus)
 pane_id=$(printf '%s\n' "$created" | jq -r '.result.pane.pane_id')
 test -n "$pane_id" && test "$pane_id" != null
 ```
+
+For parallel work, create a task tab with `herdr tab create --workspace <workspace-id> --cwd "$PWD" --label <label> --no-focus`. Read the IDs from `.result.tab.tab_id` and `.result.root_pane.pane_id` in the returned JSON. Create subsequent panes with `herdr pane split <pane-id>`, never `--current`, so the orchestrator tab remains unchanged. Build a 2x2 layout by splitting the root pane right, the root pane down, and the right pane down.
 
 3. Give the pane a short task-specific label:
 
@@ -70,6 +81,6 @@ herdr pane process-info --pane "$pane_id"
 - Let the user type passwords, OTPs, passphrases, approvals, and other sensitive input directly into the Herdr pane.
 - Treat pane output as potentially sensitive. Do not quote credential-like values.
 - Do not send input to a password, approval, root, or authenticated prompt on the user's behalf unless the user explicitly authorized that exact action and no secret is involved.
-- Do not reuse another pane merely because it appears idle. Create a dedicated sibling pane unless the user identifies an existing pane.
+- Do not reuse another pane merely because it appears idle. Create a dedicated pane in the routed target tab unless the user identifies an existing pane.
 - Use the pane ID returned by Herdr JSON; never predict IDs or rely on the currently focused UI pane.
 - For dev servers, report the URL or port when known. For unfinished work, report the pane ID and current state.

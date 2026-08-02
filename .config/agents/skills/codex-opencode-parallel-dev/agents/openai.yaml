@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex OpenCode Parallel Dev"
+  short_description: "Run parallel OpenCode workers from Codex via Herdr"
+  default_prompt: "Use $codex-opencode-parallel-dev to split this development task across safe OpenCode workers and integrate the results."

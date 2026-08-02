@@ -41,6 +41,7 @@ in
       emacsGoTreesitGrammars
       # emacs vterm dependencies (cross-platform)
       cmake
+      jq
       ripgrep
       ghq
       fzf

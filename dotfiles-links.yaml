@@ -61,6 +61,12 @@ unix_only:
   - source: .config/agents/skills/html-report-builder
     target: ~/.agents/skills/html-report-builder
     type: directory
+  - source: .config/agents/skills/codex-opencode-parallel-dev
+    target: ~/.agents/skills/codex-opencode-parallel-dev
+    type: directory
+  - source: .config/opencode/agents
+    target: $CONFIG_DIR/opencode/agents
+    type: directory
   - source: .config/kitty
     target: $CONFIG_DIR/kitty
     type: directory
