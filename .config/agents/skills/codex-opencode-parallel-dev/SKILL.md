@@ -1,11 +1,11 @@
 ---
 name: codex-opencode-parallel-dev
-description: Orchestrate parallel software development from Codex through Herdr panes and bounded OpenCode workers using DeepSeek V4 Flash. Use for OpenCode worker delegation, Herdr-based parallel investigation or implementation, isolated Git worktree development, DeepSeek V4 Flash coding workers, parallel development, 並列開発, and Codex orchestration with external agents.
+description: Orchestrate parallel software development from any model (Codex, OpenCode, or DeepSeek V4 Flash) through Herdr panes and bounded OpenCode workers. Use for OpenCode worker delegation, Herdr-based parallel investigation or implementation, isolated Git worktree development, DeepSeek V4 Flash coding workers, parallel development, 並列開発, Codex orchestration with external agents, and any-model orchestration with OpenCode.
 ---
 
-# Codex OpenCode Parallel Development
+# Any-Model OpenCode Parallel Development
 
-Keep Codex responsible for decomposition, ownership, integration, review judgment, and final communication. Use OpenCode workers only for bounded execution.
+Keep the orchestrating model responsible for decomposition, ownership, integration, review judgment, and final communication. Orchestrate from Codex, OpenCode, or any other model (e.g. DeepSeek V4 Flash). Use OpenCode workers only for bounded execution.
 
 Load and follow `$herdr-interactive-runner` before controlling Herdr. Do not duplicate its pane lifecycle or secret-handling logic.
 
@@ -28,7 +28,7 @@ If Herdr is unavailable, do not control an external Herdr session. Explain the c
 - Use `codex-scout` for repository searches, diagnosis, and evidence collection.
 - Use `codex-implementer` for one bounded implementation in an isolated Git worktree.
 - Use `codex-reviewer` for read-only review of a completed diff.
-- Prefer existing Codex subagents for cheap mechanical reads when they are sufficient; use OpenCode when external visible execution or DeepSeek capacity is useful.
+- Prefer the orchestrating model's cheap subagents for mechanical reads when they are sufficient; use OpenCode workers when external visible execution, bounded parallelism, or DeepSeek capacity is useful.
 
 Do not allow OpenCode workers to spawn subagents, commit, push, merge, rebase, reset, switch branches, or control Git worktrees. Implementers may use broad shell access inside their isolated worktrees for task-scoped investigation and validation; scout and reviewer workers remain shell-free. Treat the implementer restrictions as behavioral guardrails, not a complete shell sandbox.
 
@@ -38,17 +38,17 @@ Allow read-only workers to share the current directory. Give every editing worke
 
 If workers must see uncommitted changes from the main worktree, keep them read-only unless the user explicitly chooses how to establish a reproducible base. Do not silently copy, stash, or commit those changes.
 
-Keep each worker worktree until Codex has reviewed and integrated or rejected its diff. Remove it only after it is clearly disposable.
+Keep each worker worktree until the orchestrator has reviewed and integrated or rejected its diff. Remove it only after it is clearly disposable.
 
 ## Launch Workers
 
 1. Write one task contract per worker to a non-secret temporary file.
 2. Choose one non-secret run ID for the orchestration run and a unique worker ID for each worker. Use only letters, digits, dots, underscores, and hyphens.
-3. Keep the original tab dedicated to the orchestrating Codex pane.
+3. Keep the original tab dedicated to the orchestrating pane.
 4. Before launching two or more workers, create one unfocused Herdr tab named `workers:<short-task>` with `scripts/create-worker-tab.sh`. Record the returned `tab_id` and `root_pane_id`.
 5. Use the new tab's initial pane as the run control pane or first worker, then split panes inside that tab by explicit pane ID.
-6. Build a 2x2 layout deterministically: split the root pane right, split the root pane down, then split the right pane down. Keep at most four total panes per worker tab. Create another tab by phase or subsystem instead of shrinking the Codex tab or overloading one worker tab.
-7. Use a single sibling pane only for one standalone interactive command; do not repeatedly split the Codex tab for orchestration.
+6. Build a 2x2 layout deterministically: split the root pane right, split the root pane down, then split the right pane down. Keep at most four total panes per worker tab. Create another tab by phase or subsystem instead of shrinking the orchestrator tab or overloading one worker tab.
+7. Use a single sibling pane only for one standalone interactive command; do not repeatedly split the orchestrator tab for orchestration.
 8. For review tasks, prepare the diff or other raw evidence as an attachment instead of granting shell access.
 9. Run the bundled launcher from each worker pane with the shared run ID and unique worker ID:
 
@@ -72,9 +72,9 @@ The launcher defaults to `opencode-go/deepseek-v4-flash`. Override it only with 
 1. Inspect each worker's commands, findings, risks, and diff.
 2. Reject unrelated files and overlapping ownership.
 3. Require each implementer to run the task's relevant formatter, lint, tests, or build in its isolated worktree before handoff. Treat missing required validation or an unexplained failure as a failed handoff.
-4. Apply accepted changes from Codex; do not ask a worker to integrate its own result.
+4. Apply accepted changes from the orchestrator; do not ask a worker to integrate its own result.
 5. Resolve cross-worker assumptions in the main worktree.
 6. Rerun builds, formatters, tests, and final validation from the integrated worktree. Worker validation does not replace integrated validation.
 7. Report which worker results were accepted, revised, rejected, or blocked.
 
-Treat a worker's successful exit as evidence, not proof. Codex owns the final correctness decision.
+Treat a worker's successful exit as evidence, not proof. The orchestrating model owns the final correctness decision.

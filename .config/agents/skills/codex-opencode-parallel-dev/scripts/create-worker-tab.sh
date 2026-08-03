@@ -11,7 +11,7 @@ if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
 fi
 
 if [ "${HERDR_ENV:-}" != 1 ]; then
-  echo "Codex is not running inside a Herdr-managed pane" >&2
+  echo "The orchestrating model is not running inside a Herdr-managed pane" >&2
   exit 69
 fi
 
