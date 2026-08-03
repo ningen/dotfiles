@@ -38,7 +38,7 @@ Allow read-only workers to share the current directory. Give every editing worke
 
 If workers must see uncommitted changes from the main worktree, keep them read-only unless the user explicitly chooses how to establish a reproducible base. Do not silently copy, stash, or commit those changes.
 
-Keep each worker worktree until the orchestrator has reviewed and integrated or rejected its diff. Remove it only after it is clearly disposable.
+Keep each worker worktree until the orchestrator has reviewed and integrated or rejected its diff. Remove it only after it is clearly disposable (see [Cleanup](#cleanup)).
 
 ## Launch Workers
 
@@ -61,9 +61,9 @@ OPENCODE_WORKER_RUN_ID=<run-id> OPENCODE_WORKER_ID=<worker-id> \
 10. Monitor panes independently with bounded reads and waits. Treat pane output as the live view, not the durable result store.
 11. Read durable worker results from `${OPENCODE_WORKER_ARTIFACT_ROOT:-${TMPDIR:-/tmp}/codex-runs}/<run-id>/<worker-id>/`. Use `summary.md` for the handoff, `events.jsonl` for raw events, and `result.json` for status and file locations. For implementers, also inspect `git-status.txt`, `changes.patch`, `untracked-files.tar`, and the retained worktree.
 12. Stop or revise dependent tasks when an upstream worker changes an interface or reports a blocker.
-13. Keep the worker tab and implementation worktree until their outputs and diffs are integrated. Close or reuse the tab only when its state is clearly disposable.
+13. Keep the worker tab and implementation worktree until their outputs and diffs are integrated. Close or reuse the tab only when its state is clearly disposable (see [Cleanup](#cleanup)).
 
-Worker artifacts use private file modes but may contain source code and tool output. Never put secrets in task files or worker output. Remove a run directory only after its results are integrated or intentionally rejected and no audit trail is needed.
+Worker artifacts use private file modes but may contain source code and tool output. Never put secrets in task files or worker output. Remove a run directory only after its results are integrated or intentionally rejected and no audit trail is needed (see [Cleanup](#cleanup)).
 
 The launcher defaults to `opencode-go/deepseek-v4-flash`. Override it only with an explicit task-local `OPENCODE_WORKER_MODEL` value.
 
@@ -78,3 +78,13 @@ The launcher defaults to `opencode-go/deepseek-v4-flash`. Override it only with 
 7. Report which worker results were accepted, revised, rejected, or blocked.
 
 Treat a worker's successful exit as evidence, not proof. The orchestrating model owns the final correctness decision.
+
+## Cleanup
+
+Clean up every resource created for the run as soon as its results are integrated or intentionally rejected (後始末). Do not leave panes, worktrees, or run directories behind. This is the mandatory closing phase of every run.
+
+1. Confirm every worker has exited before closing anything: read `result.json` in `${OPENCODE_WORKER_ARTIFACT_ROOT:-${TMPDIR:-/tmp}/codex-runs}/<run-id>/<worker-id>/` and check `status` (`completed`, `worker_failed`, `collector_error`, or `collector_interrupted`) for each worker ID. Do not close a pane while its launcher is still running.
+2. Close the worker tab: `herdr tab close <tab_id>`. Close leftover panes individually with `herdr pane close <pane_id>`. Verify with `herdr tab list` and `herdr pane list` that no worker pane remains and the orchestrating pane is untouched.
+3. Remove each implementer worktree with `git worktree remove --force <worktree-path>` (use `--force` for leftover uncommitted changes; the diff is already collected in `changes.patch`). Verify with `git worktree list` that only the main checkout remains.
+4. Remove the run artifact directory `${OPENCODE_WORKER_ARTIFACT_ROOT:-${TMPDIR:-/tmp}/codex-runs}/<run-id>/` and the worker task contract files after results are integrated or intentionally rejected and no audit trail is needed.
+5. Report the cleanup outcome (closed panes, removed worktrees, removed run directory) together with the integration report.
