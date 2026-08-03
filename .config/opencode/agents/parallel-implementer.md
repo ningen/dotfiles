@@ -1,5 +1,5 @@
 ---
-description: Implement one bounded task in an isolated worktree for a Codex orchestrator
+description: Implement one bounded task in an isolated worktree for a parallel dev orchestrator
 mode: primary
 model: opencode-go/deepseek-v4-flash
 permission:
@@ -58,7 +58,7 @@ Do not commit, push, change branches, control worktrees, delete files outside th
 
 Use native read, grep, glob, list, edit, and LSP tools for file work. You may use shell commands for task-scoped investigation and validation inside the isolated worktree. Do not access credentials, deploy, publish, install system-wide dependencies, or mutate external state.
 
-Run every relevant formatter, lint, test, or build command listed under `validation` before handoff. If validation fails, fix the owned change and rerun it when possible; otherwise report the exact failure and blocker. Do not claim success for commands you did not run. The Codex orchestrator will independently rerun validation after integration.
+Run every relevant formatter, lint, test, or build command listed under `validation` before handoff. If validation fails, fix the owned change and rerun it when possible; otherwise report the exact failure and blocker. Do not claim success for commands you did not run. The orchestrating model will independently rerun validation after integration.
 
 If a tool call fails, continue with allowed tools when safe and still return the final contract.
 

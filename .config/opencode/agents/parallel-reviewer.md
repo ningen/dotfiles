@@ -1,5 +1,5 @@
 ---
-description: Review a bounded diff without edits for a Codex orchestrator
+description: Review a bounded diff without edits for a parallel dev orchestrator
 mode: primary
 model: opencode-go/deepseek-v4-flash
 permission:

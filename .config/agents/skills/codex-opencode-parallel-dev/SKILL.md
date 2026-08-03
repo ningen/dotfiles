@@ -25,9 +25,9 @@ If Herdr is unavailable, do not control an external Herdr session. Explain the c
 
 ## Select Workers
 
-- Use `codex-scout` for repository searches, diagnosis, and evidence collection.
-- Use `codex-implementer` for one bounded implementation in an isolated Git worktree.
-- Use `codex-reviewer` for read-only review of a completed diff.
+- Use `parallel-scout` for repository searches, diagnosis, and evidence collection.
+- Use `parallel-implementer` for one bounded implementation in an isolated Git worktree.
+- Use `parallel-reviewer` for read-only review of a completed diff.
 - Prefer the orchestrating model's cheap subagents for mechanical reads when they are sufficient; use OpenCode workers when external visible execution, bounded parallelism, or DeepSeek capacity is useful.
 
 Do not allow OpenCode workers to spawn subagents, commit, push, merge, rebase, reset, switch branches, or control Git worktrees. Implementers may use broad shell access inside their isolated worktrees for task-scoped investigation and validation; scout and reviewer workers remain shell-free. Treat the implementer restrictions as behavioral guardrails, not a complete shell sandbox.

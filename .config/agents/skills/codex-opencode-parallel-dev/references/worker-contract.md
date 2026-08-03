@@ -30,6 +30,6 @@ next:
 
 Under `commands`, include exact shell commands with exit statuses and native tool calls with success or failure status. Under `findings`, include changed files and the result of every required validation command for implementation tasks. Keep logs concise and do not include secrets.
 
-For `codex-scout` and `codex-reviewer`, provide repository status and diffs as task context or attached artifacts because shell execution is disabled. For `codex-implementer`, allow project-local shell commands and require worker-side validation before handoff. The orchestrating model must still rerun the relevant validation after integrating accepted worker changes.
+For `parallel-scout` and `parallel-reviewer`, provide repository status and diffs as task context or attached artifacts because shell execution is disabled. For `parallel-implementer`, allow project-local shell commands and require worker-side validation before handoff. The orchestrating model must still rerun the relevant validation after integrating accepted worker changes.
 
 Treat missing fields, missing required validation, unrelated edits, unreported failures, or ownership violations as a failed handoff.

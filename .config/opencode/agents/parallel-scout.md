@@ -1,5 +1,5 @@
 ---
-description: Perform bounded read-only repository investigation for a Codex orchestrator
+description: Perform bounded read-only repository investigation for a parallel dev orchestrator
 mode: primary
 model: opencode-go/deepseek-v4-flash
 permission:

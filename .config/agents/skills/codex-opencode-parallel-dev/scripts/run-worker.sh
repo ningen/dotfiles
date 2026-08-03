@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage() {
-  echo "usage: run-worker.sh <codex-scout|codex-implementer|codex-reviewer> <working-directory> <task-file> [artifact-file ...]" >&2
+  echo "usage: run-worker.sh <parallel-scout|parallel-implementer|parallel-reviewer> <working-directory> <task-file> [artifact-file ...]" >&2
 }
 
 if [ "$#" -lt 3 ]; then
@@ -16,7 +16,7 @@ task_file=$3
 shift 3
 
 case "$agent" in
-  codex-scout | codex-implementer | codex-reviewer) ;;
+  parallel-scout | parallel-implementer | parallel-reviewer) ;;
   *)
     echo "unsupported worker agent: $agent" >&2
     usage
@@ -36,7 +36,7 @@ if [ ! -d "$worker_dir" ]; then
   exit 66
 fi
 
-if [ "$agent" = codex-implementer ]; then
+if [ "$agent" = parallel-implementer ]; then
   for required_command in git tar; do
     if ! command -v "$required_command" >/dev/null 2>&1; then
       echo "$required_command is not available on PATH" >&2
@@ -191,7 +191,7 @@ git_status_exit=0
 git_diff_exit=0
 untracked_list_exit=0
 untracked_archive_exit=0
-if [ "$agent" = codex-implementer ]; then
+if [ "$agent" = parallel-implementer ]; then
   git -C "$worker_dir" status --short --untracked-files=all >"$result_dir/git-status.txt"
   git_status_exit=$?
   git -C "$worker_dir" diff HEAD --binary --no-ext-diff >"$result_dir/changes.patch"
@@ -283,10 +283,10 @@ jq -n \
       task: "task.md",
       events: "events.jsonl",
       summary: "summary.md",
-      git_status: (if $agent == "codex-implementer" then "git-status.txt" else null end),
-      tracked_changes: (if $agent == "codex-implementer" then "changes.patch" else null end),
-      untracked_list: (if $agent == "codex-implementer" then "untracked-files.zlist" else null end),
-      untracked_archive: (if $agent == "codex-implementer" then "untracked-files.tar" else null end)
+      git_status: (if $agent == "parallel-implementer" then "git-status.txt" else null end),
+      tracked_changes: (if $agent == "parallel-implementer" then "changes.patch" else null end),
+      untracked_list: (if $agent == "parallel-implementer" then "untracked-files.zlist" else null end),
+      untracked_archive: (if $agent == "parallel-implementer" then "untracked-files.tar" else null end)
     }
   }' >"$result_dir/result.json.tmp"
 mv "$result_dir/result.json.tmp" "$result_dir/result.json"
