@@ -104,11 +104,35 @@ let
     };
   };
 
+  pencli = pkgs.buildNpmPackage rec {
+    pname = "pencli";
+    version = "0.3.3";
+
+    src = pkgs.fetchurl {
+      url = "https://registry.npmjs.org/@pen.dev/cli/-/cli-${version}.tgz";
+      hash = "sha512-/JT7Ir3KelG0G5V7lfvpciWTTOa205IfqS/iMVT8XhbGc25Llo1D1nAooEffh9gMgVdOD9oWKPDeIGnYhHcAtQ==";
+    };
+
+    dontNpmBuild = true;
+    npmDepsHash = "sha256-h/Ru2VirjXfF5cXuafRA5VRGJLJWNi/PBVSJUrlnFFQ=";
+    postPatch = ''
+      cp ${./locks/pencli/package-lock.json} package-lock.json
+    '';
+
+    meta = {
+      description = "CLI tool for running the pen.dev AI agent manipulating .pen design files";
+      homepage = "https://pen.dev";
+      mainProgram = "pen";
+      platforms = pkgs.lib.platforms.unix;
+    };
+  };
+
   hunk = inputs.hunk.packages.${pkgs.stdenv.hostPlatform.system}.default;
 in
 {
   home.packages = [
     portless
+    pencli
     hunk
   ];
 }
