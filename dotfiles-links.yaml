@@ -10,6 +10,9 @@ unix_only:
   - source: .config/nvim
     target: $CONFIG_DIR/nvim
     type: directory
+  - source: .config/old-nvim
+    target: $CONFIG_DIR/old-nvim
+    type: directory
   - source: .config/tmux
     target: $CONFIG_DIR/tmux
     type: directory

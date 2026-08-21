@@ -79,6 +79,8 @@ in
   # The shell and Windows launcher both connect to Home Manager's standard
   # socket. systemd starts the daemon on the first client connection.
   programs.zsh.shellAliases.emacs = "emacsclient-wsl";
+  programs.zsh.shellAliases.onvim = "NVIM_APPNAME=old-nvim nvim";
+
   services.emacs = {
     enable = true;
     package = emacsPackage;
