@@ -4,88 +4,88 @@ unix_only:
   - source: .gitconfig.local
     target: ~/.gitconfig.local
     type: file
-  - source: .config/git
+  - source: _config/git
     target: $CONFIG_DIR/git
     type: directory
-  - source: .config/nvim
+  - source: _config/nvim
     target: $CONFIG_DIR/nvim
     type: directory
-  - source: .config/old-nvim
+  - source: _config/old-nvim
     target: $CONFIG_DIR/old-nvim
     type: directory
-  - source: .config/tmux
+  - source: _config/tmux
     target: $CONFIG_DIR/tmux
     type: directory
-  - source: .config/emacs
+  - source: _config/emacs
     target: $CONFIG_DIR/emacs
     type: directory
-  - source: .config/helix
+  - source: _config/helix
     target: $CONFIG_DIR/helix
     type: directory
-  - source: .config/yazi
+  - source: _config/yazi
     target: $CONFIG_DIR/yazi
     type: directory
-  - source: .config/nix
+  - source: _config/nix
     target: $CONFIG_DIR/nix
     type: directory
   - source: .claude/agents
     target: ~/.claude/agents
     type: directory
-  - source: .config/agents/skills/codex-user-skill-author
+  - source: _config/agents/skills/codex-user-skill-author
     target: ~/.agents/skills/codex-user-skill-author
     type: directory
-  - source: .config/agents/skills/nix-env-maintainer
+  - source: _config/agents/skills/nix-env-maintainer
     target: ~/.agents/skills/nix-env-maintainer
     type: directory
-  - source: .config/agents/skills/dotfiles-link-manager
+  - source: _config/agents/skills/dotfiles-link-manager
     target: ~/.agents/skills/dotfiles-link-manager
     type: directory
-  - source: .config/agents/skills/git-message-style
+  - source: _config/agents/skills/git-message-style
     target: ~/.agents/skills/git-message-style
     type: directory
-  - source: .config/agents/skills/natural-writing-editor
+  - source: _config/agents/skills/natural-writing-editor
     target: ~/.agents/skills/natural-writing-editor
     type: directory
-  - source: .config/agents/skills/verify-ui-with-screenshots
+  - source: _config/agents/skills/verify-ui-with-screenshots
     target: ~/.agents/skills/verify-ui-with-screenshots
     type: directory
-  - source: .config/agents/skills/diff-command-worker
+  - source: _config/agents/skills/diff-command-worker
     target: ~/.agents/skills/diff-command-worker
     type: directory
-  - source: .config/agents/skills/herdr-interactive-runner
+  - source: _config/agents/skills/herdr-interactive-runner
     target: ~/.agents/skills/herdr-interactive-runner
     type: directory
-  - source: .config/agents/skills/skills-cli-installer
+  - source: _config/agents/skills/skills-cli-installer
     target: ~/.agents/skills/skills-cli-installer
     type: directory
-  - source: .config/agents/skills/typescript-quality-reviewer
+  - source: _config/agents/skills/typescript-quality-reviewer
     target: ~/.agents/skills/typescript-quality-reviewer
     type: directory
-  - source: .config/agents/skills/html-report-builder
+  - source: _config/agents/skills/html-report-builder
     target: ~/.agents/skills/html-report-builder
     type: directory
-  - source: .config/agents/skills/codex-opencode-parallel-dev
+  - source: _config/agents/skills/codex-opencode-parallel-dev
     target: ~/.agents/skills/codex-opencode-parallel-dev
     type: directory
-  - source: .config/opencode/agents
+  - source: _config/opencode/agents
     target: $CONFIG_DIR/opencode/agents
     type: directory
-  - source: .config/kitty
+  - source: _config/kitty
     target: $CONFIG_DIR/kitty
     type: directory
-  - source: .config/discord/settings.json
+  - source: _config/discord/settings.json
     target: $CONFIG_DIR/discord/settings.json
     type: file
 
 macos_only:
-  - source: .config/wezterm
+  - source: _config/wezterm
     target: $CONFIG_DIR/wezterm
     type: directory
 
 wsl_only: []
 
 windows_only:
-  - source: .config/wezterm
+  - source: _config/wezterm
     target: $CONFIG_DIR/wezterm
     type: directory
   - source: windows/glazewm/config.yaml
@@ -96,9 +96,9 @@ windows_only:
     type: file
 
 vscode:
-  - source: .config/vscode/settings.json
+  - source: _config/vscode/settings.json
     target: $VSCODE_CONFIG_DIR/settings.json
     type: file
-  - source: .config/vscode/keybindings.json
+  - source: _config/vscode/keybindings.json
     target: $VSCODE_CONFIG_DIR/keybindings.json
     type: file

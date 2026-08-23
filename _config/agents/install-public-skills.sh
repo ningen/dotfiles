@@ -2,7 +2,7 @@
 set -euo pipefail
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-MANIFEST="${1:-$DOTFILES_DIR/.config/agents/public-skills.tsv}"
+MANIFEST="${1:-$DOTFILES_DIR/_config/agents/public-skills.tsv}"
 
 [[ -f "$MANIFEST" ]] || { echo "manifest not found: $MANIFEST" >&2; exit 1; }
 
