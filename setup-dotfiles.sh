@@ -105,3 +105,11 @@ for record in "${records[@]}"; do
   ln -s "$src" "$dest"
   echo "LINKED $dest -> $src"
 done
+
+if command -v ya >/dev/null 2>&1 && [[ -f "$CONFIG_DIR/yazi/package.toml" ]]; then
+  if $DRY_RUN; then
+    echo "DRY ya pkg install ($CONFIG_DIR/yazi)"
+  else
+    YAZI_CONFIG_HOME="$CONFIG_DIR/yazi" ya pkg install && echo "yazi packages installed"
+  fi
+fi
