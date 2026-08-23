@@ -86,8 +86,10 @@ in
     package = emacsPackage;
     socketActivation.enable = true;
     startWithUserSession = false;
-    defaultEditor = true;
   };
+
+  home.sessionVariables.EDITOR = "nvim";
+  home.sessionVariables.VISUAL = "nvim";
 
   home.sessionVariables.BROWSER = "wsl-open";
   # Windows invokes this stable path directly. The source remains a Nix store
