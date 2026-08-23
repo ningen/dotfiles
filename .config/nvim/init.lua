@@ -9,7 +9,7 @@ vim.cmd('colorscheme catppuccin')
 
 vim.opt.clipboard = "unnamedplus"
 
-require('config.lazy')
+require('plugins')
 require('lsp')
 
 
