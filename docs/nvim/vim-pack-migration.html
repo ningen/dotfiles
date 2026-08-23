@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neovim 0.12 vim.pack 学習ガイド — lazy.nvim からの移行計画</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+    },
+  },
+}
+</script>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans leading-relaxed">
+
+<nav class="sticky top-0 z-50 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+  <div class="max-w-5xl mx-auto px-6 py-3 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+    <span class="font-semibold text-white mr-2">vim.pack ガイド</span>
+    <a href="#overview" class="text-slate-400 hover:text-indigo-300">全体像</a>
+    <a href="#packages" class="text-slate-400 hover:text-emerald-300">基礎概念</a>
+    <a href="#apiv" class="text-slate-400 hover:text-sky-300">vim.pack API</a>
+    <a href="#compare" class="text-slate-400 hover:text-fuchsia-300">lazy.nvim 対比</a>
+    <a href="#lockfile" class="text-slate-400 hover:text-amber-300">lockfile</a>
+    <a href="#step1" class="text-slate-400 hover:text-emerald-300">移行 1</a>
+    <a href="#step2" class="text-slate-400 hover:text-emerald-300">移行 2</a>
+    <a href="#ops" class="text-slate-400 hover:text-sky-300">運用</a>
+    <a href="#caution" class="text-slate-400 hover:text-amber-300">注意点</a>
+  </div>
+</nav>
+
+<header class="max-w-5xl mx-auto px-6 pt-10 pb-6">
+  <h1 class="text-3xl font-bold text-white">Neovim 0.12 標準プラグインマネージャ<br><span class="text-indigo-400">vim.pack</span> の概念と移行計画</h1>
+  <p class="mt-4 text-slate-400 max-w-3xl">lazy.nvim をやめて標準の <code class="font-mono text-sm text-slate-300">vim.pack</code> に移行するための学習ドキュメント。概念 → API → lockfile → 移行手順 → 日々の運用、の順に読めば実装イメージが持てます。</p>
+  <div class="mt-4 flex flex-wrap gap-2 text-xs font-mono">
+    <span class="rounded-full border border-indigo-800 bg-indigo-950/60 px-3 py-1 text-indigo-300">nvim v0.12.4 (nix)</span>
+    <span class="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-slate-400">plugins: oil.nvim / mini.icons</span>
+    <span class="rounded-full border border-emerald-800 bg-emerald-950/60 px-3 py-1 text-emerald-300">catppuccin 同梱済み</span>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-6 pb-16 space-y-14">
+
+<!-- ===================== 全体像 ===================== -->
+<section id="overview" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-indigo-500 pl-3">1. 全体像 — 何が変わるのか</h2>
+  <p class="mt-4 text-slate-300">lazy.nvim は「spec 形式・遅延ロード・lockfile・UI」を提供する外部プラグイン。vim.pack は Neovim 本体組み込みの最小構成マネージャで、<strong class="text-white">git clone + lockfile + 更新確認バッファ</strong>を提供します。遅延ロード機械はないので、「全部起動時に読む」現在の使い方と相性が良い。</p>
+
+  <div class="mt-5 grid md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <h3 class="font-semibold text-fuchsia-300 text-sm uppercase tracking-wide">失うもの</h3>
+      <ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5">
+        <li><code class="font-mono text-xs">opts = {}</code> 自動 setup 慣習 → 明示的に <code class="font-mono text-xs">setup()</code> を呼ぶ</li>
+        <li>遅延ロード（現状未使用なので実質影響なし）</li>
+        <li><code class="font-mono text-xs">{ import = "plugins" }</code> の自動スキャン → 自前で require</li>
+        <li>0.12.4 では <code class="font-mono text-xs">:packupdate</code> コマンドなし（Lua API で運用）</li>
+      </ul>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <h3 class="font-semibold text-emerald-300 text-sm uppercase tracking-wide">得られるもの</h3>
+      <ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5">
+        <li>bootstrap コード不要（本体機能なので消える）</li>
+        <li>lockfile はネイティブ (<code class="font-mono text-xs">nvim-pack-lock.json</code>)</li>
+        <li>設定ファイル総量の減少・依存ゼロ</li>
+        <li><code class="font-mono text-xs">PackChanged</code> イベントでのフック（build 等）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-emerald-800/60 bg-emerald-950/30 p-5 text-sm">
+    <p class="text-emerald-200"><span class="font-semibold">前提メモ:</span> catppuccin は 0.12 から runtime 同梱（<code class="font-mono">$VIMRUNTIME/colors/catppuccin.vim</code> 実機確認済み）。<code class="font-mono">colorscheme catppuccin</code> はそのまま動き続けます。</p>
+  </div>
+</section>
+
+<!-- ===================== 基礎概念 ===================== -->
+<section id="packages" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-emerald-500 pl-3">2. 基礎概念 — Vim packages</h2>
+  <p class="mt-4 text-slate-300">vim.pack を理解するには、まず Vim 由来の「package」システムが必要です。これは <code class="font-mono text-sm">:h packages</code> の世界。</p>
+
+  <div class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300">~/.local/share/nvim/
+└── site/pack/<span class="text-emerald-300">{pack名}</span>/
+    ├── start/<span class="text-sky-300">{plugin名}</span>/   ← 起動時に自動ロード
+    └── opt/<span class="text-amber-300">{plugin名}</span>/    ← :packadd {plugin} で明示ロード
+
+vim.pack 管理下:
+└── site/pack/core/opt/<span class="text-amber-300">{plugin名}</span>/   ← 常に opt として置かれる</pre>
+  </div>
+
+  <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-emerald-300">'runtimepath'</h3>
+      <p class="mt-2 text-slate-400">Nvim が ftplugin / colorscheme / lua モジュール等を探す場所のリスト。<code class="font-mono text-xs">pack/*/start/*</code> は暗黙で検索対象になる（&rtp 表示には出ない）。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-sky-300">start vs opt</h3>
+      <p class="mt-2 text-slate-400">start 配下は起動時に plugin/ スクリプトまで自動 source。opt 配下は rtp 探索のみ有効で、<code class="font-mono text-xs">:packadd!</code> するまで plugin/ は読まれない。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-amber-300">vim.pack は opt 前提</h3>
+      <p class="mt-2 text-slate-400">インストール先は常に <code class="font-mono text-xs">core/opt</code>。add() 内で <code class="font-mono text-xs">:packadd</code> 相当を実行して初めて使えるようになる、という設計。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== vim.pack API ===================== -->
+<section id="apiv" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-sky-500 pl-3">3. vim.pack API — 4 つの関数だけ</h2>
+  <p class="mt-4 text-slate-300">0.12.4 の <code class="font-mono text-sm">vim.pack</code> は関数 4 つ（実機確認: add / del / get / update）。これだけでインストール〜更新〜削除が完結します。</p>
+
+  <div class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300"><span class="text-sky-400">-- インストール & ロード（並列 clone、完了まで同期）</span>
+vim.pack.add({
+  { src = 'https://github.com/nvim-mini/mini.icons' },          <span class="text-slate-500">-- 文字列でも可</span>
+  {
+    src = 'https://github.com/stevearc/oil.nvim',
+    name = 'oil',                        <span class="text-slate-500">-- ディレクトリ名（省略時は repo 名）</span>
+    version = 'master',                  <span class="text-slate-500">-- ブランチ / タグ / コミット / vim.version.range()</span>
+  },
+}, {
+  confirm = false,                       <span class="text-slate-500">-- 初回インストールの対話確認を省略（デフォルト true）</span>
+})
+
+require('mini.icons').setup({})          <span class="text-slate-500">-- opts={} 自動化はないので明示 setup</span>
+require('oil').setup({})</pre>
+  </div>
+
+  <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-sky-300">vim.pack.update()</h3>
+      <p class="mt-2 text-slate-400">差分確認バッファ（タブページ）を開く。<code class="font-mono text-xs">:write</code> で適用、<code class="font-mono text-xs">:quit</code> で取消。LSP 経由で gx リンクや K hover 付き。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-sky-300">vim.pack.get()</h3>
+      <p class="mt-2 text-slate-400">各プラグインの rev / rev_to / tags 等を取得。<code class="font-mono text-xs">rev ~= rev_to</code> なら保留中の更新あり。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-sky-300">vim.pack.del()</h3>
+      <p class="mt-2 text-slate-400">ディスクから削除。spec から外して再起動した後に呼ぶ。非アクティブなものは <code class="font-mono text-xs">{ force = true }</code> 不要で削除可能。</p>
+    </div>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+    <h3 class="font-semibold text-white text-sm">add() の load オプション — ハマりどころ</h3>
+    <p class="mt-2 text-sm text-slate-400">init.lua 読み込み中はデフォルト <code class="font-mono text-xs">load = false</code>（<code class="font-mono text-xs">:packadd!</code> 相当 = rtp 追加のみで plugin/ スクリプトは source しない）。init.lua 以降では true。今回は両プラグとも setup() を明示呼びするので問題ないが、plugin/ スクリプト必須のプラグインを入れるときは意識する。</p>
+  </div>
+</section>
+
+<!-- ===================== lazy.nvim 対比 ===================== -->
+<section id="compare" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-fuchsia-500 pl-3">4. lazy.nvim との対比</h2>
+  <div class="mt-5 overflow-x-auto rounded-2xl border border-slate-800">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-900 text-left text-slate-400">
+        <tr>
+          <th class="px-4 py-3 font-medium">関心事</th>
+          <th class="px-4 py-3 font-medium">lazy.nvim</th>
+          <th class="px-4 py-3 font-medium">vim.pack (0.12.4)</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-800 text-slate-300">
+        <tr><td class="px-4 py-3">インストール</td><td class="px-4 py-3">setup(spec) 時に sync</td><td class="px-4 py-3 font-mono text-xs">vim.pack.add()</td></tr>
+        <tr><td class="px-4 py-3">更新</td><td class="px-4 py-3 font-mono text-xs">:Lazy update</td><td class="px-4 py-3 font-mono text-xs">vim.pack.update()</td></tr>
+        <tr><td class="px-4 py-3">状態確認</td><td class="px-4 py-3 font-mono text-xs">:Lazy</td><td class="px-4 py-3 font-mono text-xs">vim.pack.get()</td></tr>
+        <tr><td class="px-4 py-3">lockfile</td><td class="px-4 py-3 font-mono text-xs">lazy-lock.json</td><td class="px-4 py-3 font-mono text-xs">nvim-pack-lock.json（自動生成・手編集禁止）</td></tr>
+        <tr><td class="px-4 py-3">遅延ロード</td><td class="px-4 py-3 font-mono text-xs">lazy = true / keys / ft ...</td><td class="px-4 py-3 text-amber-300">なし（opt + packadd で自作）</td></tr>
+        <tr><td class="px-4 py-3">依存解決</td><td class="px-4 py-3 font-mono text-xs">dependencies = {}</td><td class="px-4 py-3 text-amber-300">自分で順序管理</td></tr>
+        <tr><td class="px-4 py-3">build フック</td><td class="px-4 py-3 font-mono text-xs">build = 'make'</td><td class="px-4 py-3 font-mono text-xs">PackChanged autocmd（master は pkg.json manifest 対応）</td></tr>
+        <tr><td class="px-4 py-3">設定慣習</td><td class="px-4 py-3 font-mono text-xs">opts = {} / config</td><td class="px-4 py-3 text-amber-300">なし → setup() 明示</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===================== lockfile ===================== -->
+<section id="lockfile" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-amber-500 pl-3">5. lockfile — 再現性の中核</h2>
+
+  <div class="mt-5 grid md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <h3 class="font-semibold text-amber-300 text-sm uppercase tracking-wide">生成と場所</h3>
+      <ul class="mt-3 space-y-2 text-sm text-slate-300 list-disc pl-5">
+        <li>最初の vim.pack 関数呼び出し時に自動生成</li>
+        <li>パスは <code class="font-mono text-xs">$XDG_CONFIG_HOME/nvim/nvim-pack-lock.json</code> 固定（0.12.4。master では 'packlockfile' オプション化）</li>
+        <li>~/.config/nvim は symlink なので実体はこのリポジトリ内 → VCS 管理できる（推奨）</li>
+        <li>lockfile がある環境では<strong class="text-white">記載リビジョンで一括インストール</strong>される</li>
+      </ul>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <h3 class="font-semibold text-amber-300 text-sm uppercase tracking-wide">ライフサイクル</h3>
+      <ol class="mt-3 space-y-2 text-sm text-slate-300 list-decimal pl-5">
+        <li>config 変更後 <code class="font-mono text-xs">:restart</code> → spec と lockfile を突き合わせ</li>
+        <li><code class="font-mono text-xs">vim.pack.update()</code> で差分確認 → <code class="font-mono text-xs">:write</code></li>
+        <li>lockfile 差分をコミット</li>
+        <li>他マシンでは pull 後 <code class="font-mono text-xs">:restart</code> で lockfile 通り復元</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300"><span class="text-slate-500"># ロールバック: 直前の更新を取り消す</span>
+git checkout HEAD -- nvim-pack-lock.json
+<span class="text-slate-500"># → nvim で:</span>
+vim.pack.update(nil, { target = 'lockfile' })   <span class="text-slate-500">-- 確認して適用</span>
+
+<span class="text-slate-500"># freeze: spec.version を現在の rev に固定すると更新されなくなる</span>
+{ src = '...', version = 'abc12345' }
+<span class="text-slate-500"># unfreeze: version を nil / ブランチ等に戻す</span></pre>
+  </div>
+</section>
+
+<!-- ===================== 移行ステップ1 ===================== -->
+<section id="step1" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-emerald-500 pl-3">6. 移行ステップ 1 — 機械的置換</h2>
+  <p class="mt-4 text-slate-300">構造はいじらず、同じ挙動になることだけを目指す。</p>
+
+  <div class="mt-5 grid md:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-rose-900/60 bg-rose-950/20 p-5">
+      <h3 class="font-semibold text-rose-300 text-sm uppercase tracking-wide">削除</h3>
+      <ul class="mt-3 space-y-1 text-sm font-mono text-slate-300">
+        <li>lua/config/lazy.lua <span class="text-slate-500">(bootstrap)</span></li>
+        <li>lua/plugins/filer.lua <span class="text-slate-500">(lazy spec)</span></li>
+        <li>lazy-lock.json <span class="text-slate-500">(代替は nvim-pack-lock.json)</span></li>
+      </ul>
+    </div>
+    <div class="rounded-2xl border border-emerald-900/60 bg-emerald-950/20 p-5">
+      <h3 class="font-semibold text-emerald-300 text-sm uppercase tracking-wide">変更</h3>
+      <ul class="mt-3 space-y-1 text-sm text-slate-300">
+        <li>init.lua: <code class="font-mono text-xs">require('config.lazy')</code> → <code class="font-mono text-xs">require('plugins')</code></li>
+        <li>新規: <code class="font-mono text-xs">lua/plugins/init.lua</code>（下記）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300"><span class="text-slate-500">-- lua/plugins/init.lua （新規）</span>
+vim.pack.add({
+  { src = 'https://github.com/nvim-mini/mini.icons' },
+  { src = 'https://github.com/stevearc/oil.nvim' },
+}, { confirm = false })
+
+require('mini.icons').setup({})
+require('oil').setup({})</pre>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+    <h3 class="font-semibold text-white text-sm">検証コマンド</h3>
+    <div class="mt-3 space-y-2 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300"><span class="text-slate-500"># エラーなし起動 + lockfile 生成確認</span>
+nvim --headless +qa && cat .config/nvim/nvim-pack-lock.json
+
+<span class="text-slate-500"># :Oil コマンドの存在確認（期待値 1）※ setup 由来のはず</span>
+nvim --headless +'lua print(vim.fn.exists(":Oil"))' +qa
+
+<span class="text-slate-500"># ディレクトリが oil で開けるか（期待値 oil）</span>
+nvim --headless +'edit /tmp' +'lua print(vim.bo.filetype)' +qa</pre>
+    </div>
+    <p class="mt-3 text-xs text-slate-500">:Oil が無ければ add() に <code class="font-mono">load = true</code> を追加して再確認。</p>
+  </div>
+
+  <div class="mt-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm">
+    <p><span class="font-mono text-xs rounded bg-slate-800 px-2 py-0.5 text-emerald-300">commit</span> <code class="font-mono text-xs">refactor(nvim): replace lazy.nvim with native vim.pack</code> — lockfile も一緒にコミット</p>
+  </div>
+</section>
+
+<!-- ===================== 移行ステップ2 ===================== -->
+<section id="step2" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-emerald-500 pl-3">7. 移行ステップ 2 — プラグインごとのファイル分割</h2>
+  <p class="mt-4 text-slate-300">規約: 「spec + setup を 1 ファイルに閉じ込める」。新しいプラグイン = ファイル 1 枚追加 + order への追記。</p>
+
+  <div class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300">lua/plugins/
+├── init.lua         <span class="text-slate-500">-- 集約: add → 全 setup の順に実行</span>
+├── mini-icons.lua   <span class="text-slate-500">-- pack + setup</span>
+└── oil.lua          <span class="text-slate-500">-- pack + setup</span></pre>
+  </div>
+
+  <div class="mt-4 grid md:grid-cols-3 gap-4">
+    <div class="md:col-span-1 rounded-2xl border border-slate-800 bg-slate-900/50 p-4 overflow-x-auto">
+<pre class="font-mono text-[11px] leading-6 text-slate-300"><span class="text-slate-500">-- mini-icons.lua</span>
+return {
+  pack = {
+    src = 'https://github.com/nvim-mini/mini.icons',
+  },
+  setup = function()
+    require('mini.icons').setup({})
+  end,
+}</pre>
+    </div>
+    <div class="md:col-span-1 rounded-2xl border border-slate-800 bg-slate-900/50 p-4 overflow-x-auto">
+<pre class="font-mono text-[11px] leading-6 text-slate-300"><span class="text-slate-500">-- oil.lua</span>
+return {
+  pack = {
+    src = 'https://github.com/stevearc/oil.nvim',
+  },
+  setup = function()
+    require('oil').setup({})
+  end,
+}</pre>
+    </div>
+    <div class="md:col-span-1 rounded-2xl border border-slate-800 bg-slate-900/50 p-4 overflow-x-auto">
+<pre class="font-mono text-[11px] leading-6 text-slate-300"><span class="text-slate-500">-- init.lua</span>
+local order =
+  { 'mini-icons', 'oil' }
+
+local mods = {}
+for _, name in
+    ipairs(order) do
+  mods[#mods+1] =
+    require('plugins.'..name)
+end
+
+local specs = {}
+for _, m in ipairs(mods) do
+  specs[#specs+1] = m.pack
+end
+vim.pack.add(specs,
+  { confirm = false })
+
+for _, m in ipairs(mods) do
+  if m.setup then m.setup() end
+end</pre>
+    </div>
+  </div>
+
+  <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-emerald-300">依存順序</h3>
+      <p class="mt-2 text-slate-400"><code class="font-mono text-xs">order</code> の並びが依存グラフ（依存される側を先）。alphabetical 依存は避けて明示リストで管理。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-emerald-300">setup 不要なもの</h3>
+      <p class="mt-2 text-slate-400">colorscheme 同梱系などは setup フィールドを省略すれば OK。init 側は nil チェック済み。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+      <h3 class="font-semibold text-emerald-300">freeze も局所化</h3>
+      <p class="mt-2 text-slate-400">特定プラグインだけ固定したいときは、そのファイルの <code class="font-mono text-xs">pack.version</code> にコミットハッシュを書くだけ。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 運用 ===================== -->
+<section id="ops" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-sky-500 pl-3">8. 移行後の日々の運用</h2>
+  <div class="mt-5 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 overflow-x-auto">
+<pre class="font-mono text-xs leading-6 text-slate-300"><span class="text-sky-400">-- 更新（確認バッファ: :write 適用 / :quit 取消）</span>
+vim.pack.update()
+
+<span class="text-sky-400">-- 更新の有無だけ確認（ネットワーク通信なし）</span>
+for _, p in ipairs(vim.pack.get()) do
+  if p.rev_to then print(p.spec.name, p.rev, '→', p.rev_to) end
+end
+
+<span class="text-sky-400">-- プラグイン削除（spec から外して再起動した後で）</span>
+vim.pack.del({ 'oil' })
+
+<span class="text-sky-400">-- build が必要なプラグインは PackChanged でフック</span>
+vim.api.nvim_create_autocmd('PackChanged', {
+  callback = function(ev)
+    if ev.data.kind == 'install' or ev.data.kind == 'update' then
+      vim.system({ 'make' }, { cwd = ev.data.path })
+    end
+  end,
+})</pre>
+  </div>
+</section>
+
+<!-- ===================== 注意点 ===================== -->
+<section id="caution" class="scroll-mt-20">
+  <h2 class="text-xl font-bold text-white border-l-4 border-amber-500 pl-3">9. 注意点まとめ</h2>
+  <div class="mt-5 space-y-3">
+    <div class="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-5 text-sm">
+      <p class="text-amber-100"><span class="font-semibold">0.12.4 と master の差分:</span> 公式 Web ドキュメントは master 由来。<code class="font-mono text-xs">:packupdate</code> コマンドと <code class="font-mono text-xs">'packlockfile'</code> オプションは 0.12.4 に存在しない（実機 help 確認済み）。0.12.4 の間は Lua API ベースで運用する。</p>
+    </div>
+    <div class="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-5 text-sm">
+      <p class="text-amber-100"><span class="font-semibold">confirm デフォルト true:</span> 初回インストール時に対話確認が出る。headless や自動化と相性が悪いので <code class="font-mono text-xs">{ confirm = false }</code> を明示。</p>
+    </div>
+    <div class="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-5 text-sm">
+      <p class="text-amber-100"><span class="font-semibold">load デフォルト（init 中 false）:</span> plugin/ スクリプトは自動 source されない。明示 setup() で賄う前提。挙動が怪しいプラグインは <code class="font-mono text-xs">load = true</code> を試す。</p>
+    </div>
+    <div class="rounded-2xl border border-amber-900/60 bg-amber-950/20 p-5 text-sm">
+      <p class="text-amber-100"><span class="font-semibold">初回起動はネットワーク必須:</span> clone が走る。2 回目以降はオフライン起動可。lazy の実体は残るので、安定確認後に任意で <code class="font-mono text-xs">rm -rf ~/.local/share/nvim/lazy ~/.local/state/nvim/lazy</code>。</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-sm">
+      <p class="text-slate-300"><span class="font-semibold text-slate-100">実験的扱いについて:</span> help 上は WARNING: experimental だが「daily use に耐える安定度」と明記。破壊的変更は 0.x マイナーで入る可能性がある点だけ頭に入れておく。</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="border-t border-slate-800">
+  <div class="max-w-5xl mx-auto px-6 py-6 text-xs text-slate-500 space-y-1">
+    <p>Research date: 2026-08-23 / Environment: WSL (x86_64-linux), nix-managed Neovim v0.12.4</p>
+    <p>Sources: <code class="font-mono">:h vim.pack</code>, <code class="font-mono">:h packages</code> (0.12.4 local help), neovim.io/doc/user/pack (master, generated 2026-08-22)</p>
+    <p>Tailwind CSS CDN 使用のため描画にはネットワーク接続が必要です。</p>
+  </div>
+</footer>
+
+</body>
+</html>
