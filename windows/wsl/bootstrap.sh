@@ -46,7 +46,7 @@ git -C "$REPOSITORY_DIR" submodule update --init --recursive
 
 cd "$REPOSITORY_DIR"
 echo '==> Applying Home Manager'
-nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
+nix --extra-experimental-features 'nix-command flakes' run .#switch
 
 echo '==> Validating and applying Unix dotfiles'
 ./setup-dotfiles.sh --dry-run

@@ -33,4 +33,4 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 nix build .#darwinConfigurations.ningen.system
 ```
 
-Run `nix run .#switch-wsl`, `nix run .#switch-macos`, or `nix run .#update-lock` only when the user wants to apply the configuration on the current machine.
+Run `nix run .#switch` or `nix run .#update-lock` only when the user wants to apply the configuration on the current machine.

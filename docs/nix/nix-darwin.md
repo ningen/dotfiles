@@ -158,11 +158,11 @@ homebrew = {
 
 ### darwin-rebuildコマンド
 
-このdotfilesでは、flakeの`switch-macos` appでHome Managerとnix-darwinをまとめて適用します（CLAUDE.md参照）：
+このdotfilesでは、flakeの`switch` appがmacOSを自動判定し、Home Managerとnix-darwinをまとめて適用します（CLAUDE.md参照）：
 
 ```bash
 # Home Manager + Darwin設定を適用（macOSのみ）
-nix run .#switch-macos
+nix run .#switch
 ```
 
 ### 一般的なdarwin-rebuildコマンド
@@ -190,7 +190,7 @@ darwin-rebuild check
 
 2. **変更の適用**
    ```bash
-   nix run .#switch-macos
+   nix run .#switch
    ```
 
 3. **設定の確認**

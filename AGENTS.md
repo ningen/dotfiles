@@ -13,11 +13,8 @@
 # Flakeの依存関係を更新（ロック更新のみ）
 nix run .#update-lock
 
-# WSLのHome Manager設定を適用（WSL内でのみ実行可能）
-nix run .#switch-wsl
-
-# macOSのHome Managerとnix-darwin設定を適用（macOSでのみ実行可能）
-nix run .#switch-macos
+# macOSまたはWSLの設定を適用（実行環境を自動判定）
+nix run .#switch
 
 # Home Manager設定を手動で適用（Linux全般）
 nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
@@ -61,7 +58,7 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 
 ### ホスト設定
 - **ningen@ningen-mba.local**: macOS Apple Silicon開発環境
-- **ningen@wsl**: Windows+WSL環境用Home Manager設定（switch-wslで適用）
+- **ningen@wsl**: Windows+WSL環境用Home Manager設定（共通のswitchで適用）
 
 ### 開発スタック
 - **エディタ**: Neovim with 言語サーバー（TypeScript、Python/Pyright、Lua、Nix）
@@ -84,7 +81,7 @@ Node.jsパッケージを更新するには：
 1. `npm view <package> version dist.integrity dist.tarball --json` でversionとhashを確認
 2. `nix/packages/node-packages.nix` のderivation、または `flake.nix` のinputを更新
 3. `nix build '.#homeConfigurations."ningen@ningen-mba.local".activationPackage' --no-link` で検証
-4. 必要なら `nix run .#switch-macos` で設定を適用
+4. 必要なら `nix run .#switch` で設定を適用
 
 ## 設定管理
 

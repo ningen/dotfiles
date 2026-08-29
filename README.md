@@ -165,11 +165,8 @@ macOSやWSLで、ユーザーレベルの設定（パッケージ、シェル設
 # Flakeの依存関係を更新（ロック更新のみ）
 nix run .#update-lock
 
-# WSL環境に適用（WSL内でのみ実行可能）
-nix run .#switch-wsl
-
-# macOSに適用（Home Manager + nix-darwin、macOSでのみ実行可能）
-nix run .#switch-macos
+# macOS または WSL に適用（実行環境を自動判定）
+nix run .#switch
 
 # その他のLinuxホストに適用
 nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME

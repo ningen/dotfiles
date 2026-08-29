@@ -64,30 +64,28 @@
               ''
             );
           };
-          switch-wsl = {
+          switch = {
             type = "app";
             program = toString (
-              nixpkgs.legacyPackages.${system}.writeShellScript "switch-wsl" ''
+              nixpkgs.legacyPackages.${system}.writeShellScript "switch" ''
                 set -eu
-                if [ "$(uname -s)" != Linux ] || { ! grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null && [ -z "''${WSL_INTEROP:-}" ]; }; then
-                  echo "switch-wsl must run inside WSL" >&2
-                  exit 1
-                fi
-                exec ${hm} switch --flake '.#ningen@wsl'
-              ''
-            );
-          };
-          switch-macos = {
-            type = "app";
-            program = toString (
-              nixpkgs.legacyPackages.${system}.writeShellScript "switch-macos" ''
-                set -eu
-                if [ "$(uname -s)" != Darwin ]; then
-                  echo "switch-macos must run on macOS" >&2
-                  exit 1
-                fi
-                ${hm} switch --flake '.#ningen@ningen-mba.local'
-                exec sudo darwin-rebuild switch --flake .#ningen
+                case "$(uname -s)" in
+                  Darwin)
+                    ${hm} switch --flake '.#ningen@ningen-mba.local'
+                    exec sudo darwin-rebuild switch --flake .#ningen
+                    ;;
+                  Linux)
+                    if ! grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null && [ -z "''${WSL_INTEROP:-}" ]; then
+                      echo "switch must run on macOS or inside WSL" >&2
+                      exit 1
+                    fi
+                    exec ${hm} switch --flake '.#ningen@wsl'
+                    ;;
+                  *)
+                    echo "switch must run on macOS or inside WSL" >&2
+                    exit 1
+                    ;;
+                esac
               ''
             );
           };

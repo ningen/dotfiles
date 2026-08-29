@@ -23,7 +23,7 @@ set -euo pipefail
 repo="$(ghq root)/github.com/ningen/dotfiles"
 git -C "$repo" pull --ff-only
 cd "$repo"
-nix run .#switch-wsl
+nix run .#switch
 ./setup-dotfiles.sh
 refresh-emacs-wsl
 '@

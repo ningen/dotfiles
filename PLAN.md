@@ -74,10 +74,9 @@ macOS
 
 ### Flake apps
 
-- `nix run .#switch-wsl`: flake 内の Home Manager binaryで `ningen@wsl` を適用する。
-- `nix run .#switch-macos`: macOS Home Managerを適用した後、nix-darwinを適用する。
+- `nix run .#switch`: 実行環境を自動判定し、WSLでは `ningen@wsl`、macOSでは Home Manager と nix-darwin を適用する。
 - `nix run .#update-lock`: `nix flake update` だけを実行する。
-- hostname 依存の `switch` と、lock更新後に設定まで適用する `update` は削除する。
+- hostname 依存の旧 `switch` と、lock更新後に設定まで適用する `update` は削除し、現在の `switch` は実行環境を判定する。
 
 通常の switch は `flake.lock` を変更しない。
 
@@ -179,7 +178,7 @@ docs/windows-wsl.md
 
 - [x] `nix/hosts/wsl/home.nix` を追加する。
 - [x] `homeConfigurations."ningen@wsl"` をx86_64-linuxとして追加する。
-- [x] `switch-wsl`、`switch-macos`、`update-lock`を追加し、既存の`switch`と`update`を削除する。
+- [x] 共通の`switch`、`update-lock`を追加し、個別のswitch appと既存の`update`を削除する。
 - [x] `common/home.nix` をmacOS/WSL共通CLI設定に絞る。
 - [x] GNOME dconfとdesktop Linux用font設定をNixOS moduleへ移す。
 - [x] Doom Emacsのclone/sync activationはmacOSとWSLの両方で有効にする。
@@ -354,7 +353,7 @@ sh <(curl -L https://nixos.org/nix/install) --daemon
 
 ```bash
 cd ~/ghq/github.com/ningen/dotfiles
-nix --extra-experimental-features 'nix-command flakes' run .#switch-wsl
+nix --extra-experimental-features 'nix-command flakes' run .#switch
 ```
 
 - [x] `setup-dotfiles.sh --dry-run`を確認してから実適用する。
