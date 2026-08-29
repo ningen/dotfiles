@@ -6,6 +6,7 @@ vim.pack.add({
     src = "https://github.com/Saghen/blink.cmp",
     version = vim.version.range("1"),
   },
+  { src = "https://github.com/stevearc/conform.nvim" },
   {
     src = "https://github.com/stevearc/oil.nvim",
     name = "oil",
@@ -28,6 +29,25 @@ require("blink.cmp").setup({
   sources = { default = { "lsp", "path", "snippets", "buffer" } },
   fuzzy = { implementation = "prefer_rust_with_warning" },
 })
+
+local conform = require("conform")
+conform.setup({
+  formatters_by_ft = {
+    lua = { "stylua" },
+    python = { "black" },
+    typescript = { "prettierd" },
+    typescriptreact = { "prettierd" },
+  },
+  format_on_save = {
+    timeout_ms = 500,
+    lsp_format = "fallback",
+  },
+})
+
+vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+vim.keymap.set("", "<leader>f", function()
+  conform.format({ async = true, lsp_format = "fallback" })
+end, { desc = "Format buffer" })
 
 local oil = require("oil")
 oil.setup({})
