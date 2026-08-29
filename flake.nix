@@ -10,6 +10,10 @@
       url = "github:LnL7/nix-darwin";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    neovim-nightly-overlay = {
+      url = "github:nix-community/neovim-nightly-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     hunk = {
       url = "github:modem-dev/hunk";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -23,6 +27,7 @@
       home-manager,
       flake-utils,
       nix-darwin,
+      neovim-nightly-overlay,
       hunk,
     }@inputs:
     let
@@ -36,6 +41,7 @@
         inputs.home-manager.lib.homeManagerConfiguration {
           pkgs = import inputs.nixpkgs {
             inherit system;
+            overlays = [ inputs.neovim-nightly-overlay.overlays.default ];
             config.allowUnfree = true;
             config.allowBroken = true;
           };
