@@ -33,6 +33,12 @@ vim.keymap.set('n', '<C-j>', '<C-w>j', { desc = 'Move to bottom window' })
 vim.keymap.set('n', '<C-k>', '<C-w>k', { desc = 'Move to top window' })
 vim.keymap.set('n', '<C-l>', '<C-w>l', { desc = 'Move to right window' })
 
+vim.keymap.set('n', '<leader>e', function()
+  vim.cmd('Neotree toggle')
+  vim.cmd('wincmd p')
+end, { desc = 'Toggle filer' })
+vim.keymap.set('n', '<leader>E', '<cmd>Neotree focus<CR>', { desc = 'Focus filer' })
+
 -- ウィンドウサイズ調整
 vim.keymap.set('n', '<C-Up>', '<cmd>resize -2<CR>', { desc = 'Decrease window height' })
 vim.keymap.set('n', '<C-Down>', '<cmd>resize +2<CR>', { desc = 'Increase window height' })
