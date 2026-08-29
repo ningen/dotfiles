@@ -2,6 +2,7 @@
 -- neovim 0.12 で 導入された、標準plugin manager を使用する
 vim.pack.add({
   { src = "https://github.com/nvim-mini/mini.icons" },
+  { src = "https://github.com/folke/which-key.nvim" },
   {
     src = "https://github.com/Saghen/blink.cmp",
     version = vim.version.range("1"),
@@ -164,3 +165,5 @@ require("neo-tree").setup({
     },
   },
 })
+
+require("which-key").setup({})
