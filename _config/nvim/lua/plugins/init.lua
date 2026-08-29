@@ -8,6 +8,7 @@ vim.pack.add({
   },
   { src = "https://github.com/stevearc/conform.nvim" },
   { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+  { src = "https://github.com/folke/snacks.nvim" },
   {
     src = "https://github.com/stevearc/oil.nvim",
     name = "oil",
@@ -67,6 +68,52 @@ vim.api.nvim_create_autocmd("FileType", {
     pcall(vim.treesitter.start)
   end,
 })
+
+local Snacks = require("snacks")
+Snacks.setup({
+  picker = {
+    enabled = true,
+    sources = {
+      files = {
+        hidden = true,
+      },
+    },
+  },
+  indent = { enabled = true },
+})
+
+vim.keymap.set("n", "<leader>fp", function()
+  Snacks.picker.keymaps()
+end, { desc = "Command Palette" })
+
+vim.keymap.set("n", "<leader>ff", function()
+  local _ = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+  if vim.v.shell_error == 0 then
+    Snacks.picker.git_files({ hidden = true })
+  else
+    Snacks.picker.files({ hidden = true })
+  end
+end, { desc = "Find files" })
+
+vim.keymap.set("n", "<leader>fg", function()
+  Snacks.picker.grep()
+end, { desc = "Live grep" })
+
+vim.keymap.set("n", "<leader>fw", function()
+  Snacks.picker.grep_word()
+end, { desc = "Grep cursor string" })
+
+vim.keymap.set("n", "<leader>gs", function()
+  Snacks.picker.git_status()
+end, { desc = "show git status" })
+
+vim.keymap.set("n", "<leader>gb", function()
+  Snacks.picker.git_branches()
+end, { desc = "show git branches" })
+
+vim.keymap.set("n", "<leader>gc", function()
+  Snacks.picker.git_log()
+end, { desc = "show git commits" })
 
 local oil = require("oil")
 oil.setup({})
