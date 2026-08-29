@@ -1,0 +1,4 @@
+interface:
+  display_name: "Focus Mentor"
+  short_description: "Keep effort focused on high-impact work"
+  default_prompt: "Use $focus-mentor to help me decide what matters, avoid tool and configuration rabbit holes, and choose the smallest next action."

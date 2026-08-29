@@ -46,6 +46,9 @@ unix_only:
   - source: _config/agents/skills/natural-writing-editor
     target: ~/.agents/skills/natural-writing-editor
     type: directory
+  - source: _config/agents/skills/focus-mentor
+    target: ~/.agents/skills/focus-mentor
+    type: directory
   - source: _config/agents/skills/verify-ui-with-screenshots
     target: ~/.agents/skills/verify-ui-with-screenshots
     type: directory
