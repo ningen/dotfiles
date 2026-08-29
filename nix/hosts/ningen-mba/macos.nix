@@ -111,8 +111,6 @@ in
     brews = [
       # ghcup: nixpkgsに存在しないためbrew管理を維持
       "ghcup"
-      "libvterm" # emacs vterm dependency
-      "libtool" # emacs vterm build dependency (provides glibtool)
     ];
     # macos gui apps
     casks = [

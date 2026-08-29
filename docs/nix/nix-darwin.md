@@ -130,8 +130,6 @@ homebrew = {
   # CLI アプリケーション
   brews = [
     "ghcup"    # Haskell toolchain manager（nixpkgs未収録のためbrew管理）
-    "libvterm" # emacs vterm dependency
-    "libtool"  # emacs vterm build dependency (provides glibtool)
   ];
   
   # GUI アプリケーション
