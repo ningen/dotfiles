@@ -7,8 +7,6 @@
     pkgs.noto-fonts-color-emoji
   ];
   fonts.fontconfig.enable = true;
-  programs.zsh.shellAliases.onvim = "NVIM_APPNAME=old-nvim nvim";
-
   home.sessionVariables.EDITOR = "nvim";
   home.sessionVariables.VISUAL = "nvim";
 
