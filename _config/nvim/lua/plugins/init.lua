@@ -3,6 +3,10 @@
 vim.pack.add({
   { src = "https://github.com/nvim-mini/mini.icons" },
   {
+    src = "https://github.com/Saghen/blink.cmp",
+    version = vim.version.range("1"),
+  },
+  {
     src = "https://github.com/stevearc/oil.nvim",
     name = "oil",
   },
@@ -16,6 +20,15 @@ vim.pack.add({
 })
 
 require("mini.icons").setup({})
+
+require("blink.cmp").setup({
+  keymap = { preset = "enter" },
+  appearance = { nerd_font_variant = "mono" },
+  completion = { documentation = { auto_show = true } },
+  sources = { default = { "lsp", "path", "snippets", "buffer" } },
+  fuzzy = { implementation = "prefer_rust_with_warning" },
+})
+
 local oil = require("oil")
 oil.setup({})
 
