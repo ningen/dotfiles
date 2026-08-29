@@ -27,6 +27,22 @@ vim.opt.splitright = true
 
 vim.keymap.set('i', 'jj', '<ESC>')
 
+-- ウィンドウ移動
+vim.keymap.set('n', '<C-h>', '<C-w>h', { desc = 'Move to left window' })
+vim.keymap.set('n', '<C-j>', '<C-w>j', { desc = 'Move to bottom window' })
+vim.keymap.set('n', '<C-k>', '<C-w>k', { desc = 'Move to top window' })
+vim.keymap.set('n', '<C-l>', '<C-w>l', { desc = 'Move to right window' })
+
+-- ウィンドウサイズ調整
+vim.keymap.set('n', '<C-Up>', '<cmd>resize -2<CR>', { desc = 'Decrease window height' })
+vim.keymap.set('n', '<C-Down>', '<cmd>resize +2<CR>', { desc = 'Increase window height' })
+vim.keymap.set('n', '<C-Left>', '<cmd>vertical resize -2<CR>', { desc = 'Decrease window width' })
+vim.keymap.set('n', '<C-Right>', '<cmd>vertical resize +2<CR>', { desc = 'Increase window width' })
+
+-- ターミナルからノーマルモードへ戻る
+vim.keymap.set('t', '<Esc>', '<C-\\><C-n>')
+vim.keymap.set('t', 'jj', '<C-\\><C-n>')
+
 -- クリップボード連携。WSL では Windows 側のコマンドを使う。
 vim.opt.clipboard = 'unnamedplus'
 if vim.fn.has('wsl') == 1 then
