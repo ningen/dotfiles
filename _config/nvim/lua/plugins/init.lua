@@ -16,7 +16,22 @@ vim.pack.add({
 })
 
 require("mini.icons").setup({})
-require("oil").setup({})
+local oil = require("oil")
+oil.setup({})
+
+-- Oil accepts preview options for each open call. Make preview the default while
+-- preserving an explicit choice from the caller.
+local function open_with_preview(open)
+  return function(dir, opts, cb)
+    if not opts or opts.preview == nil then
+      opts = vim.tbl_extend("keep", opts or {}, { preview = {} })
+    end
+    return open(dir, opts, cb)
+  end
+end
+
+oil.open = open_with_preview(oil.open)
+oil.open_float = open_with_preview(oil.open_float)
 
 require("neo-tree").setup({
   close_if_last_window = true,
