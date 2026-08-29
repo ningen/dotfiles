@@ -7,6 +7,7 @@ vim.pack.add({
     version = vim.version.range("1"),
   },
   { src = "https://github.com/stevearc/conform.nvim" },
+  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
   {
     src = "https://github.com/stevearc/oil.nvim",
     name = "oil",
@@ -48,6 +49,24 @@ vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
 vim.keymap.set("", "<leader>f", function()
   conform.format({ async = true, lsp_format = "fallback" })
 end, { desc = "Format buffer" })
+
+local treesitter = require("nvim-treesitter")
+treesitter.setup()
+treesitter.install({
+  "astro",
+  "css",
+  "html",
+  "javascript",
+  "typescript",
+  "tsx",
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("vim-treesitter-start", { clear = true }),
+  callback = function()
+    pcall(vim.treesitter.start)
+  end,
+})
 
 local oil = require("oil")
 oil.setup({})
