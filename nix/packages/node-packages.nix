@@ -27,14 +27,29 @@ let
       hash = opencode2Target.hash;
     };
 
-    nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.autoPatchelfHook ];
-    buildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.glibc ];
+    nativeBuildInputs = lib.optionals pkgs.stdenv.hostPlatform.isLinux [ pkgs.patchelf ];
 
     dontConfigure = true;
     dontBuild = true;
+    # autoPatchelfHook/patchelf's normal RPATH fixups break Bun's embedded app.
+    # Patch only the ELF interpreter below and keep the runtime library path in
+    # the launcher so OpenCode's server re-exec also uses the same binary.
+    dontFixup = true;
 
     installPhase = ''
-      install -Dm755 bin/opencode2 "$out/bin/opencode2"
+      install -Dm755 bin/opencode2 "$out/libexec/opencode2"
+      ${lib.optionalString pkgs.stdenv.hostPlatform.isLinux ''
+        patchelf --set-interpreter ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 "$out/libexec/opencode2"
+        mkdir -p "$out/bin"
+        cat > "$out/bin/opencode2" <<EOF
+        #!${pkgs.runtimeShell}
+        exec ${pkgs.coreutils}/bin/env LD_LIBRARY_PATH=${lib.makeLibraryPath [ pkgs.glibc ]} "$out/libexec/opencode2" "\$@"
+        EOF
+        chmod 755 "$out/bin/opencode2"
+      ''}
+      ${lib.optionalString pkgs.stdenv.hostPlatform.isDarwin ''
+        install -Dm755 bin/opencode2 "$out/bin/opencode2"
+      ''}
     '';
 
     meta = {
