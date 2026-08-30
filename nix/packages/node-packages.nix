@@ -1,5 +1,51 @@
-{ inputs, pkgs, ... }:
+{ inputs, pkgs, lib, ... }:
 let
+  # OpenCode 2 is currently distributed as platform-specific native npm
+  # packages rather than a package in nixpkgs. Keep the beta version pinned
+  # here so Home Manager does not fetch or update it at runtime.
+  opencode2Version = "0.0.0-beta-18684";
+  opencode2Target =
+    if pkgs.stdenv.hostPlatform.system == "aarch64-darwin" then
+      {
+        packageName = "cli-darwin-arm64";
+        hash = "sha256-FEhbtAKyo1tdxqLC/1N+tQ9re96MOd35zzGryup5jso=";
+      }
+    else if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then
+      {
+        packageName = "cli-linux-x64-baseline";
+        hash = "sha256-KkpcAV4LcLuk/O8VF2IU4KCnzBwrrmySxsoA3tO8QHs=";
+      }
+    else
+      throw "opencode2 is not supported on ${pkgs.stdenv.hostPlatform.system}";
+
+  opencode2 = pkgs.stdenvNoCC.mkDerivation {
+    pname = "opencode2";
+    version = opencode2Version;
+
+    src = pkgs.fetchurl {
+      url = "https://registry.npmjs.org/@opencode-ai/${opencode2Target.packageName}/-/${opencode2Target.packageName}-${opencode2Version}.tgz";
+      hash = opencode2Target.hash;
+    };
+
+    nativeBuildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.autoPatchelfHook ];
+    buildInputs = lib.optionals pkgs.stdenv.isLinux [ pkgs.glibc ];
+
+    dontConfigure = true;
+    dontBuild = true;
+
+    installPhase = ''
+      install -Dm755 bin/opencode2 "$out/bin/opencode2"
+    '';
+
+    meta = {
+      description = "OpenCode 2 beta coding agent for the terminal";
+      homepage = "https://opencode.ai";
+      license = lib.licenses.mit;
+      mainProgram = "opencode2";
+      platforms = [ "aarch64-darwin" "x86_64-linux" ];
+    };
+  };
+
   portless = pkgs.buildNpmPackage rec {
     pname = "portless";
     version = "0.15.5";
@@ -131,6 +177,7 @@ let
 in
 {
   home.packages = [
+    opencode2
     portless
     pencli
     hunk
