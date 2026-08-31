@@ -32,8 +32,10 @@ let
     dontConfigure = true;
     dontBuild = true;
     # autoPatchelfHook/patchelf's normal RPATH fixups break Bun's embedded app.
-    # Patch only the ELF interpreter below and keep the runtime library path in
-    # the launcher so OpenCode's server re-exec also uses the same binary.
+    # Patch only the ELF interpreter below. Do NOT inject LD_LIBRARY_PATH in the
+    # launcher: Bun is essentially static, and a leaked LD_LIBRARY_PATH (pointing
+    # at Nix glibc) makes OpenCode's shell tool crash a DIFERENT glibc's /bin and
+    # /usr/bin binaries (e.g. ssh, cat, ls) with SIGSEGV.
     dontFixup = true;
 
     installPhase = ''
@@ -43,7 +45,7 @@ let
         mkdir -p "$out/bin"
         cat > "$out/bin/opencode2" <<EOF
         #!${pkgs.runtimeShell}
-        exec ${pkgs.coreutils}/bin/env LD_LIBRARY_PATH=${lib.makeLibraryPath [ pkgs.glibc ]} "$out/libexec/opencode2" "\$@"
+        exec "$out/libexec/opencode2" "\$@"
         EOF
         chmod 755 "$out/bin/opencode2"
       ''}
