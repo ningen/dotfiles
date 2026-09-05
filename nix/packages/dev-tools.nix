@@ -43,6 +43,7 @@
       herdr
       google-cloud-sdk
       opencode
+      chromium
     ]
     ++ lib.optionals pkgs.stdenv.isLinux [
       # Codex CLI Linux sandbox dependency
