@@ -52,6 +52,11 @@ vim.keymap.set("", "<leader>f", function()
   conform.format({ async = true, lsp_format = "fallback" })
 end, { desc = "Format buffer" })
 
+-- nvim-treesitter の highlight クエリは runtime/queries/ 配下に同梱されているが、
+-- vim.pack はプラグインのルートディレクトリしか runtimepath に追加しないため、
+-- runtime/ サブディレクトリを明示的に追加する（これがないと highlight が全滅する）
+vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site/pack/core/opt/nvim-treesitter/runtime")
+
 local treesitter = require("nvim-treesitter")
 treesitter.setup()
 treesitter.install({
