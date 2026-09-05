@@ -62,6 +62,8 @@ treesitter.setup()
 treesitter.install({
   "astro",
   "css",
+  "go",
+  "gomod",
   "html",
   "javascript",
   "typescript",

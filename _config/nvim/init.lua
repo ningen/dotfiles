@@ -68,6 +68,36 @@ vim.filetype.add({
 
 local config_augroup = vim.api.nvim_create_augroup("nvim-config", { clear = true })
 
+local transparent_background_groups = {
+	"Normal",
+	"NormalNC",
+	"NormalFloat",
+	"FloatBorder",
+	"FloatTitle",
+	"SignColumn",
+	"FoldColumn",
+	"LineNr",
+	"CursorLineNr",
+	"EndOfBuffer",
+	"NonText",
+	"StatusLine",
+	"StatusLineNC",
+	"TabLine",
+	"TabLineFill",
+	"TabLineSel",
+}
+
+local function set_transparent_background()
+	for _, group in ipairs(transparent_background_groups) do
+		vim.cmd(("highlight %s guibg=NONE ctermbg=NONE"):format(group))
+	end
+end
+
+vim.api.nvim_create_autocmd("ColorScheme", {
+	group = config_augroup,
+	callback = set_transparent_background,
+})
+
 vim.api.nvim_create_autocmd("FileType", {
 	group = config_augroup,
 	pattern = { "go", "make", "gitconfig" },
@@ -92,3 +122,4 @@ vim.cmd("colorscheme catppuccin")
 
 require("plugins")
 require("lsp")
+set_transparent_background()
