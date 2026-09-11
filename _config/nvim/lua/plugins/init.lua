@@ -1,176 +1,208 @@
+return {
+	{
+		"nvim-mini/mini.icons",
+		lazy = false,
+		config = function()
+			require("mini.icons").setup({})
+		end,
+	},
 
--- neovim 0.12 で 導入された、標準plugin manager を使用する
-vim.pack.add({
-  { src = "https://github.com/nvim-mini/mini.icons" },
-  { src = "https://github.com/folke/which-key.nvim" },
-  {
-    src = "https://github.com/Saghen/blink.cmp",
-    version = vim.version.range("1"),
-  },
-  { src = "https://github.com/stevearc/conform.nvim" },
-  { src = "https://github.com/nvim-treesitter/nvim-treesitter" },
-  { src = "https://github.com/folke/snacks.nvim" },
-  {
-    src = "https://github.com/stevearc/oil.nvim",
-    name = "oil",
-  },
-  {
-    src = "https://github.com/nvim-neo-tree/neo-tree.nvim",
-    version = vim.version.range("3"),
-  },
-  { src = "https://github.com/nvim-lua/plenary.nvim" },
-  { src = "https://github.com/MunifTanjim/nui.nvim" },
-  { src = "https://github.com/nvim-tree/nvim-web-devicons" },
-})
+	{
+		"folke/which-key.nvim",
+		lazy = false,
+		config = function()
+			require("which-key").setup({})
+		end,
+	},
 
-require("mini.icons").setup({})
+	{
+		"Saghen/blink.cmp",
+		version = "1.*",
+		lazy = false,
+		config = function()
+			require("blink.cmp").setup({
+				keymap = { preset = "enter" },
+				appearance = { nerd_font_variant = "mono" },
+				completion = { documentation = { auto_show = true } },
+				sources = { default = { "lsp", "path", "snippets", "buffer" } },
+				fuzzy = { implementation = "prefer_rust_with_warning" },
+			})
+		end,
+	},
 
-require("blink.cmp").setup({
-  keymap = { preset = "enter" },
-  appearance = { nerd_font_variant = "mono" },
-  completion = { documentation = { auto_show = true } },
-  sources = { default = { "lsp", "path", "snippets", "buffer" } },
-  fuzzy = { implementation = "prefer_rust_with_warning" },
-})
+	{
+		"stevearc/conform.nvim",
+		lazy = false,
+		config = function()
+			local conform = require("conform")
+			conform.setup({
+				formatters_by_ft = {
+					lua = { "stylua" },
+					python = { "black" },
+					typescript = { "prettierd" },
+					typescriptreact = { "prettierd" },
+				},
+				format_on_save = {
+					timeout_ms = 500,
+					lsp_format = "fallback",
+				},
+			})
 
-local conform = require("conform")
-conform.setup({
-  formatters_by_ft = {
-    lua = { "stylua" },
-    python = { "black" },
-    typescript = { "prettierd" },
-    typescriptreact = { "prettierd" },
-  },
-  format_on_save = {
-    timeout_ms = 500,
-    lsp_format = "fallback",
-  },
-})
+			vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
+			vim.keymap.set("", "<leader>f", function()
+				conform.format({ async = true, lsp_format = "fallback" })
+			end, { desc = "Format buffer" })
+		end,
+	},
 
-vim.o.formatexpr = "v:lua.require'conform'.formatexpr()"
-vim.keymap.set("", "<leader>f", function()
-  conform.format({ async = true, lsp_format = "fallback" })
-end, { desc = "Format buffer" })
+	{
+		"nvim-treesitter/nvim-treesitter",
+		lazy = false,
+		config = function()
+			-- nvim-treesitter の highlight クエリは runtime/queries/ 配下に同梱されている。
+			-- lazy.nvim はプラグインのルートディレクトリしか runtimepath に追加しないため、
+			-- runtime/ サブディレクトリを明示的に追加する（これがないと highlight が全滅する）
+			vim.opt.rtp:append(vim.fn.stdpath("data") .. "/lazy/nvim-treesitter/runtime")
 
--- nvim-treesitter の highlight クエリは runtime/queries/ 配下に同梱されているが、
--- vim.pack はプラグインのルートディレクトリしか runtimepath に追加しないため、
--- runtime/ サブディレクトリを明示的に追加する（これがないと highlight が全滅する）
-vim.opt.rtp:append(vim.fn.stdpath("data") .. "/site/pack/core/opt/nvim-treesitter/runtime")
+			local treesitter = require("nvim-treesitter")
+			treesitter.setup()
+			treesitter.install({
+				"astro",
+				"css",
+				"go",
+				"gomod",
+				"html",
+				"javascript",
+				"typescript",
+				"tsx",
+			})
 
-local treesitter = require("nvim-treesitter")
-treesitter.setup()
-treesitter.install({
-  "astro",
-  "css",
-  "go",
-  "gomod",
-  "html",
-  "javascript",
-  "typescript",
-  "tsx",
-})
+			vim.api.nvim_create_autocmd("FileType", {
+				group = vim.api.nvim_create_augroup("vim-treesitter-start", { clear = true }),
+				callback = function()
+					pcall(vim.treesitter.start)
+				end,
+			})
+		end,
+	},
 
-vim.api.nvim_create_autocmd("FileType", {
-  group = vim.api.nvim_create_augroup("vim-treesitter-start", { clear = true }),
-  callback = function()
-    pcall(vim.treesitter.start)
-  end,
-})
+	{
+		"folke/snacks.nvim",
+		lazy = false,
+		config = function()
+			local Snacks = require("snacks")
+			Snacks.setup({
+				picker = {
+					enabled = true,
+					sources = {
+						files = {
+							hidden = true,
+						},
+					},
+				},
+				indent = { enabled = true },
+			})
 
-local Snacks = require("snacks")
-Snacks.setup({
-  picker = {
-    enabled = true,
-    sources = {
-      files = {
-        hidden = true,
-      },
-    },
-  },
-  indent = { enabled = true },
-})
+			vim.keymap.set("n", "<leader>fp", function()
+				Snacks.picker.keymaps()
+			end, { desc = "Command Palette" })
 
-vim.keymap.set("n", "<leader>fp", function()
-  Snacks.picker.keymaps()
-end, { desc = "Command Palette" })
+			vim.keymap.set("n", "<leader>ff", function()
+				local _ = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
+				if vim.v.shell_error == 0 then
+					Snacks.picker.git_files({ hidden = true })
+				else
+					Snacks.picker.files({ hidden = true })
+				end
+			end, { desc = "Find files" })
 
-vim.keymap.set("n", "<leader>ff", function()
-  local _ = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-  if vim.v.shell_error == 0 then
-    Snacks.picker.git_files({ hidden = true })
-  else
-    Snacks.picker.files({ hidden = true })
-  end
-end, { desc = "Find files" })
+			vim.keymap.set("n", "<leader>fg", function()
+				Snacks.picker.grep()
+			end, { desc = "Live grep" })
 
-vim.keymap.set("n", "<leader>fg", function()
-  Snacks.picker.grep()
-end, { desc = "Live grep" })
+			vim.keymap.set("n", "<leader>fw", function()
+				Snacks.picker.grep_word()
+			end, { desc = "Grep cursor string" })
 
-vim.keymap.set("n", "<leader>fw", function()
-  Snacks.picker.grep_word()
-end, { desc = "Grep cursor string" })
+			vim.keymap.set("n", "<leader>gs", function()
+				Snacks.picker.git_status()
+			end, { desc = "show git status" })
 
-vim.keymap.set("n", "<leader>gs", function()
-  Snacks.picker.git_status()
-end, { desc = "show git status" })
+			vim.keymap.set("n", "<leader>gb", function()
+				Snacks.picker.git_branches()
+			end, { desc = "show git branches" })
 
-vim.keymap.set("n", "<leader>gb", function()
-  Snacks.picker.git_branches()
-end, { desc = "show git branches" })
+			vim.keymap.set("n", "<leader>gc", function()
+				Snacks.picker.git_log()
+			end, { desc = "show git commits" })
+		end,
+	},
 
-vim.keymap.set("n", "<leader>gc", function()
-  Snacks.picker.git_log()
-end, { desc = "show git commits" })
+	{
+		"stevearc/oil.nvim",
+		lazy = false,
+		config = function()
+			local oil = require("oil")
+			oil.setup({})
 
-local oil = require("oil")
-oil.setup({})
+			-- Oil accepts preview options for each open call. Make preview the default while
+			-- preserving an explicit choice from the caller.
+			local function open_with_preview(open)
+				return function(dir, opts, cb)
+					if not opts or opts.preview == nil then
+						opts = vim.tbl_extend("keep", opts or {}, { preview = {} })
+					end
+					return open(dir, opts, cb)
+				end
+			end
 
--- Oil accepts preview options for each open call. Make preview the default while
--- preserving an explicit choice from the caller.
-local function open_with_preview(open)
-  return function(dir, opts, cb)
-    if not opts or opts.preview == nil then
-      opts = vim.tbl_extend("keep", opts or {}, { preview = {} })
-    end
-    return open(dir, opts, cb)
-  end
-end
+			oil.open = open_with_preview(oil.open)
+			oil.open_float = open_with_preview(oil.open_float)
+		end,
+	},
 
-oil.open = open_with_preview(oil.open)
-oil.open_float = open_with_preview(oil.open_float)
-
-require("neo-tree").setup({
-  close_if_last_window = true,
-  popup_border_style = "rounded",
-  filesystem = {
-    filtered_items = {
-      visible = true,
-      hide_dotfiles = true,
-      hide_gitignored = true,
-    },
-  },
-  window = {
-    mappings = {
-      ["<CR>"] = "open",
-      ["o"] = "open",
-      ["s"] = "open_split",
-      ["v"] = "open_vsplit",
-      ["t"] = "open_tabnew",
-      ["a"] = "add",
-      ["d"] = "delete",
-      ["r"] = "rename",
-      ["y"] = "copy_to_clipboard",
-      ["x"] = "cut_to_clipboard",
-      ["p"] = "paste_from_clipboard",
-      ["h"] = "close_node",
-      ["l"] = "open",
-      ["H"] = "toggle_hidden",
-      ["R"] = "refresh",
-      ["?"] = "show_help",
-      ["q"] = "close_window",
-    },
-  },
-})
-
-require("which-key").setup({})
+	{
+		"nvim-neo-tree/neo-tree.nvim",
+		version = "3.*",
+		lazy = false,
+		dependencies = {
+			"nvim-lua/plenary.nvim",
+			"MunifTanjim/nui.nvim",
+			"nvim-tree/nvim-web-devicons",
+		},
+		config = function()
+			require("neo-tree").setup({
+				close_if_last_window = true,
+				popup_border_style = "rounded",
+				filesystem = {
+					filtered_items = {
+						visible = true,
+						hide_dotfiles = true,
+						hide_gitignored = true,
+					},
+				},
+				window = {
+					mappings = {
+						["<CR>"] = "open",
+						["o"] = "open",
+						["s"] = "open_split",
+						["v"] = "open_vsplit",
+						["t"] = "open_tabnew",
+						["a"] = "add",
+						["d"] = "delete",
+						["r"] = "rename",
+						["y"] = "copy_to_clipboard",
+						["x"] = "cut_to_clipboard",
+						["p"] = "paste_from_clipboard",
+						["h"] = "close_node",
+						["l"] = "open",
+						["H"] = "toggle_hidden",
+						["R"] = "refresh",
+						["?"] = "show_help",
+						["q"] = "close_window",
+					},
+				},
+			})
+		end,
+	},
+}

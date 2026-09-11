@@ -120,6 +120,6 @@ vim.api.nvim_create_autocmd("FileType", {
 
 vim.cmd("colorscheme catppuccin")
 
-require("plugins")
+require("config.lazy")
 require("lsp")
 set_transparent_background()

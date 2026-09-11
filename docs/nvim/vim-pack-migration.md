@@ -1,8 +1,13 @@
-# lazy.nvim → vim.pack 移行計画
+# lazy.nvim → vim.pack 移行計画（記録）
+
+> **結論 (2026-09-06): vim.pack 採用を撤回し、lazy.nvim に戻した。**
+>
+> この移行計画は 2026-08 に実装され一度 vim.pack へ移行したが、2026-09-06 に撤回して
+> lazy.nvim 管理に復帰した（`lua/config/lazy.lua` bootstrap、`lua/plugins/init.lua` の spec、
+> `lazy-lock.json`）。以下は当時の計画・調査メモであり、現在の設定とは一部異なる。
+> 現在の nvim 設定は `_config/nvim/` を参照。
 
 対象: `.config/nvim`（Neovim 0.12.4 / nix, `~/.config/nvim` はこのリポジトリへの symlink）
-
-実装前に方針を確認するためのメモ。実装はまだ行っていない。
 
 ## 現状
 
