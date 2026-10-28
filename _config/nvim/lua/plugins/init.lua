@@ -73,6 +73,7 @@ return {
 				"gomod",
 				"html",
 				"javascript",
+				"rust",
 				"typescript",
 				"tsx",
 			})

@@ -53,4 +53,5 @@ vim.lsp.enable({
   'pyright',
   'nil_ls',
   'gopls',
+  'rust_analyzer',
 })
