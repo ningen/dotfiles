@@ -75,11 +75,10 @@
                     exec sudo darwin-rebuild switch --flake .#ningen
                     ;;
                   Linux)
-                    if ! grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null && [ -z "''${WSL_INTEROP:-}" ]; then
-                      echo "switch must run on macOS or inside WSL" >&2
-                      exit 1
+                    if grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null || [ -n "''${WSL_INTEROP:-}" ]; then
+                      exec ${hm} switch --flake '.#ningen@wsl'
                     fi
-                    exec ${hm} switch --flake '.#ningen@wsl'
+                    exec sudo nixos-rebuild switch --flake ".#$(hostname)"
                     ;;
                   *)
                     echo "switch must run on macOS or inside WSL" >&2
@@ -117,6 +116,30 @@
             ./nix/packages/node-packages.nix
           ];
         };
+      };
+
+      nixosConfigurations."ningen-desktop" = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./nix/hosts/linux/hardware.nix
+          ./nix/hosts/linux/configuration.nix
+          inputs.home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.users.ningen.imports = [
+              ./nix/hosts/common/home.nix
+              ./nix/hosts/linux/home.nix
+              ./nix/packages/dev-tools.nix
+              ./nix/packages/language-servers.nix
+              ./nix/packages/formatters.nix
+              ./nix/packages/linters.nix
+              ./nix/packages/node-packages.nix
+            ];
+          }
+        ];
       };
 
       darwinConfigurations.ningen = nix-darwin.lib.darwinSystem {
