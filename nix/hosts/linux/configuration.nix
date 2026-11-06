@@ -153,6 +153,11 @@ in
     waybar
     hyprlock
     qt6Packages.fcitx5-configtool
+    discord
+    slack
+    google-chrome
+    bitwarden-desktop
+    emacs-pgtk
   ];
 
   security.pam.services.hyprlock = { };
