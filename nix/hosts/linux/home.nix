@@ -6,7 +6,7 @@
   home.sessionVariables = {
     EDITOR = "nvim";
     VISUAL = "nvim";
-    BROWSER = "chromium";
+    BROWSER = "google-chrome-stable";
   };
 
   # Linux 固有の追加パッケージはここへ。
