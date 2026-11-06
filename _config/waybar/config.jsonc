@@ -1,0 +1,46 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 34,
+  "spacing": 6,
+  "margin-top": 4,
+  "margin-left": 8,
+  "margin-right": 8,
+  "modules-left": ["hyprland/workspaces", "hyprland/window"],
+  "modules-center": ["clock"],
+  "modules-right": ["tray", "pulseaudio", "network", "cpu", "memory"],
+  "hyprland/workspaces": {
+    "format": "{id}",
+    "on-click": "activate"
+  },
+  "hyprland/window": {
+    "max-length": 60,
+    "separate-outputs": true
+  },
+  "clock": {
+    "format": "{:%m/%d %H:%M}",
+    "tooltip-format": "<tt>{calendar}</tt>"
+  },
+  "cpu": {
+    "format": " {usage}%",
+    "interval": 2
+  },
+  "memory": {
+    "format": " {percentage}%",
+    "interval": 5
+  },
+  "network": {
+    "format-wifi": " {essid}",
+    "format-ethernet": " {ifname}",
+    "format-disconnected": " offline",
+    "tooltip-format": "{ifname}: {ipaddr}/{cidr}"
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": " muted",
+    "format-icons": ["", "", ""]
+  },
+  "tray": {
+    "spacing": 8
+  }
+}

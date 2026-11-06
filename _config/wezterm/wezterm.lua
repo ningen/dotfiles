@@ -7,12 +7,14 @@ local config = {
 
 	-- Font settings
 	font = wezterm.font_with_fallback({
-		{ family = "JetBrains Mono", weight = "Medium" },
+		{ family = "JetBrainsMono Nerd Font", weight = "Medium" },
+		{ family = "UDEV Gothic NF", weight = "Regular" },
 		"Noto Color Emoji",
 	}),
 	font_size = 12.0,
 	line_height = 1.2,
 	harfbuzz_features = { "calt=1", "clig=1", "liga=1" }, -- Enable ligatures
+	use_ime = true,
 
 	-- Color scheme
 	color_scheme = "Tokyo Night",

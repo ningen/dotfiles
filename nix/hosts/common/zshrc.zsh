@@ -7,3 +7,4 @@ function ghq-fzf() {
 }
 zle -N ghq-fzf
 bindkey '^g' ghq-fzf
+bindkey -M viins '^R' history-incremental-search-backward

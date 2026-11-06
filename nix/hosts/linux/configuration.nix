@@ -4,6 +4,18 @@
   inputs,
   ...
 }:
+let
+  # SDDM のセッション一覧から uwsm 版を隠し、素の Hyprland だけにする
+  plainHyprlandSession =
+    (pkgs.runCommand "hyprland-session" { } ''
+      mkdir -p $out/share/wayland-sessions
+      ln -s ${config.programs.hyprland.package}/share/wayland-sessions/hyprland.desktop \
+        $out/share/wayland-sessions/hyprland.desktop
+    '')
+    // {
+      providedSessions = [ "hyprland" ];
+    };
+in
 {
   # --- Nix ---
   nix.settings = {
@@ -53,10 +65,15 @@
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
+    theme = "${pkgs.sddm-astronaut}/share/sddm/themes/sddm-astronaut-theme";
+    extraPackages = [ pkgs.sddm-astronaut ];
   };
+  services.displayManager.defaultSession = "hyprland";
+  services.displayManager.sessionPackages = pkgs.lib.mkForce [ plainHyprlandSession ];
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    withUWSM = true;
   };
   xdg.portal.enable = true;
   services.pipewire = {
@@ -65,6 +82,34 @@
     pulse.enable = true;
   };
   security.rtkit.enable = true;
+
+  # --- Japanese input (fcitx5 + Mozc) ---
+  i18n.inputMethod = {
+    enable = true;
+    type = "fcitx5";
+    fcitx5 = {
+      waylandFrontend = true;
+      addons = [ pkgs.fcitx5-mozc ];
+      settings.inputMethod = {
+        "Groups/0" = {
+          Name = "Default";
+          "Default Layout" = "us";
+          DefaultIM = "keyboard-us";
+        };
+        "Groups/0/Items/0" = {
+          Name = "keyboard-us";
+          Layout = "";
+        };
+        "Groups/0/Items/1" = {
+          Name = "mozc";
+          Layout = "";
+        };
+        "GroupOrder" = {
+          "0" = "Default";
+        };
+      };
+    };
+  };
 
   # --- Gaming ---
   programs.steam.enable = true;
@@ -76,6 +121,7 @@
   # --- Fonts ---
   fonts.packages = with pkgs; [
     nerd-fonts.jetbrains-mono
+    udev-gothic-nf
     noto-fonts-cjk-sans
     noto-fonts-cjk-serif
     noto-fonts-color-emoji
@@ -101,7 +147,15 @@
     vim
     wget
     curl
+    kitty
+    wezterm
+    rofi
+    waybar
+    hyprlock
+    qt6Packages.fcitx5-configtool
   ];
+
+  security.pam.services.hyprlock = { };
 
   system.stateVersion = "26.05";
 

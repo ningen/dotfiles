@@ -22,6 +22,12 @@ unix_only:
   - source: _config/yazi
     target: $CONFIG_DIR/yazi
     type: directory
+  - source: _config/hypr
+    target: $CONFIG_DIR/hypr
+    type: directory
+  - source: _config/waybar
+    target: $CONFIG_DIR/waybar
+    type: directory
   - source: _config/nix
     target: $CONFIG_DIR/nix
     type: directory
@@ -73,14 +79,14 @@ unix_only:
   - source: _config/kitty
     target: $CONFIG_DIR/kitty
     type: directory
+  - source: _config/wezterm
+    target: $CONFIG_DIR/wezterm
+    type: directory
   - source: _config/discord/settings.json
     target: $CONFIG_DIR/discord/settings.json
     type: file
 
-macos_only:
-  - source: _config/wezterm
-    target: $CONFIG_DIR/wezterm
-    type: directory
+macos_only: []
 
 wsl_only: []
 
