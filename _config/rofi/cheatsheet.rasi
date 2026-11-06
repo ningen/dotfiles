@@ -1,0 +1,105 @@
+* {
+    bg:          #1a1b26;
+    bg-alt:      #24283b;
+    fg:          #c0caf5;
+    muted:       #565f89;
+    blue:        #7aa2f7;
+    cyan:        #7dcfff;
+    purple:      #bb9af7;
+    selection:   #292e42;
+    font:        "UDEV Gothic NF 13";
+}
+
+window {
+    width:            780px;
+    background-color: @bg;
+    border:           2px;
+    border-color:     rgba(122, 162, 247, 55%);
+    border-radius:    18px;
+    padding:          20px;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    background-color: @bg;
+    spacing:          10px;
+    children:         [ inputbar, message, listview ];
+}
+
+inputbar {
+    background-color: @bg;
+    spacing:          10px;
+    padding:          2px 4px 10px 4px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    background-color: transparent;
+    text-color:       @purple;
+    font:             "UDEV Gothic NF Bold 12";
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @fg;
+    placeholder:      "Filter keybinds...";
+    placeholder-color: @muted;
+    cursor-color:     @blue;
+    cursor-width:     2px;
+}
+
+message {
+    background-color: @bg;
+    padding:          0px 6px 2px 6px;
+    text-color:       @muted;
+    font:             "UDEV Gothic NF 11";
+}
+
+listview {
+    background-color: @bg;
+    columns:          1;
+    lines:            16;
+    fixed-height:     false;
+    dynamic:          true;
+    spacing:          2px;
+    scrollbar:        false;
+    padding:          0;
+}
+
+element {
+    background-color: transparent;
+    padding:          8px 10px;
+    border-radius:    10px;
+    spacing:          0;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element selected.normal {
+    background-color: @selection;
+    text-color:       @fg;
+}
+
+element selected.alternate {
+    background-color: @selection;
+    text-color:       @fg;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       @fg;
+    vertical-align:   0.5;
+}
+
+textbox {
+    background-color: transparent;
+}
