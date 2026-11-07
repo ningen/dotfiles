@@ -137,6 +137,3 @@ nix run .#switch
 nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
 ```
 
-## ドキュメント
-
-- [Secure Boot (lanzaboote) + Windows デュアルブート](docs/nix/secure-boot.md)
