@@ -1,7 +1,6 @@
 {
   config,
   pkgs,
-  inputs,
   ...
 }:
 let
@@ -29,7 +28,6 @@ in
     ];
   };
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.overlays = [ inputs.neovim-nightly-overlay.overlays.default ];
 
   # --- Boot ---
   boot.loader.systemd-boot = {
