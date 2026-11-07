@@ -21,6 +21,7 @@
 /network-security.data
 /package-quickstart.el
 /projectile-bookmarks.eld
+/projectile-frecency.eld
 /.org-id-locations
 
 # Keep machine-local Customize output out of init.el
