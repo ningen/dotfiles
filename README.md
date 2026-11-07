@@ -47,6 +47,7 @@ dotfiles/
 - **home-manager**: ユーザー環境管理
 - **nix-darwin**: macOS向けNix設定管理
 - **hunk**: hunkdiff CLI
+- **stylix**: 配色・フォント・カーソルの一元管理
 - **flake-utils**: Flake開発ユーティリティ
 
 ### 開発環境スタック
@@ -135,3 +136,7 @@ nix run .#switch
 # その他のLinuxホストに適用
 nix run nixpkgs#home-manager -- switch --flake .#ningen@$HOSTNAME
 ```
+
+## ドキュメント
+
+- [Secure Boot (lanzaboote) + Windows デュアルブート](docs/nix/secure-boot.md)
