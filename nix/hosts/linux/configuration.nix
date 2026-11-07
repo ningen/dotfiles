@@ -76,6 +76,28 @@ in
     withUWSM = true;
   };
   xdg.portal.enable = true;
+
+  # --- AirPlay receiver (UxPlay) for iPhone screen mirroring ---
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+    publish = {
+      enable = true;
+      userServices = true;
+    };
+  };
+  networking.firewall.allowedTCPPorts = [
+    7000
+    7001
+    7100
+  ];
+  networking.firewall.allowedUDPPorts = [
+    6000
+    6001
+    7011
+  ];
+
   services.pipewire = {
     enable = true;
     alsa.enable = true;
@@ -158,6 +180,7 @@ in
     google-chrome
     bitwarden-desktop
     emacs-pgtk
+    uxplay
   ];
 
   security.pam.services.hyprlock = { };
