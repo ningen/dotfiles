@@ -1,5 +1,6 @@
 {
   config,
+  lib,
   pkgs,
   ...
 }:
@@ -36,11 +37,13 @@ in
   nixpkgs.config.allowUnfree = true;
 
   # --- Boot ---
-  boot.loader.systemd-boot = {
-    enable = true;
-    configurationLimit = 10;
-  };
+  boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.lanzaboote = {
+    enable = true;
+    pkiBundle = "/var/lib/sbctl";
+    configurationLimit = 5;
+  };
 
   # --- Locale ---
   time.timeZone = "Asia/Tokyo";
@@ -184,6 +187,7 @@ in
     vim
     wget
     curl
+    sbctl
     kitty
     wezterm
     rofi
@@ -210,15 +214,4 @@ in
   security.pam.services.hyprlock = { };
 
   system.stateVersion = "26.05";
-
-  # --- Secure Boot (LoL / Vanguard が要求) ---
-  # lanzaboote を入れるときに有効化する。flake に input 追加が必要:
-  #
-  #   inputs.lanzaboote.url = "github:nix-community/lanzaboote/v1.0.0";
-  #
-  # boot.lanzaboote = {
-  #   enable = true;
-  #   pkiBundle = "/var/lib/sbctl";
-  # };
-  # boot.loader.systemd-boot.enable = lib.mkForce false;
 }

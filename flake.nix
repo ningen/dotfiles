@@ -18,6 +18,10 @@
       url = "github:danth/stylix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    lanzaboote = {
+      url = "github:nix-community/lanzaboote/v1.2.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -29,6 +33,7 @@
       nix-darwin,
       hunk,
       stylix,
+      lanzaboote,
     }@inputs:
     let
       supportedSystems = [
@@ -128,6 +133,7 @@
         specialArgs = { inherit inputs; };
         modules = [
           stylix.nixosModules.stylix
+          lanzaboote.nixosModules.lanzaboote
           ./nix/hosts/common/stylix.nix
           ./nix/hosts/linux/hardware.nix
           ./nix/hosts/linux/configuration.nix
