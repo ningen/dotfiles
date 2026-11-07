@@ -10,7 +10,7 @@ Windows: 別ディスク `sda` にインストール済み
 - BitLocker / デバイス暗号化: OFF
 - Linux: `nvme0n1p1` (ESP, `/boot`) + `nvme0n1p2` (ext4, `/`)
 - Windows: `sda1` (ESP), `sda2` (MSR), `sda3` (C:), `sda4` (Recovery)
-- EFI変数上に Windows Boot Manager が見当たらないため再作成が必要
+- Windows Boot Manager は `sda1` を指す EFI エントリとして再作成済み
 - Linux ESP の空き: 約967MB
 
 ## 方針
@@ -21,23 +21,30 @@ Windows: 別ディスク `sda` にインストール済み
 - Microsoft 鍵は残す (`sbctl enroll-keys --microsoft`)。Windows は Microsoft 署名のまま起動できる
 - 1つのブートメニューに NixOS と Windows をまとめたい場合は Limine を検討する（この手順では扱わない）
 
+## 重要な順序
+
+**必ず lanzaboote を導入して署名済みの UKI を用意してから、鍵を enroll する。**
+
+Secure Boot が Setup Mode で「Enabled」になっている場合、鍵を enroll した時点で
+User Mode に移行し、次回起動から Secure Boot が有効になる。このとき署名済みの
+ブートローダー/UKI が無いと NixOS が起動できない。鍵作成 → lanzaboote 導入 →
+署名確認 → Setup Mode → enroll の順で進める。
+
 ## 手順
 
 ### 0. 前提確認
 
-Secure Boot が無効な状態で、Windows が起動できることを確認しておく。
-
 ```bash
-# 現在の Secure Boot 状態
 bootctl status | sed -n '1,12p'
 ```
+
+Secure Boot が `disabled`、BitLocker が OFF であることを確認する。
 
 ### 1. Windows Boot Manager エントリの再作成
 
 Secure Boot が無効なうちに、Windows の EFI エントリを作成する。
 
 ```bash
-# sda1 に Windows のブートファイルがあるか確認
 sudo mkdir -p /mnt/winesp
 sudo mount -o ro /dev/sda1 /mnt/winesp
 ls -l /mnt/winesp/EFI/Microsoft/Boot/bootmgfw.efi
@@ -52,13 +59,11 @@ nix shell nixpkgs#efibootmgr -c sudo efibootmgr --create \
   --label "Windows Boot Manager" \
   --loader '\EFI\Microsoft\Boot\bootmgfw.efi'
 
-# 確認
 nix shell nixpkgs#efibootmgr -c sudo efibootmgr -v
 ```
 
 再起動し、F11/F12 または BIOS の Boot Override から Windows が起動することを確認する。
-
-`bootmgfw.efi` が無い場合は、Windows のインストールUSBからブートファイルを修復する必要がある。
+この手順は完了済み。
 
 ### 2. sbctl の鍵を作成
 
@@ -69,7 +74,43 @@ nix shell nixpkgs#sbctl -c sudo sbctl status
 
 鍵は `/var/lib/sbctl` に作成される。
 
-### 3. BIOS で Setup Mode に入る
+### 3. lanzaboote を導入して署名済み UKI を用意
+
+`flake.nix`:
+
+```nix
+lanzaboote = {
+  url = "github:nix-community/lanzaboote/v1.2.0";
+  inputs.nixpkgs.follows = "nixpkgs";
+};
+```
+
+`nix/hosts/linux/configuration.nix`:
+
+```nix
+boot.loader.systemd-boot.enable = lib.mkForce false;
+boot.loader.efi.canTouchEfiVariables = true;
+boot.lanzaboote = {
+  enable = true;
+  pkiBundle = "/var/lib/sbctl";
+  configurationLimit = 5;
+};
+environment.systemPackages = [ pkgs.sbctl ];
+```
+
+ビルドと適用:
+
+```bash
+nix run .#switch
+
+# 署名確認
+sudo sbctl verify
+```
+
+`/boot/EFI/Linux/*.efi` と lanzaboote のブートローダーが署名済みになっていることを確認する。
+この時点では Secure Boot はまだ無効/Setup Mode なので、未署名でも起動できる。
+
+### 4. BIOS で Setup Mode に入る
 
 BIOS は Del キー、または Linux から以下で直接開ける。
 
@@ -92,62 +133,53 @@ BIOS での操作:
 - `Reset to Setup Mode` が無く `Delete PK` だけなら `Delete PK` を使う
 - `Clear All Secure Boot Keys` しか選択肢が無い場合は、実行せずに相談する
 
-### 4. 鍵を登録する
+### 5. 鍵を登録する
 
-NixOS に戻り、Setup Mode になっていることを確認してから登録する。
+Setup Mode になっていることを確認する。
 
 ```bash
-nix shell nixpkgs#sbctl -c sudo sbctl status
+sudo sbctl status
 # Setup Mode: Enabled を確認
-
-nix shell nixpkgs#sbctl -c sudo sbctl enroll-keys --microsoft
 ```
 
-`--microsoft` により、Windows Boot Manager と Microsoft 署名の Option ROM がそのまま起動できる。
-
-### 5. lanzaboote を有効化する
-
-`flake.nix` の inputs に追加:
-
-```nix
-lanzaboote = {
-  url = "github:nix-community/lanzaboote/v1.0.0";
-  inputs.nixpkgs.follows = "nixpkgs";
-};
-```
-
-`nix/hosts/linux/configuration.nix`:
-
-```nix
-boot.loader.systemd-boot = {
-  enable = lib.mkForce false;
-  configurationLimit = 5;
-};
-boot.loader.efi.canTouchEfiVariables = true;
-boot.lanzaboote = {
-  enable = true;
-  pkiBundle = "/var/lib/sbctl";
-};
-environment.systemPackages = [ pkgs.sbctl ];
-```
-
-ESP の空きを考慮して世代数は 5 程度に抑える。
-
-### 6. ビルド・署名・Secure Boot 有効化
+`File is immutable` が出た場合:
 
 ```bash
-nix run .#switch
-sudo sbctl verify
-bootctl status | sed -n '1,12p'
+sudo chattr -i /sys/firmware/efi/efivars/KEK-* /sys/firmware/efi/efivars/db-*
 ```
 
-BIOS で Secure Boot が有効（User Mode）になっていることを確認する。必要なら BIOS で Secure Boot を Enabled に戻す。
+`chattr` が無い場合:
+
+```bash
+nix shell nixpkgs#e2fsprogs -c sudo chattr -i \
+  /sys/firmware/efi/efivars/KEK-* /sys/firmware/efi/efivars/db-*
+```
+
+鍵を登録する:
+
+```bash
+sudo sbctl enroll-keys --microsoft
+sudo sbctl status
+```
+
+`Setup Mode: Disabled` になり、Microsoft の鍵も登録されていればOK。
+この時点で Secure Boot が有効化される場合があるが、lanzaboote は署名済みなので起動できる。
+
+### 6. Secure Boot 有効化後の確認
+
+```bash
+bootctl status | sed -n '1,12p'
+sudo sbctl verify
+```
 
 期待する状態:
 
 ```text
 Secure Boot: enabled (user)
 ```
+
+Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にして再起動する。
+起動できれば、以降は署名済み lanzaboote 経由で NixOS が起動する。
 
 ### 7. Windows の起動確認
 
@@ -159,20 +191,21 @@ Secure Boot: enabled (user)
 
 ## トラブル時
 
-- NixOS が起動しない: 電源投入時に systemd-boot の前世代を選ぶ。Secure Boot 自体が原因なら BIOS で一度 Secure Boot を無効化する
+- NixOS が起動しない: BIOS で Secure Boot を一時的に無効化し、systemd-boot の前世代または lanzaboote の前世代を選ぶ
 - 署名確認で失敗する: `sudo sbctl verify` と `sudo sbctl status` を確認し、再度 `nix run .#switch`
+- `File is immutable` が別のファイルでも出る: 該当する `/sys/firmware/efi/efivars/` 下のファイルに `chattr -i` を実行
 - Windows が起動しない: BIOS の Boot Override に Windows Boot Manager があるか確認。無ければ手順1をやり直す
 - Windows の BitLocker を後から有効化した場合: 次回キー変更前に必ず保護を一時停止する
 
 ## チェックリスト
 
-- [ ] Windows Boot Manager エントリを作成
-- [ ] F11/F12 から Windows が起動
-- [ ] `sudo sbctl create-keys`
-- [ ] BIOS で Setup Mode に変更
-- [ ] `sudo sbctl enroll-keys --microsoft`
+- [x] Windows Boot Manager エントリを作成
+- [x] F11/F12 から Windows が起動
+- [x] `sudo sbctl create-keys`
 - [ ] lanzaboote を有効化して switch
-- [ ] `sudo sbctl verify`
-- [ ] BIOS で Secure Boot 有効化
+- [ ] `sudo sbctl verify` で署名確認
+- [ ] BIOS で Setup Mode に変更
+- [ ] `chattr -i` で immutable を解除
+- [ ] `sudo sbctl enroll-keys --microsoft`
 - [ ] `bootctl status` が `Secure Boot: enabled (user)`
 - [ ] NixOS と Windows の両方が起動
