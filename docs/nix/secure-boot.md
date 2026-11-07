@@ -205,7 +205,12 @@ Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にし�
   sudo sbctl list-enrolled-keys
   ```
   PK に immutable (`i`) が付いていれば `sudo chattr -i /sys/firmware/efi/efivars/PK-*` して再実行。
-  それでも直らない場合は BIOS で Secure Boot Mode を **Custom**、Factory Key Provision を **Disabled** にしてから、もう一度 Setup Mode → enroll をやり直す。
+  それでも直らない場合は BIOS で Secure Boot Mode を **Custom**、Factory Key Provision を **Disabled**（項目があれば）にしてから、もう一度 Setup Mode → enroll をやり直す。
+- ASUS PRIME Z690-P D4 では `Factory Key Provision` という項目は無い。
+  Boot → Secure Boot → OS Type を **Windows UEFI mode** にし、Secure Boot Mode = **Custom**、
+  Key Management → **Clear Secure Boot keys** を使う。**Install Default Secure Boot keys は押さない**（ASUS鍵に戻る）。
+  OS Type の変更で ASUS のファクトリー鍵が戻ることがあるため、OS Type を先に確定 → Clear → enroll の順にする。
+  この操作で dbx も消える場合がある。
 - Secure Boot 有効化時に violation が出る:
   `sudo sbctl list-enrolled-keys` で PK が `ASUSTeK MotherBoard PK Certificate` などになっていたら、
   BIOS がファクトリー鍵に戻している。`Factory Key Provision = Disabled` を確認し、
