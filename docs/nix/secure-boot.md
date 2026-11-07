@@ -197,7 +197,8 @@ Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にし�
   旧 systemd-boot の残骸で、lanzaboote の起動には使われない。必要なら削除してよい。
   ただし `EFI/BOOT/BOOTX64.EFI` と `EFI/Linux/*.efi` は削除しない。
 - `enroll-keys` 後も `Setup Mode: Enabled` のまま:
-  Platform Key (PK) が登録されていない。以下を確認する。
+  Platform Key (PK) が登録されていない、または反映が遅れている。まず再起動して `sudo sbctl status` を再確認する。
+  それでも Enabled のままなら以下を確認する。
   ```bash
   sudo ls -l /sys/firmware/efi/efivars/PK-*
   sudo lsattr /sys/firmware/efi/efivars/PK-* 2>/dev/null
