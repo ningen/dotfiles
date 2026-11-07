@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 (defun my/wsl-kernel-p ()
   "Return non-nil when the Linux kernel appears to be running under WSL."
   (and (file-readable-p "/proc/sys/kernel/osrelease")
@@ -18,6 +20,11 @@
 ;; バックアップファイルの自動作成などを無効化
 (setq make-backup-files nil)
 (setq auto-save-default nil)
+
+(require 'server)
+(when (and (not noninteractive)
+           (not (server-running-p)))
+  (server-start))
 
 ;; 行番号を表示する
 (global-display-line-numbers-mode 1)
@@ -103,12 +110,17 @@
            (doom-themes-enable-italic . t)
            (doom-themes-treemacs-theme . "doom-atom"))
   :config
-  (load-theme 'doom-solarized-light t)
-  ;; 各種設定
   (doom-themes-visual-bell-config)
   (doom-themes-neotree-config)
   (doom-themes-treemacs-config)
   (doom-themes-org-config))
+
+(leaf catppuccin-theme
+  :ensure t
+  :init
+  (setq catppuccin-flavor 'mocha)
+  :config
+  (load-theme 'catppuccin t))
 
 (setq org-capture-templates
       '(("m" "Memo" entry
@@ -368,8 +380,6 @@
   :ensure t
   :init
   (projectile-mode 1)
-  :bind-keymap
-  ("C-c p" . projectile-command-map)
   :config
   (defun my/projectile-add-ghq-projects ()
     "Synchonize ghq repositories with Projectile."
