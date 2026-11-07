@@ -96,17 +96,6 @@ macos_only: []
 
 wsl_only: []
 
-windows_only:
-  - source: _config/wezterm
-    target: $CONFIG_DIR/wezterm
-    type: directory
-  - source: windows/glazewm/config.yaml
-    target: $HOME/.glzr/glazewm/config.yaml
-    type: file
-  - source: windows/powershell/Microsoft.PowerShell_profile.ps1
-    target: $HOME/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
-    type: file
-
 vscode:
   - source: _config/vscode/settings.json
     target: $VSCODE_CONFIG_DIR/settings.json

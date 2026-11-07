@@ -153,35 +153,4 @@ wezterm.on("format-window-title", function(tab, pane, tabs, panes, config)
 	return zoomed .. index .. tab.active_pane.title
 end)
 
--- Windows 固有の設定
-if wezterm.target_triple == "x86_64-pc-windows-msvc" or wezterm.target_triple == "aarch64-pc-windows-msvc" then
-	local distro = os.getenv("DOTFILES_WSL_DISTRO")
-	local user = os.getenv("DOTFILES_WSL_USER")
-	if not distro or distro == "" or not user or user == "" then
-		error("DOTFILES_WSL_DISTRO and DOTFILES_WSL_USER must be set by setup-dotfiles.ps1")
-	end
-	local wsl_args = { "wsl.exe", "-d", distro, "-u", user, "--cd", "~" }
-	config.default_prog = wsl_args
-
-	-- 起動プロファイル一覧
-	config.launch_menu = {
-		{
-			label = distro .. " (" .. user .. ")",
-			args = wsl_args,
-		},
-		{
-			label = "PowerShell",
-			args = { "pwsh.exe", "-NoLogo" },
-		},
-		{
-			label = "Command Prompt",
-			args = { "cmd.exe" },
-		},
-		{
-			label = "Git Bash",
-			args = { "C:\\Program Files\\Git\\bin\\bash.exe", "-l" },
-		},
-	}
-end
-
 return config

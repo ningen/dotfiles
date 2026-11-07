@@ -4,7 +4,7 @@
 
 ## リポジトリ概要
 
-このリポジトリは、Nix Flakes と Home Manager を使用して macOS と Windows+WSL 間で宣言的で再現可能な環境設定を管理する個人用dotfilesリポジトリです。
+このリポジトリは、Nix Flakes と Home Manager を使用して macOS・NixOS・WSL 間で宣言的で再現可能な環境設定を管理する個人用dotfilesリポジトリです。
 
 ## 主要コマンド
 
@@ -13,7 +13,7 @@
 # Flakeの依存関係を更新（ロック更新のみ）
 nix run .#update-lock
 
-# macOSまたはWSLの設定を適用（実行環境を自動判定）
+# macOS・NixOS・WSLの設定を適用（実行環境を自動判定）
 nix run .#switch
 
 # Home Manager設定を手動で適用（Linux全般）
@@ -46,18 +46,19 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 
 ### Flake構造
 - **flake.nix**: 入力、出力、システム設定を定義するメイン設定ファイル
-- **マルチプラットフォーム対応**: aarch64-darwin (Apple Silicon) と x86_64-linux (WSL)
+- **マルチプラットフォーム対応**: aarch64-darwin (Apple Silicon) と x86_64-linux (NixOS/WSL)
 - **モジュラー設計**: 共通設定、ホスト固有設定、パッケージコレクションを分離
 
 ### 主要設定モジュール
 - **nix/hosts/common/home.nix**: starship、direnv、zshを含むHome Managerベース設定
 - **nix/packages/**: 機能別に整理されたパッケージコレクション（dev-tools、language-servers、formatters、node-packages）
-- **nix/hosts/wsl/**: クリップボード連携・WSL open bridgeを含むWSL固有設定
+- **nix/hosts/wsl/**: フォントとエディタ設定を含むWSL固有設定
 - **nix/hosts/ningen-mba/**: nix-darwinを使用したmacOS固有設定
 
 ### ホスト設定
 - **ningen@ningen-mba.local**: macOS Apple Silicon開発環境
-- **ningen@wsl**: Windows+WSL環境用Home Manager設定（共通のswitchで適用）
+- **ningen@wsl**: WSL環境用Home Manager設定（共通のswitchで適用）
+- **ningen-desktop**: NixOSデスクトップ環境（Hyprland + NVIDIA）
 
 ### 開発スタック
 - **エディタ**: Neovim with 言語サーバー（TypeScript、Python/Pyright、Lua、Nix）
@@ -67,7 +68,8 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 
 ### プラットフォーム固有機能
 - **macOS**: システムデフォルト統合、Homebrewアプリ管理、nix-darwin設定
-- **Windows+WSL**: Windows側のsymlink配布は `setup-dotfiles.ps1`、WSL側は `nix/hosts/wsl/home.nix`（クリップボード連携・WSL open bridge含む）
+- **NixOS**: Hyprland + Waybar + Quickshell、NVIDIA、Steam、fcitx5
+- **WSL**: `nix/hosts/wsl/home.nix`（フォント・エディタ設定）
 
 ## Node.js パッケージ管理
 
@@ -121,7 +123,6 @@ Node.jsパッケージを更新するには：
 
 - **docs/nix/node-packages.md**: Node.js CLIパッケージ管理のガイド
 - **docs/nix/nix-darwin.md**: nix-darwinの詳細ガイド（macOS特有設定、Homebrew統合、システム管理）
-- **docs/windows-wsl.md**: Windows+WSL環境のセットアップガイド
 
 ## Web検索について
 

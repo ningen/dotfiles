@@ -158,60 +158,8 @@
 (leaf org-download
   :doc "drag and drop image .org support"
   :ensure t
-  :preface
-  (defun my/org-download-save-wsl-clipboard (output-file)
-    "Save the Windows clipboard image to OUTPUT-FILE."
-    (let ((helper (expand-file-name "~/.local/bin/win-paste-image"))
-          (output-buffer (get-buffer-create "*win-paste-image*")))
-      (unless (file-executable-p helper)
-        (user-error "%s is not available; apply the WSL Home Manager configuration" helper))
-      (with-current-buffer output-buffer
-        (erase-buffer))
-      (unless (zerop (call-process helper nil output-buffer nil output-file))
-        (user-error "Failed to read the Windows clipboard: %s"
-                    (string-trim
-                     (with-current-buffer output-buffer
-                       (buffer-string)))))))
-
-  (defun my/org-download-wsl-clipboard (&optional basename)
-    "Insert a Windows clipboard image into the current Org buffer."
-    (interactive)
-    (require 'org-download)
-    (require 'org-id)
-    (let ((org-download-screenshot-method #'my/org-download-save-wsl-clipboard))
-      (org-id-get-create)
-      (org-download-screenshot basename)))
-
-  (defun my/org-download-clipboard (&optional basename)
-    "Insert a clipboard image using the platform-appropriate backend."
-    (interactive)
-    (if (eq (my/os) 'wsl)
-        (my/org-download-wsl-clipboard basename)
-      (org-download-clipboard basename)))
-
-  (defun my/org-download-screenshot-backend ()
-    "Return the screenshot backend available on the current platform."
-    (pcase (my/os)
-      ('wsl #'my/org-download-save-wsl-clipboard)
-      ('macos "screencapture -i %s")
-      ('linux
-       (cond
-        ((and (executable-find "grim") (executable-find "slurp"))
-         "grim -g \"$(slurp)\" %s")
-        ((executable-find "spectacle") "spectacle -br -o %s")
-        ((executable-find "gnome-screenshot") "gnome-screenshot -a -f %s")))
-      (_ nil)))
-  :bind
-  (:org-mode-map
-   ("C-M-y" . my/org-download-clipboard))
   :custom
   ((org-download-timestamp . "%Y%m%d_%H%M%S_"))
-  :commands ;; TODO: leaf 確認して理解する、一旦の理解としては、コマンドが実行されたときにload する
-  (org-download-screenshot my/org-download-clipboard my/org-download-wsl-clipboard)
-  :config
-  (let ((backend (my/org-download-screenshot-backend)))
-    (when backend
-      (setq org-download-screenshot-method backend)))
   :hook
   (org-mode-hook
    . (lambda ()
