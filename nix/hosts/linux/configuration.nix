@@ -171,6 +171,7 @@ in
     wezterm
     rofi
     waybar
+    quickshell
     hyprlock
     qt6Packages.fcitx5-configtool
     discord

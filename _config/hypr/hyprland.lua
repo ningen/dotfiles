@@ -45,6 +45,7 @@ local menu        = "rofi -show drun"
 hl.on("hyprland.start", function ()
   hl.exec_cmd("fcitx5 -d")
   hl.exec_cmd("waybar")
+  hl.exec_cmd("qs -c audio -n")
   hl.exec_cmd("systemctl --user start nixos-fake-graphical-session.target")
 end)
 
@@ -362,6 +363,15 @@ hl.layer_rule({
     blur        = true,
     dim_around  = true,
     no_anim     = true,
+})
+
+hl.layer_rule({
+    name  = "quickshell-audio-blur",
+    match = { namespace = "quickshell-audio" },
+
+    blur         = true,
+    ignore_alpha = 0.5,
+    no_anim      = true,
 })
 
 -- Hyprland-run windowrule

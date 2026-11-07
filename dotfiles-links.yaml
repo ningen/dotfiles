@@ -28,6 +28,9 @@ unix_only:
   - source: _config/waybar
     target: $CONFIG_DIR/waybar
     type: directory
+  - source: _config/quickshell
+    target: $CONFIG_DIR/quickshell
+    type: directory
   - source: _config/rofi
     target: $CONFIG_DIR/rofi
     type: directory
