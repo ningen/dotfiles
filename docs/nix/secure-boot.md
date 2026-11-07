@@ -193,6 +193,9 @@ Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にし�
 
 - NixOS が起動しない: BIOS で Secure Boot を一時的に無効化し、systemd-boot の前世代または lanzaboote の前世代を選ぶ
 - 署名確認で失敗する: `sudo sbctl verify` と `sudo sbctl status` を確認し、再度 `nix run .#switch`
+- `sbctl verify` で `/boot/EFI/nixos/kernel-*.efi` や `systemd-boot-fallbackx64.efi` が未署名と出る:
+  旧 systemd-boot の残骸で、lanzaboote の起動には使われない。必要なら削除してよい。
+  ただし `EFI/BOOT/BOOTX64.EFI` と `EFI/Linux/*.efi` は削除しない。
 - `File is immutable` が別のファイルでも出る: 該当する `/sys/firmware/efi/efivars/` 下のファイルに `chattr -i` を実行
 - Windows が起動しない: BIOS の Boot Override に Windows Boot Manager があるか確認。無ければ手順1をやり直す
 - Windows の BitLocker を後から有効化した場合: 次回キー変更前に必ず保護を一時停止する
