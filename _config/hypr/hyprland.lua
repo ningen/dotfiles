@@ -46,7 +46,6 @@ hl.on("hyprland.start", function ()
   hl.exec_cmd("fcitx5 -d")
   hl.exec_cmd("waybar")
   hl.exec_cmd("qs -c audio -n")
-  hl.exec_cmd("systemctl --user start nixos-fake-graphical-session.target")
 end)
 
 
@@ -92,11 +91,6 @@ hl.config({
 
         border_size = 2,
 
-        col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
-            inactive_border = "rgba(595959aa)",
-        },
-
         -- Set to true to enable resizing windows by clicking and dragging on borders and gaps
         resize_on_border = false,
 
@@ -118,7 +112,6 @@ hl.config({
             enabled      = true,
             range        = 4,
             render_power = 3,
-            color        = 0xee1a1a1a,
         },
 
         blur = {
@@ -271,6 +264,11 @@ hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }), { descrip
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd(menu), { description = "Launch: app launcher" })
 hl.bind(mainMod .. " + D", hl.dsp.exec_cmd(menu), { description = "Launch: app launcher (alias)" })
 hl.bind(mainMod .. " + H", hl.dsp.exec_cmd("~/.config/hypr/scripts/cheatsheet.sh"), { description = "Help: keybind cheat sheet" })
+hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh"), { description = "Clipboard: history" })
+hl.bind("Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh area"), { description = "Screenshot: area" })
+hl.bind(mainMod .. " + Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh output"), { description = "Screenshot: output" })
+hl.bind(mainMod .. " + SHIFT + Print", hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh screen"), { description = "Screenshot: screen" })
+hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Color: pick" })
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Window: toggle pseudo tile" })
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "Window: toggle split (dwindle)" })    -- dwindle only
 

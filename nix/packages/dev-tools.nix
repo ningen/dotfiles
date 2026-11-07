@@ -41,6 +41,7 @@
       pandoc
       sbcl
       herdr
+      nh
       google-cloud-sdk
       opencode
     ]

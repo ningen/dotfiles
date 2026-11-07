@@ -27,6 +27,12 @@ in
       "ningen"
     ];
   };
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
+  nix.optimise.automatic = true;
   nixpkgs.config.allowUnfree = true;
 
   # --- Boot ---
@@ -53,12 +59,22 @@ in
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
-    open = false;
+    open = true;
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
   boot.kernelParams = [ "nvidia-drm.modeset=1" ];
 
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    ELECTRON_OZONE_PLATFORM_HINT = "auto";
+    LIBVA_DRIVER_NAME = "nvidia";
+    GBM_BACKEND = "nvidia-drm";
+    __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+    NVD_BACKEND = "direct";
+  };
+
   # --- Desktop ---
+  programs.dconf.enable = true;
   services.xserver.enable = true;
   services.displayManager.sddm = {
     enable = true;
@@ -133,6 +149,7 @@ in
 
   # --- Gaming ---
   programs.steam.enable = true;
+  programs.steam.gamescopeSession.enable = true;
   programs.gamemode.enable = true;
 
   # --- Memory ---
@@ -174,12 +191,20 @@ in
     quickshell
     hyprlock
     qt6Packages.fcitx5-configtool
+    wl-clipboard
+    cliphist
+    grimblast
+    hyprpicker
+    libnotify
     discord
     slack
     google-chrome
     bitwarden-desktop
     emacs-pgtk
     uxplay
+    mangohud
+    goverlay
+    nvtopPackages.nvidia
   ];
 
   security.pam.services.hyprlock = { };
