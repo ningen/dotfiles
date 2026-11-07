@@ -206,6 +206,12 @@ Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にし�
   ```
   PK に immutable (`i`) が付いていれば `sudo chattr -i /sys/firmware/efi/efivars/PK-*` して再実行。
   それでも直らない場合は BIOS で Secure Boot Mode を **Custom**、Factory Key Provision を **Disabled** にしてから、もう一度 Setup Mode → enroll をやり直す。
+- Secure Boot 有効化時に violation が出る:
+  `sudo sbctl list-enrolled-keys` で PK が `ASUSTeK MotherBoard PK Certificate` などになっていたら、
+  BIOS がファクトリー鍵に戻している。`Factory Key Provision = Disabled` を確認し、
+  OS Type を **Windows UEFI mode** に変更した後に Delete PK → 再起動 → `sbctl enroll-keys --microsoft` をやり直す。
+  OS Type の変更自体が鍵を戻すことがあるため、OS Type を先に確定させてから鍵を入れる。
+- `Setup Mode: Disabled` でも PK が `ASUSTeK...` なら成功ではない。PK が `Platform Key`、DB に `Database Key` が入っていることを確認する。
 - `File is immutable` が別のファイルでも出る: 該当する `/sys/firmware/efi/efivars/` 下のファイルに `chattr -i` を実行
 - Windows が起動しない: BIOS の Boot Override に Windows Boot Manager があるか確認。無ければ手順1をやり直す
 - Windows の BitLocker を後から有効化した場合: 次回キー変更前に必ず保護を一時停止する
