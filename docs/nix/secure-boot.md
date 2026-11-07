@@ -196,6 +196,15 @@ Secure Boot が無効のままなら、BIOS で Secure Boot を Enabled にし�
 - `sbctl verify` で `/boot/EFI/nixos/kernel-*.efi` や `systemd-boot-fallbackx64.efi` が未署名と出る:
   旧 systemd-boot の残骸で、lanzaboote の起動には使われない。必要なら削除してよい。
   ただし `EFI/BOOT/BOOTX64.EFI` と `EFI/Linux/*.efi` は削除しない。
+- `enroll-keys` 後も `Setup Mode: Enabled` のまま:
+  Platform Key (PK) が登録されていない。以下を確認する。
+  ```bash
+  sudo ls -l /sys/firmware/efi/efivars/PK-*
+  sudo lsattr /sys/firmware/efi/efivars/PK-* 2>/dev/null
+  sudo sbctl list-enrolled-keys
+  ```
+  PK に immutable (`i`) が付いていれば `sudo chattr -i /sys/firmware/efi/efivars/PK-*` して再実行。
+  それでも直らない場合は BIOS で Secure Boot Mode を **Custom**、Factory Key Provision を **Disabled** にしてから、もう一度 Setup Mode → enroll をやり直す。
 - `File is immutable` が別のファイルでも出る: 該当する `/sys/firmware/efi/efivars/` 下のファイルに `chattr -i` を実行
 - Windows が起動しない: BIOS の Boot Override に Windows Boot Manager があるか確認。無ければ手順1をやり直す
 - Windows の BitLocker を後から有効化した場合: 次回キー変更前に必ず保護を一時停止する
