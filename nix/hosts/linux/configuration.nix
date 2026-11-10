@@ -190,7 +190,6 @@ in
     sbctl
     kitty
     wezterm
-    rofi
     waybar
     quickshell
     hyprlock

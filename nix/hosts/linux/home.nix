@@ -48,6 +48,28 @@
     allowImages = true;
   };
 
+  # 放置時の自動ロック（5分）と画面オフ（10分）。systemd ユーザーサービスとして起動。
+  services.hypridle = {
+    enable = true;
+    settings = {
+      general = {
+        lock_cmd = "hyprlock";
+        before_sleep_cmd = "hyprlock";
+      };
+      listener = [
+        {
+          timeout = 300;
+          on-timeout = "hyprlock";
+        }
+        {
+          timeout = 600;
+          on-timeout = "hyprctl dispatch dpms off";
+          on-resume = "hyprctl dispatch dpms on";
+        }
+      ];
+    };
+  };
+
   services.wl-clip-persist = {
     enable = true;
     clipboardType = "regular";

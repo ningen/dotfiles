@@ -17,8 +17,6 @@ in
   };
 
   xdg.configFile = {
-    "hypr/hyprlock.conf".source =
-      config.lib.file.mkOutOfStoreSymlink "${repo}/_config/hypr/hyprlock.conf";
     "hypr/scripts/audio-panel.sh".source =
       config.lib.file.mkOutOfStoreSymlink "${repo}/_config/hypr/scripts/audio-panel.sh";
     "hypr/scripts/cheatsheet.sh".source =

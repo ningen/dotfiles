@@ -22,9 +22,6 @@ unix_only:
   - source: _config/yazi
     target: $CONFIG_DIR/yazi
     type: directory
-  - source: _config/rofi
-    target: $CONFIG_DIR/rofi
-    type: directory
   - source: _config/nix
     target: $CONFIG_DIR/nix
     type: directory

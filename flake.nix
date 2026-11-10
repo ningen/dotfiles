@@ -147,8 +147,10 @@
               ./nix/hosts/common/stylix-targets.nix
               ./nix/hosts/common/home.nix
               ./nix/hosts/linux/hyprland.nix
+              ./nix/hosts/linux/hyprlock.nix
               ./nix/hosts/linux/waybar.nix
               ./nix/hosts/linux/quickshell.nix
+              ./nix/hosts/linux/rofi.nix
               ./nix/hosts/linux/migration.nix
               ./nix/hosts/linux/home.nix
               ./nix/packages/dev-tools.nix
