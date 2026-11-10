@@ -41,7 +41,6 @@ nix build .#homeConfigurations."ningen@$HOSTNAME".activationPackage
 - `git diff`、`git status`、`rg`、`sed`、`nl`、`ls`、ログ収集、コマンド実行結果の要約は、可能なら安い worker/subagent に委譲する。
 - worker は read-only を基本とし、編集・commit・push・破壊的操作・依存関係インストールは行わせない。
 - worker からは `task`、`commands`、`findings`、`risks`、`next` の構造で結果を受け取り、オーケストレーターが判断してユーザーに返す。
-- Codex では `$diff-command-worker` skill をこの用途の標準プロンプトとして使う。
 
 ## アーキテクチャ
 

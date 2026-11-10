@@ -8,8 +8,6 @@ permission:
   external_directory: deny
   webfetch: deny
   websearch: deny
-  skill:
-    codex-opencode-parallel-dev: deny
   bash:
     "*": allow
     "git status": allow
