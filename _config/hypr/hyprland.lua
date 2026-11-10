@@ -200,8 +200,9 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        force_default_wallpaper = 0,    -- 壁紙は stylix + hyprpaper が担当（デフォルト壁紙は無効）
+        disable_hyprland_logo   = true, -- stylix 側の設定と揃える
+        vrr                     = 1,    -- Variable Refresh Rate（ゲーミング用途）
     },
     debug = {
         enable_stdout_logs = true,
@@ -258,7 +259,7 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close(), { desc
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("hyprlock"), { description = "System: lock screen" })
 hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"), { description = "System: lock screen (alias)" })
-hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"), { description = "System: exit Hyprland" })
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exit(), { description = "System: exit Hyprland" })
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "Launch: file manager" })
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }), { description = "Window: toggle floating" })
 hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd(menu), { description = "Launch: app launcher" })

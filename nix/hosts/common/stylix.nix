@@ -3,6 +3,7 @@
   stylix = {
     enable = true;
     base16Scheme = "${pkgs.base16-schemes}/share/themes/tokyo-night-dark.yaml";
+    image = ../../../_config/wallpapers/night-mountains.jpg;
     polarity = "dark";
     override = {
       base06 = "c0caf5";
