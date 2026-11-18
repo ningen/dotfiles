@@ -11,7 +11,7 @@ local config = {
 		{ family = "UDEV Gothic NF", weight = "Regular" },
 		"Noto Color Emoji",
 	}),
-	font_size = 12.0,
+	font_size = 11.0,
 	line_height = 1.2,
 	harfbuzz_features = { "calt=1", "clig=1", "liga=1" }, -- Enable ligatures
 	use_ime = true,
@@ -127,15 +127,9 @@ wezterm.on("format-tab-title", function(tab, tabs, panes, config, hover, max_wid
 	}
 end)
 
--- Status line with time
-wezterm.on("update-right-status", function(window, pane)
-	local date = wezterm.strftime("%a %b %-d %H:%M ")
-
-	window:set_right_status(wezterm.format({
-		{ Background = { Color = "#414868" } },
-		{ Foreground = { Color = "#c0caf5" } },
-		{ Text = " " .. date },
-	}))
+-- Clear any stale right status (e.g. left over from a previous config)
+wezterm.on("window-config-reloaded", function(window, pane)
+	window:set_right_status("")
 end)
 
 -- Add workspace indicator
